@@ -1,0 +1,16 @@
+*.egg-info/
+*.pyc
+__pycache__/
+[.][v]env/
+build
+dist
+.cache
+.coverage
+.eggs
+.tox
+.vscode
+_skbuild
+*.so
+*.prof
+*.pstats
+benchmarks/.profiles
