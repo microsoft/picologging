@@ -2,6 +2,7 @@
 #include <structmember.h>
 #include <cstddef>
 #include <unordered_map>
+#include <string>
 
 #ifndef PICOLOGGING_FORMATSTYLE_H
 #define PICOLOGGING_FORMATSTYLE_H

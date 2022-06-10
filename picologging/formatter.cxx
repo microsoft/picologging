@@ -86,16 +86,16 @@ static PyMemberDef Formatter_members[] = {
 PyTypeObject FormatterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "picologging.Formatter",
-    .tp_doc = PyDoc_STR("Formatter for log records."),
     .tp_basicsize = sizeof(Formatter),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc)Formatter_init,
     .tp_dealloc = (destructor)Formatter_dealloc,
     .tp_repr = (reprfunc)PyObject_Repr,
-    .tp_members = Formatter_members,
-    .tp_methods = Formatter_methods,
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PyDoc_STR("Formatter for log records."),
+    .tp_methods = Formatter_methods,
+    .tp_members = Formatter_members,
+    .tp_init = (initproc)Formatter_init,
+    .tp_new = PyType_GenericNew,
 };

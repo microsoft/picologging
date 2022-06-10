@@ -313,16 +313,16 @@ static PyMemberDef PercentStyle_members[] = {
 PyTypeObject PercentStyleType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "picologging.PercentStyle",
-    .tp_doc = PyDoc_STR("% formatter for log records."),
     .tp_basicsize = offsetof(PercentStyle, fragments),
     .tp_itemsize = sizeof(FormatFragment),
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PercentStyle_new,
-    .tp_init = (initproc)PercentStyle_init,
     .tp_dealloc = (destructor)PercentStyle_dealloc,
     .tp_repr = (reprfunc)PyObject_Repr,
-    .tp_members = PercentStyle_members,
-    .tp_methods = PercentStyle_methods,
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PyDoc_STR("% formatter for log records."),
+    .tp_methods = PercentStyle_methods,
+    .tp_members = PercentStyle_members,
+    .tp_init = (initproc)PercentStyle_init,
+    .tp_new = PercentStyle_new,
 };

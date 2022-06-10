@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  push:
+    branches: [ develop/main, develop/3.10 ]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["macos-11", ubuntu-20.04, "windows-2019"]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.2.2
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
