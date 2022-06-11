@@ -1,14 +1,35 @@
-# Project
+# picologging
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+**INTERNAL NOTE** This project is about 40% complete, do not deploy yet. 
 
-As the maintainer of this project, please make a few updates:
+Picologging is a high-performance logging library for Python. picologging is 10-20x faster than the `logging` module in the standard library.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+Picologging is designed to be used as a _drop-in_ replacement for applications which already use logging, and supports the same API as the `logging` module.
+
+## Installation
+
+```console
+$ pip install picologging
+```
+
+## Usage
+
+Run `picologging.install()` once your logging setup is configured, (typically after calling `logging.basicSetup()`).
+
+This patches all the loggers registered to use picologging loggers and formatters.
+
+```python
+import logging
+logging.basicSetup()
+
+import picologging; picologging.install()  # Add this line
+
+logger = logging.getLogger()
+
+logger.info("A log message!")
+
+logger.warning("A log message with %s", "arguments")
+```
 
 ## Contributing
 
