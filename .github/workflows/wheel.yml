@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ develop/main, develop/3.10 ]
+    branches: [ main ]
 
 jobs:
   build_wheels:
