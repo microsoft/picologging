@@ -21,6 +21,7 @@ setup(
     ],
     install_requires=[],
     package_dir={'': 'src'},
+    python_requires='>=3.7',
     extras_require = {
         "dev": [
             "rich",

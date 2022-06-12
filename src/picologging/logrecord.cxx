@@ -132,7 +132,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(self->relativeCreated);
 
     // TODO : Implement multi-threading and process support
-    self->thread = PyThread_get_thread_ident();
+    self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     self->threadName = Py_None;
     Py_INCREF(Py_None);
     self->processName = Py_None;

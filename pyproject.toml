@@ -10,4 +10,4 @@ build-backend = "setuptools.build_meta"
 [tool.cibuildwheel]
 skip = ["*-musllinux*"]
 test-requires = "pytest"
-test-command = "pytest {project}/test"
+test-command = "pytest {project}/tests"
