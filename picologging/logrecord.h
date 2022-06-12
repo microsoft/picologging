@@ -42,6 +42,10 @@ _PyTime_t current_time();
 
 PyAPI_DATA(PyTypeObject) LogRecordType;
 
+#ifdef Py_IS_TYPE
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
+#else
+#define LogRecord_CheckExact(op) (Py_TYPE(op) == &LogRecordType)
+#endif
 
 #endif // PICOLOGGING_LOGRECORD_H

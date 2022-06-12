@@ -57,6 +57,11 @@ PyObject* PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 PyAPI_DATA(PyTypeObject) PercentStyleType;
 
+#ifdef Py_IS_TYPE
 #define PercentStyle_CheckExact(op) Py_IS_TYPE(op, &PercentStyleType)
+#else
+#define PercentStyle_CheckExact(op) (Py_TYPE(op) == &PercentStyleType)
+#endif
+
 typedef std::unordered_map<std::string, FragmentType> FieldMap;
 #endif // PICOLOGGING_FORMATSTYLE_H

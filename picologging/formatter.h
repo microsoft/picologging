@@ -18,7 +18,10 @@ PyObject* Formatter_dealloc(Formatter *self);
 
 PyAPI_DATA(PyTypeObject) FormatterType;
 
+#ifdef Py_IS_TYPE
 #define Formatter_CheckExact(op) Py_IS_TYPE(op, &FormatterType)
-
+#else
+#define Formatter_CheckExact(op) (Py_TYPE(op) == &FormatterType)
+#endif
 
 #endif // PICOLOGGING_FORMATTER_H
