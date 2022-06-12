@@ -8,7 +8,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Test ${{ matrix.os }} Python ${{ matrix.python_version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
