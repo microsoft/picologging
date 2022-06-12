@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build wheels
-        uses: pypa/cibuildwheel@latest
+        uses: pypa/cibuildwheel@v2.6.1
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
