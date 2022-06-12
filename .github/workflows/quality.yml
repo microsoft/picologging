@@ -60,22 +60,11 @@ jobs:
       run: |
         sudo apt-get -y update
         sudo apt-get install -y cmake llvm-9 clang-9 autoconf automake \
-        libtool build-essential python curl git lldb-6.0 liblldb-6.0-dev \
-        libunwind8 libunwind8-dev gettext libicu-dev liblttng-ust-dev \
-        libssl-dev libnuma-dev libkrb5-dev zlib1g-dev
+        libtool build-essential curl git lldb-6.0 liblldb-6.0-dev
+        python -m pip install scikit-build
   
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config $BUILD_TYPE
+      run: python setup.py build_ext --build-type Debug
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
