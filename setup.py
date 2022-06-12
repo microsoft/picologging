@@ -1,4 +1,5 @@
 from skbuild import setup
+from setuptools import find_packages
 
 
 with open("./README.md", "r") as fh:
@@ -7,7 +8,8 @@ with open("./README.md", "r") as fh:
 
 setup(
     name="picologging",
-    packages=["picologging"],
+    packages=find_packages(where="src"),
+    package_dir={'': 'src'},
     version="0.1.0",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
@@ -20,7 +22,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[],
-    package_dir={'': 'src'},
     python_requires='>=3.7',
     extras_require = {
         "dev": [
