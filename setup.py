@@ -1,5 +1,4 @@
 from skbuild import setup
-import picologging
 
 
 with open("./README.md", "r") as fh:
@@ -9,7 +8,7 @@ with open("./README.md", "r") as fh:
 setup(
     name="picologging",
     packages=["picologging"],
-    version=picologging.__version__,
+    version="0.1.0",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
     long_description=long_description,
