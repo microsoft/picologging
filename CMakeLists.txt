@@ -4,7 +4,7 @@ project(picologging)
 
 find_package(PythonExtensions REQUIRED)
 
-add_library(_picologging MODULE picologging/_picologging.cxx picologging/logrecord.cxx picologging/formatstyle.cxx picologging/formatter.cxx)
+add_library(_picologging MODULE src/picologging/_picologging.cxx src/picologging/logrecord.cxx src/picologging/formatstyle.cxx src/picologging/formatter.cxx)
 set_target_properties(_picologging PROPERTIES CXX_STANDARD 17)
 python_extension_module(_picologging)
 install(TARGETS _picologging LIBRARY DESTINATION picologging)

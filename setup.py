@@ -20,7 +20,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[],
-    extra_requires = {
+    package_dir={'': 'src'},
+    extras_require = {
         "dev": [
             "rich",
             "pytest",
