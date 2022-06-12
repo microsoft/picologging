@@ -2,6 +2,8 @@ import logging
 
 from ._picologging import LogRecord, PercentStyle, Formatter
 
+__version__ = "0.1.0"
+
 def install():
     """ Install the picologging record and logger """
     if len(logging.root.handlers) == 0:
