@@ -37,5 +37,5 @@ jobs:
 
     - name: Run benchmarks
       run: |
-       python -m pip install rich
+       python -m pip install rich pyinstrument
        python benchmarks/suite.py
