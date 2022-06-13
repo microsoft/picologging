@@ -44,8 +44,6 @@ possible_format_strings = [
     "%(module)s",
     "%(funcName)s",
     "%(lineno)d",
-    "%(created)f",
-    "%(asctime)s",
     "%(thread)d",
     "%(threadName)s",
     "%(process)d",

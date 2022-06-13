@@ -9,5 +9,5 @@ def test_logrecord_standard():
     assert record.levelno == logging.WARNING
     assert record.levelname == 'WARNING'
     assert record.pathname == '/serv/'
-    assert record.filename == None
     assert record.args == ()
+
