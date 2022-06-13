@@ -25,6 +25,8 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 
     self->style = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
     if (self->style == nullptr){ // Got exception in PercentStyle.__init__()
+        if (PyErr_Occurred() == nullptr)
+            PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return nullptr;
     }
 

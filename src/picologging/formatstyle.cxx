@@ -34,8 +34,8 @@ FieldMap field_map = {
     };
 
 #define APPEND_STRING(field) \
-if (PyUnicode_Check(log_record->field )) { \ 
-    if (_PyUnicodeWriter_WriteStr(&writer, log_record->field ) != 0) { \ 
+if (PyUnicode_Check(log_record->field )) { \
+    if (_PyUnicodeWriter_WriteStr(&writer, log_record->field ) != 0) { \
         _PyUnicodeWriter_Dealloc(&writer); \
         return nullptr; \
     } \

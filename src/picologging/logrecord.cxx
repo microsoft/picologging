@@ -122,6 +122,9 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->created = _PyFloat_FromPyTime(ctime);
     if (self->created == NULL) {
         //TODO : cleanup refs.
+        if (PyErr_Occurred == nullptr) {
+            PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
+        }
         return NULL;
     }
     Py_INCREF(self->created);
