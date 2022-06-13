@@ -1,5 +1,5 @@
-#include "formatstyle.h"
-#include "logrecord.h"
+#include "formatstyle.hxx"
+#include "logrecord.hxx"
 
 #include <regex>
 #include <cstdarg>

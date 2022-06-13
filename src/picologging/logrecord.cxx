@@ -1,6 +1,6 @@
 #include <thread>
 
-#include "logrecord.h"
+#include "logrecord.hxx"
 
 _PyTime_t startTime = current_time();
 

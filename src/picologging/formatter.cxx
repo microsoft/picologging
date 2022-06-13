@@ -1,6 +1,6 @@
-#include "formatter.h"
-#include "formatstyle.h"
-#include "logrecord.h"
+#include "formatter.hxx"
+#include "formatstyle.hxx"
+#include "logrecord.hxx"
 
 PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;

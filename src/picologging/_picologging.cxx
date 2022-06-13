@@ -5,9 +5,9 @@
 // STD includes
 #include <stdio.h>
 
-#include "logrecord.h"
-#include "formatter.h"
-#include "formatstyle.h"
+#include "logrecord.hxx"
+#include "formatter.hxx"
+#include "formatstyle.hxx"
 
 //-----------------------------------------------------------------------------
 static PyMethodDef picologging_methods[] = {
