@@ -15,7 +15,6 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     switch (style){
         case '%':
             /* Call the class object. */
-            assert(PyType_Ready(&PercentStyleType) == 0);
             styleType = (PyObject*)&PercentStyleType;
             break;
         default:
@@ -23,29 +22,33 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             return nullptr;
     }
 
-    self->style = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
+    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
     if (PyErr_Occurred()){ // Got exception in PercentStyle.__init__()
         return nullptr;
     }
-    if (self->style == nullptr){
+    if (styleCls == nullptr){
         PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return nullptr;
     }
 
+    self->style = styleCls;
+    Py_INCREF(self->style);
+
     self->fmt = ((PercentStyle*)(self->style))->fmt;
-    Py_IncRef(fmt);
+    Py_INCREF(fmt);
 
     self->dateFmt = dateFmt;
-    Py_IncRef(dateFmt);
+    Py_INCREF(dateFmt);
 
     if (validate){
         if (PyObject_CallMethod(self->style, "validate", NULL) == nullptr){
             Py_DECREF(self->style);
+            Py_DECREF(fmt);
+            Py_DECREF(dateFmt);
             return nullptr;
         }
     }
 
-    Py_IncRef(self->style) ; // TODO: This is a new reference, so check if this is required.
     return (PyObject*)self;
 }
 
