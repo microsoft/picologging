@@ -27,7 +27,7 @@ jobs:
     - name: Install requirements and package
       run: |
         python -m pip install -U scikit-build
-        python -m pip install -vv .
+        python setup.py build_ext --inplace --build Debug
     
     - name: Run pytest
       run: |
