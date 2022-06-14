@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include <cstddef>
+#include "compat.hxx"
 
 #ifndef PICOLOGGING_LOGRECORD_H
 #define PICOLOGGING_LOGRECORD_H
@@ -20,7 +21,7 @@ typedef struct {
     PyObject *created;
     long msecs;
     PyObject *relativeCreated;
-    int thread;
+    unsigned long thread;
     PyObject *threadName;
     int process;
     PyObject *processName;
@@ -42,10 +43,6 @@ _PyTime_t current_time();
 
 PyAPI_DATA(PyTypeObject) LogRecordType;
 
-#ifdef Py_IS_TYPE
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
-#else
-#define LogRecord_CheckExact(op) (Py_TYPE(op) == &LogRecordType)
-#endif
 
 #endif // PICOLOGGING_LOGRECORD_H

@@ -55,13 +55,23 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->msg = msg;
     Py_INCREF(msg);
 
-    // TODO :
+    // This is a copy of the behaviour in the Python class
     // if (args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping)
     //         and args[0]):
     //         args = args[0]
-    if (args == Py_None){
-        self->hasArgs = false;
-    } else if (PySequence_Check(args) && PySequence_Length(args) == 0) {
+    Py_ssize_t argsLen = 0;
+    if (args != Py_None){
+        argsLen = PyObject_Length(args);
+    }
+
+    if (argsLen == 1 && PySequence_Check(args)){
+        PyObject* firstValue = PySequence_GetItem(args, 0);
+        if (PyMapping_Check(firstValue)) {
+            args = firstValue;
+        }
+        Py_DECREF(firstValue);
+    }
+    if (argsLen == 0) {
         self->hasArgs = false;
     } else {
         self->hasArgs = true;
@@ -149,10 +159,12 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);
     Py_INCREF(self->relativeCreated);
 
-    // TODO : Implement multi-threading and process support
+    
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
+    // TODO : See if there is a performant way to get the thread name.
     self->threadName = Py_None;
     Py_INCREF(Py_None);
+    // TODO : See if there is a performant way to get the process name.
     self->processName = Py_None;
     Py_INCREF(Py_None);
     self->process = getpid();
@@ -262,7 +274,7 @@ LogRecord_getDict(PyObject *obj, void *context)
     PyDict_SetItemString(dict, "created", ((LogRecord*)obj)->created);
     PyDict_SetItemString(dict, "msecs", PyLong_FromLong(((LogRecord*)obj)->msecs));
     PyDict_SetItemString(dict, "relativeCreated", ((LogRecord*)obj)->relativeCreated);
-    PyDict_SetItemString(dict, "thread", PyLong_FromLong(((LogRecord*)obj)->thread));
+    PyDict_SetItemString(dict, "thread", PyLong_FromUnsignedLong(((LogRecord*)obj)->thread));
     PyDict_SetItemString(dict, "threadName", ((LogRecord*)obj)->threadName);
     PyDict_SetItemString(dict, "processName", ((LogRecord*)obj)->processName);
     PyDict_SetItemString(dict, "process", PyLong_FromLong(((LogRecord*)obj)->process));
@@ -288,7 +300,7 @@ static PyMemberDef LogRecord_members[] = {
     {"created", T_OBJECT_EX, offsetof(LogRecord, created), 0, "Created"},
     {"msecs", T_LONG, offsetof(LogRecord, msecs), 0, "Milliseconds"},
     {"relativeCreated", T_OBJECT_EX, offsetof(LogRecord, relativeCreated), 0, "Relative created"},
-    {"thread", T_INT, offsetof(LogRecord, thread), 0, "Thread"},
+    {"thread", T_ULONG, offsetof(LogRecord, thread), 0, "Thread"},
     {"threadName", T_OBJECT_EX, offsetof(LogRecord, threadName), 0, "Thread name"},
     {"processName", T_OBJECT_EX, offsetof(LogRecord, processName), 0, "Process name"},
     {"process", T_INT, offsetof(LogRecord, process), 0, "Process"},

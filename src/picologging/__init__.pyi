@@ -17,7 +17,7 @@ class LogRecord:
     levelno: int
     levelname: str
     msg: str
-    args: Any
+    args: Iterable[Any]
     pathname: str
     filename: str
     module: str
@@ -26,10 +26,10 @@ class LogRecord:
     created: float
     msecs: float
     relativeCreated: float
-    thread: Optional[Any]
+    thread: Optional[int]
     threadName: Optional[str]
     processName: Optional[str]
-    process: Optional[Any]
+    process: Optional[int]
     exc_info: Any
     exc_text: Optional[str]
     stack_info: Optional[Any]
