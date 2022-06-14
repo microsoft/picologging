@@ -72,7 +72,6 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
 
         if (self->usesTime){
             PyObject * asctime = Py_None;
-            // Step 1 convert the created time to localtime
             std::time_t created = (std::time_t)logRecord->created;
             std::tm *ct = localtime(&created);
             if (self->dateFmt != Py_None){
@@ -82,9 +81,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             } else {
                 char buf[100];
                 size_t len = strftime(buf, 100, "%Y-%m-%d %H:%M:%S", ct);
-                asctime = PyUnicode_FromStringAndSize(buf, len);
+                asctime = PyUnicode_FromFormat("%s,%03d", buf, logRecord->msecs);
             }
-            // TODO: format milliseconds.
 
             Py_XDECREF(logRecord->asctime);
             logRecord->asctime = asctime;
