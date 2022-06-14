@@ -71,4 +71,3 @@ def test_asctime_field():
     record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
     assert pico_f.format(record)
     assert pico_f.usesTime()
-    

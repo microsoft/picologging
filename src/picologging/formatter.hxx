@@ -19,7 +19,6 @@ PyObject* Formatter_dealloc(Formatter *self);
 PyObject* Formatter_usesTime(Formatter *self);
 PyObject* Formatter_formatMessage(Formatter *self, PyObject *record);
 PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo);
-
 PyAPI_DATA(PyTypeObject) FormatterType;
 
 #define Formatter_CheckExact(op) Py_IS_TYPE(op, &FormatterType)

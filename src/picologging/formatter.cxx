@@ -1,7 +1,10 @@
+#include <ctime>
 #include "formatter.hxx"
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
+static PyObject* DEFAULT_TIME_FORMAT = PyUnicode_FromString("%Y-%m-%d %H:%M:%S");
+static PyObject* DEFAULT_MSEC_FORMAT = PyUnicode_FromString("%s,%03d");
 
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
@@ -58,6 +61,26 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
     if (LogRecord_CheckExact(record)){
         LogRecord* logRecord = (LogRecord*)record;
         LogRecord_getMessage(logRecord);
+
+        if (Formatter_usesTime(self) == Py_True){
+            PyObject * asctime = Py_None;
+            // Step 1 convert the created time to localtime
+            std::time_t created = (std::time_t)logRecord->created;
+            std::tm *ct = localtime(&created);
+            if (self->dateFmt != Py_None){
+                char buf[100];
+                size_t len = strftime(buf, 100, PyUnicode_AsUTF8(self->dateFmt), ct);
+                asctime = PyUnicode_FromStringAndSize(buf, len);
+            } else {
+                char buf[100];
+                size_t len = strftime(buf, 100, "%Y-%m-%d %H:%M:%S", ct);
+                asctime = PyUnicode_FromStringAndSize(buf, len);
+            }
+            Py_XDECREF(logRecord->asctime);
+            logRecord->asctime = asctime;
+            Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.
+        }
+
         if (PercentStyle_CheckExact(self->style)){
             return PercentStyle_format((PercentStyle*)self->style, record);
         } else {

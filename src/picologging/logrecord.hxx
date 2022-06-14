@@ -18,7 +18,7 @@ typedef struct {
     PyObject *module;
     int lineno;
     PyObject *funcName;
-    PyObject *created;
+    double created;
     long msecs;
     PyObject *relativeCreated;
     unsigned long thread;

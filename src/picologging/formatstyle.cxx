@@ -167,7 +167,10 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(funcName)
                         break;
                     case Field_Created:
-                        APPEND_STRING(created)
+                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%f", log_record->created)) != 0) {
+                            _PyUnicodeWriter_Dealloc(&writer);
+                            return nullptr;
+                        }
                         break;
                     case Field_Msecs:
                         if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->msecs)) != 0) {

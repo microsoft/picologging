@@ -148,17 +148,10 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         goto error;
     }
 
-    self->created = _PyFloat_FromPyTime(ctime);
-    if (self->created == NULL) {
-        goto error;
-    }
-    Py_INCREF(self->created);
-
+    self->created = _PyTime_AsSecondsDouble(ctime);
     self->msecs = _PyTime_AsMilliseconds(ctime, _PyTime_ROUND_CEILING);
-
     self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);
     Py_INCREF(self->relativeCreated);
-
     
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     // TODO : See if there is a performant way to get the thread name.
@@ -183,7 +176,6 @@ error:
     Py_XDECREF(self->filename);
     Py_XDECREF(self->module);
     Py_XDECREF(self->funcName);
-    Py_XDECREF(self->created);
     Py_XDECREF(self->relativeCreated);
     Py_XDECREF(self->threadName);
     Py_XDECREF(self->processName);
@@ -208,7 +200,6 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     Py_XDECREF(self->filename);
     Py_XDECREF(self->module);
     Py_XDECREF(self->funcName);
-    Py_XDECREF(self->created);
     Py_XDECREF(self->relativeCreated);
     Py_XDECREF(self->threadName);
     Py_XDECREF(self->processName);
@@ -271,7 +262,7 @@ LogRecord_getDict(PyObject *obj, void *context)
     PyDict_SetItemString(dict, "module", ((LogRecord*)obj)->module);
     PyDict_SetItemString(dict, "funcName", ((LogRecord*)obj)->funcName);
     PyDict_SetItemString(dict, "lineno", PyLong_FromLong(((LogRecord*)obj)->lineno));
-    PyDict_SetItemString(dict, "created", ((LogRecord*)obj)->created);
+    PyDict_SetItemString(dict, "created", PyFloat_FromDouble(((LogRecord*)obj)->created));
     PyDict_SetItemString(dict, "msecs", PyLong_FromLong(((LogRecord*)obj)->msecs));
     PyDict_SetItemString(dict, "relativeCreated", ((LogRecord*)obj)->relativeCreated);
     PyDict_SetItemString(dict, "thread", PyLong_FromUnsignedLong(((LogRecord*)obj)->thread));
@@ -297,7 +288,7 @@ static PyMemberDef LogRecord_members[] = {
     {"module", T_OBJECT_EX, offsetof(LogRecord, module), 0, "Module name"},
     {"lineno", T_INT, offsetof(LogRecord, lineno), 0, "Line number"},
     {"funcName", T_OBJECT_EX, offsetof(LogRecord, funcName), 0, "Function name"},
-    {"created", T_OBJECT_EX, offsetof(LogRecord, created), 0, "Created"},
+    {"created", T_DOUBLE, offsetof(LogRecord, created), 0, "Created"},
     {"msecs", T_LONG, offsetof(LogRecord, msecs), 0, "Milliseconds"},
     {"relativeCreated", T_OBJECT_EX, offsetof(LogRecord, relativeCreated), 0, "Relative created"},
     {"thread", T_ULONG, offsetof(LogRecord, thread), 0, "Thread"},
