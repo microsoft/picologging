@@ -31,7 +31,7 @@ enum FragmentType {
     Field_ExcText,
     Field_StackInfo,
     Field_Message,
-    // TODO : asctime
+    Field_Asctime,
     // Special field
     Field_Unknown,
     LiteralFragment,

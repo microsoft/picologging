@@ -42,8 +42,16 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     self->fmt = ((PercentStyle*)(self->style))->fmt;
     Py_INCREF(fmt);
 
+    self->usesTime = (PercentStyle_usesTime((PercentStyle*)self->style) == Py_True);
+
     self->dateFmt = dateFmt;
     Py_INCREF(dateFmt);
+
+    if (dateFmt != Py_None) {
+        self->dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
+    } else {
+        self->dateFmtStr = nullptr;
+    }
 
     if (validate){
         if (PyObject_CallMethod(self->style, "validate", NULL) == nullptr){
@@ -62,20 +70,22 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         LogRecord* logRecord = (LogRecord*)record;
         LogRecord_getMessage(logRecord);
 
-        if (Formatter_usesTime(self) == Py_True){
+        if (self->usesTime){
             PyObject * asctime = Py_None;
             // Step 1 convert the created time to localtime
             std::time_t created = (std::time_t)logRecord->created;
             std::tm *ct = localtime(&created);
             if (self->dateFmt != Py_None){
                 char buf[100];
-                size_t len = strftime(buf, 100, PyUnicode_AsUTF8(self->dateFmt), ct);
+                size_t len = strftime(buf, 100, self->dateFmtStr, ct);
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             } else {
                 char buf[100];
                 size_t len = strftime(buf, 100, "%Y-%m-%d %H:%M:%S", ct);
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             }
+            // TODO: format milliseconds.
+
             Py_XDECREF(logRecord->asctime);
             logRecord->asctime = asctime;
             Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.

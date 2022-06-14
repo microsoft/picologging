@@ -29,6 +29,20 @@ def format_record_picologging():
         f.format(record)
 
 
+def format_record_with_date_logging():
+    f = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    record = logging.LogRecord('hello', 40, '/serv/', 123, 'bork bork bork', (), None)
+    for _ in range(10_000):
+        f.format(record)
+
+
+def format_record_with_date_picologging():
+    f = picologging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    record = picologging.LogRecord('hello', 40, '/serv/', 123, 'bork bork bork', (), None)
+    for _ in range(10_000):
+        f.format(record)
+
+
 def logger_makerecord_logging():
     logger = logging.getLogger(__name__)
     for _ in range(10_000):
@@ -79,6 +93,7 @@ def log_error_picologging():
 __benchmarks__ = [
     (record_factory_logging, record_factory_picologging, "LogRecordFactory()"),
     (format_record_logging, format_record_picologging, "Formatter().format()"),
+    (format_record_with_date_logging, format_record_with_date_picologging, "Formatter().format() with date"),
     (log_error_logging, log_error_picologging, "logging.error()"),
     (logger_makerecord_logging, logger_makerecord_picologging, "Logger.makeRecord()")
 ]

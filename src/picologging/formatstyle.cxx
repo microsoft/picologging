@@ -10,7 +10,6 @@ std::regex const fragment_search("\\%\\(\\w+\\)[diouxefgcrsa%]");
 FieldMap field_map = {
         {"name", Field_Name},
         {"msg", Field_Msg},
-        // {"asctime", Field_Asctime},
         {"args", Field_Args},
         {"levelno", Field_LevelNo},
         {"levelname", Field_LevelName},
@@ -30,6 +29,7 @@ FieldMap field_map = {
         {"exc_text", Field_ExcText},
         {"stack_info", Field_StackInfo},
         {"message", Field_Message},
+        {"asctime", Field_Asctime},
     };
 
 #define APPEND_STRING(field) \
@@ -210,6 +210,9 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         break;
                     case Field_Message:
                         APPEND_STRING(message)
+                        break;
+                    case Field_Asctime:
+                        APPEND_STRING(asctime)
                         break;
                     case LiteralFragment:
                         if (_PyUnicodeWriter_WriteStr(&writer, self->fragments[i].fragment) != 0) {
