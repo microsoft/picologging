@@ -2,6 +2,8 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
+
+
 PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;
     char style = '%';
@@ -55,8 +57,7 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 PyObject* Formatter_format(Formatter *self, PyObject *record){
     if (LogRecord_CheckExact(record)){
         LogRecord* logRecord = (LogRecord*)record;
-        logRecord->message = LogRecord_getMessage(logRecord);
-        Py_INCREF(logRecord->message);
+        LogRecord_getMessage(logRecord);
         if (PercentStyle_CheckExact(self->style)){
             return PercentStyle_format((PercentStyle*)self->style, record);
         } else {

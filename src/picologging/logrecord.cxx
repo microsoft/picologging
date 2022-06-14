@@ -1,6 +1,8 @@
 #include <thread>
-
+#include <filesystem>
 #include "logrecord.hxx"
+
+namespace fs = std::filesystem;
 
 _PyTime_t startTime = current_time();
 
@@ -30,7 +32,7 @@ _PyTime_t current_time()
 
 PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 {
-    PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = EMPTY_STRING, *module = EMPTY_STRING, *funcname = nullptr;
+    PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = nullptr, *module = nullptr, *funcname = nullptr;
     int levelno, lineno;
     long msecs;
     static char *kwlist[] = {
@@ -95,15 +97,16 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(levelname);
     self->pathname = pathname;
     Py_INCREF(pathname);
-    // TODO : Resolve filename and module name
-        self->filename = filename;
-        Py_INCREF(filename);
-        self->module = module;
-        Py_INCREF(module);
+
+    fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
+    self->filename = PyUnicode_FromString(fs_path.filename().c_str());
+    Py_INCREF(self->filename);
+    self->module = PyUnicode_FromString(fs_path.stem().c_str());
+    Py_INCREF(self->module);
     self->excInfo = exc_info;
-    Py_INCREF(exc_info);
+    Py_INCREF(self->excInfo);
     self->excText = Py_None;
-    Py_INCREF(Py_None);
+    Py_INCREF(self->excText);
 
     if (sinfo != NULL){
         self->stackInfo = sinfo;
@@ -122,6 +125,20 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         Py_INCREF(EMPTY_STRING);
     }
     _PyTime_t ctime = current_time();
+    if (ctime == -1){
+        Py_DECREF(self->funcName);
+        Py_DECREF(self->stackInfo);
+        Py_DECREF(self->excText);
+        Py_DECREF(self->excInfo);
+        Py_DECREF(self->module);
+        Py_DECREF(self->filename);
+        Py_DECREF(self->pathname);
+        Py_DECREF(self->levelname);
+        Py_DECREF(self->msg);
+        Py_DECREF(self->args);
+        Py_DECREF(self->name);
+        return nullptr;
+    }
 
     self->created = _PyFloat_FromPyTime(ctime);
     if (self->created == NULL) {
@@ -185,6 +202,9 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     return NULL;
 }
 
+/**
+ * Update the message attribute of the object and return the field
+ */
 PyObject* LogRecord_getMessage(LogRecord *self)
 {
     PyObject *msg = NULL;
@@ -198,10 +218,15 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     }
 
     if (!self->hasArgs) {
-        return msg;
+        Py_DECREF(self->message);
+        self->message = msg;
+        Py_INCREF(self->message);
     } else {
-        return PyUnicode_Format(msg, args);
+        Py_DECREF(self->message);
+        self->message = PyUnicode_Format(msg, args);
+        Py_INCREF(self->message);
     }
+    return self->message;
 }
 
 PyObject* LogRecord_repr(LogRecord *self)
@@ -238,7 +263,6 @@ LogRecord_getDict(PyObject *obj, void *context)
     PyDict_SetItemString(dict, "exc_info", ((LogRecord*)obj)->excInfo);
     PyDict_SetItemString(dict, "exc_text", ((LogRecord*)obj)->excText);
     PyDict_SetItemString(dict, "stack_info", ((LogRecord*)obj)->stackInfo);
-    assert(((LogRecord*)obj)->message != nullptr);
     PyDict_SetItemString(dict, "message", ((LogRecord*)obj)->message);
     PyDict_SetItemString(dict, "asctime", ((LogRecord*)obj)->asctime);
     return dict;
