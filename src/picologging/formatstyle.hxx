@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <string>
 
+#include "compat.hxx"
+
 #ifndef PICOLOGGING_FORMATSTYLE_H
 #define PICOLOGGING_FORMATSTYLE_H
 
@@ -57,19 +59,7 @@ PyObject* PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 PyAPI_DATA(PyTypeObject) PercentStyleType;
 
-#ifdef Py_IS_TYPE
 #define PercentStyle_CheckExact(op) Py_IS_TYPE(op, &PercentStyleType)
-#else
-#define PercentStyle_CheckExact(op) (Py_TYPE(op) == &PercentStyleType)
-#endif
-
-// Python <3.9 backward compat
-#ifndef Py_SET_SIZE
-static inline void _Py_SET_SIZE(PyVarObject *ob, Py_ssize_t size) {
-    ob->ob_size = size;
-}
-#define Py_SET_SIZE(ob, size) _Py_SET_SIZE(_PyVarObject_CAST(ob), size)
-#endif
 
 typedef std::unordered_map<std::string, FragmentType> FieldMap;
 #endif // PICOLOGGING_FORMATSTYLE_H
