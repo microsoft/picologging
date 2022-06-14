@@ -135,40 +135,12 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     }
     _PyTime_t ctime = current_time();
     if (ctime == -1){
-        Py_DECREF(self->funcName);
-        Py_DECREF(self->stackInfo);
-        Py_DECREF(self->excText);
-        Py_DECREF(self->excInfo);
-        Py_DECREF(self->module);
-        Py_DECREF(self->filename);
-        Py_DECREF(self->pathname);
-        Py_DECREF(self->levelname);
-        Py_DECREF(self->msg);
-        Py_DECREF(self->args);
-        Py_DECREF(self->name);
-        if (!PyErr_Occurred()) {
-            PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
-        }
-        return -1;
+        goto error;
     }
 
     self->created = _PyFloat_FromPyTime(ctime);
     if (self->created == NULL) {
-        Py_DECREF(self->funcName);
-        Py_DECREF(self->stackInfo);
-        Py_DECREF(self->excText);
-        Py_DECREF(self->excInfo);
-        Py_DECREF(self->module);
-        Py_DECREF(self->filename);
-        Py_DECREF(self->pathname);
-        Py_DECREF(self->levelname);
-        Py_DECREF(self->msg);
-        Py_DECREF(self->args);
-        Py_DECREF(self->name);
-        if (!PyErr_Occurred()) {
-            PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
-        }
-        return -1;
+        goto error;
     }
     Py_INCREF(self->created);
 
@@ -189,6 +161,29 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->asctime = Py_None;
     Py_INCREF(Py_None);
     return 0;
+
+error:
+    Py_XDECREF(self->name);
+    Py_XDECREF(self->msg);
+    Py_XDECREF(self->args);
+    Py_XDECREF(self->levelname);
+    Py_XDECREF(self->pathname);
+    Py_XDECREF(self->filename);
+    Py_XDECREF(self->module);
+    Py_XDECREF(self->funcName);
+    Py_XDECREF(self->created);
+    Py_XDECREF(self->relativeCreated);
+    Py_XDECREF(self->threadName);
+    Py_XDECREF(self->processName);
+    Py_XDECREF(self->excInfo);
+    Py_XDECREF(self->excText);
+    Py_XDECREF(self->stackInfo);
+    Py_XDECREF(self->message);
+    Py_XDECREF(self->asctime);
+    if (!PyErr_Occurred()) {
+        PyErr_Format(PyExc_ValueError, "Could not create LogRecord, unknown error.");
+    }
+    return -1;
 }
 
 PyObject* LogRecord_dealloc(LogRecord *self)
@@ -211,7 +206,7 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     Py_XDECREF(self->message);
     Py_XDECREF(self->asctime);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -219,9 +214,8 @@ PyObject* LogRecord_dealloc(LogRecord *self)
  */
 PyObject* LogRecord_getMessage(LogRecord *self)
 {
-    PyObject *msg = NULL;
+    PyObject *msg = nullptr;
     PyObject *args = self->args;
-    PyObject *result = NULL;
 
     if (PyUnicode_Check(self->msg)){
         msg = self->msg;
@@ -230,13 +224,13 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     }
 
     if (!self->hasArgs) {
-        Py_DECREF(self->message);
+        Py_XDECREF(self->message);
         self->message = msg;
-        Py_INCREF(self->message);
+        Py_XINCREF(self->message);
     } else {
-        Py_DECREF(self->message);
+        Py_XDECREF(self->message);
         self->message = PyUnicode_Format(msg, args);
-        Py_INCREF(self->message);
+        Py_XINCREF(self->message);
     }
     return self->message;
 }

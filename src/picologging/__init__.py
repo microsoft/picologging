@@ -1,8 +1,15 @@
 import logging
 
-from ._picologging import LogRecord, PercentStyle, Formatter
+from ._picologging import LogRecord, PercentStyle, Formatter  # NOQA
 
 __version__ = "0.1.0"
+__all__ = [
+    "LogRecord",
+    "Formatter",
+    "PercentStyle",
+    "install",
+    "uninstall",
+]
 
 def install():
     """ Install the picologging record and logger """
@@ -12,8 +19,8 @@ def install():
     logging.setLogRecordFactory(LogRecord)
     logging._STYLES['%'] = (PercentStyle, logging.BASIC_FORMAT)
     logging.Logger.manager.logRecordFactory = LogRecord
-    for h in logging.Logger.root.handlers:
-        h.setFormatter(Formatter(h.formatter._fmt))
+    for handler in logging.Logger.root.handlers:
+        handler.setFormatter(Formatter(handler.formatter._fmt))
     logging._defaultFormatter = Formatter()
 
 def uninstall():
