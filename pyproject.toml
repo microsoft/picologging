@@ -8,6 +8,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-skip = ["*-musllinux*"]
+# skip musl and pypy
+skip = ["*-musllinux*", "pp*"] 
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
