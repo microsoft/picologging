@@ -68,8 +68,25 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         PyErr_SetString(PyExc_TypeError, "Argument must be a LogRecord");
         return nullptr;
     }
-    return Py_None; // TODO: Implement.
 }
+
+PyObject* Formatter_usesTime(Formatter *self) {
+    if (PercentStyle_CheckExact(self->style)){
+        return PercentStyle_usesTime((PercentStyle*)self->style);
+    } else {
+        return PyObject_CallMethodNoArgs(self->style, PyUnicode_FromString("usesTime"));
+    }
+}
+
+PyObject* Formatter_formatMessage(Formatter *self, PyObject* record){
+    return PyObject_CallMethodOneArg(self->style, PyUnicode_FromString("format"), record);
+}
+
+PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
+    // The base implementation just returns the value passed in.
+    return stackInfo;
+}
+
 
 PyObject* Formatter_dealloc(Formatter *self) {
     Py_XDECREF(self->style);
@@ -81,6 +98,9 @@ PyObject* Formatter_dealloc(Formatter *self) {
 
 static PyMethodDef Formatter_methods[] = {
     {"format", (PyCFunction)Formatter_format, METH_O, "Format record into log event string"},
+    {"usesTime", (PyCFunction)Formatter_usesTime, METH_NOARGS, "Return True if the format uses the creation time of the record."},
+    {"formatMessage", (PyCFunction)Formatter_formatMessage, METH_O, "Format the message for a record."},
+    {"formatStack", (PyCFunction)Formatter_formatStack, METH_O, "Format the stack for a record."},
     {NULL}
 };
 

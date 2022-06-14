@@ -16,6 +16,9 @@ typedef struct {
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds);
 PyObject* Formatter_format(Formatter *self, PyObject *record);
 PyObject* Formatter_dealloc(Formatter *self);
+PyObject* Formatter_usesTime(Formatter *self);
+PyObject* Formatter_formatMessage(Formatter *self, PyObject *record);
+PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo);
 
 PyAPI_DATA(PyTypeObject) FormatterType;
 
