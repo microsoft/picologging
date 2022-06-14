@@ -5,6 +5,9 @@
 
 #include <Python.h>
 
+#ifndef COMPAT_H
+#define COMPAT_H
+
 #ifndef _PyObject_CAST
 #define _PyObject_CAST(op) ((PyObject*)(op))
 #endif
@@ -35,6 +38,18 @@ static inline void _Py_SET_SIZE(PyVarObject *ob, Py_ssize_t size) {
 #define Py_SET_SIZE(ob, size) _Py_SET_SIZE(_PyVarObject_CAST(ob), size)
 #endif
 
-#ifndef PYUNICODE_ENDSWITH
 #define PYUNICODE_ENDSWITH(ob, suffix) (PyUnicode_Tailmatch(ob, suffix, PyUnicode_GET_LENGTH(ob) - 1, PyUnicode_GET_LENGTH(ob), +1) > 0)
+
+#if PY_VERSION_HEX >= 0x03090000
+#define PyObject_CallMethod_ONEARG(ob, name, arg) PyObject_CallMethodOneArg(ob, name, arg)
+#else
+#define PyObject_CallMethod_ONEARG(ob, name, arg) PyObject_CallMethodObjArgs(ob, name, arg, NULL)
 #endif
+
+#if PY_VERSION_HEX >= 0x03090000
+#define PyObject_CallMethod_NOARGS(ob, name) PyObject_CallMethodNoArgs(ob, name)
+#else
+#define PyObject_CallMethod_NOARGS(ob, name) PyObject_CallMethodObjArgs(ob, name, NULL)
+#endif
+
+#endif // COMPAT_H

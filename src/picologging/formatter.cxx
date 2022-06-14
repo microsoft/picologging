@@ -92,8 +92,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         if (PercentStyle_CheckExact(self->style)){
             result = PercentStyle_format((PercentStyle*)self->style, record);
         } else {
-            result = PyObject_CallMethodObjArgs(self->style, PyUnicode_FromString("format"), record, NULL);
-            
+            result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
         }
         // TODO : format exc_info, exc_text and stack_info.
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
@@ -122,12 +121,12 @@ PyObject* Formatter_usesTime(Formatter *self) {
     if (PercentStyle_CheckExact(self->style)){
         return PercentStyle_usesTime((PercentStyle*)self->style);
     } else {
-        return PyObject_CallMethodNoArgs(self->style, PyUnicode_FromString("usesTime"));
+        return PyObject_CallMethod_NOARGS(self->style, PyUnicode_FromString("usesTime"));
     }
 }
 
 PyObject* Formatter_formatMessage(Formatter *self, PyObject* record){
-    return PyObject_CallMethodOneArg(self->style, PyUnicode_FromString("format"), record);
+    return PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
 }
 
 PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {

@@ -22,9 +22,8 @@ PyObject* Formatter_usesTime(Formatter *self);
 PyObject* Formatter_formatMessage(Formatter *self, PyObject *record);
 PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo);
 
-extern "C" {
 PyAPI_DATA(PyTypeObject) FormatterType;
 #define Formatter_CheckExact(op) Py_IS_TYPE(op, &FormatterType)
-}
+
 
 #endif // PICOLOGGING_FORMATTER_H
