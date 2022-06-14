@@ -12,3 +12,6 @@ build-backend = "setuptools.build_meta"
 skip = ["*-musllinux*", "pp*"] 
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
