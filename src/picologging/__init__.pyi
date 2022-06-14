@@ -1,6 +1,5 @@
 from typing import Any, Iterable, Optional
 
-
 class LogRecord:
     """
     A LogRecord instance represents an event being logged.
@@ -13,6 +12,7 @@ class LogRecord:
     the source line where the logging call was made, and any exception
     information to be logged.
     """
+
     name: str
     levelno: int
     levelname: str
@@ -34,10 +34,19 @@ class LogRecord:
     exc_text: Optional[str]
     stack_info: Optional[Any]
 
-    def __init__(self, name: str, level: int, pathname: str, lineno: int,
-                 msg: int, args: Iterable[Any], exc_info: Any, func=None, sinfo=None, **kwargs):
-        ...
-    
+    def __init__(
+        self,
+        name: str,
+        level: int,
+        pathname: str,
+        lineno: int,
+        msg: str,
+        args: Iterable[Any],
+        exc_info: Any,
+        func=None,
+        sinfo=None,
+        **kwargs
+    ): ...
     def getMessage(self) -> str:
         """
         Return the message for this LogRecord.
@@ -54,7 +63,6 @@ def install():
 def uninstall():
     """Remove the picologging types from logging."""
     ...
-
 
 class Formatter:
     """
@@ -98,12 +106,18 @@ class Formatter:
     %(message)s         The result of record.getMessage(), computed just as
                         the record is emitted
     """
+
     datefmt: str
 
-    def __init__(self, fmt: str =None, datefmt: str =None, style: str='%', validate: bool =True, *,
-                 defaults=None):
-        ...
-
+    def __init__(
+        self,
+        fmt: Optional[str] = None,
+        datefmt: Optional[str] = None,
+        style: str = "%",
+        validate: bool = True,
+        *,
+        defaults=None
+    ): ...
     def format(self, record: LogRecord) -> str:
         """
         Format the specified record as text.
