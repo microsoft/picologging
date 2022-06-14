@@ -5,6 +5,22 @@
 
 #include <Python.h>
 
+#ifndef _PyObject_CAST
+#define _PyObject_CAST(op) ((PyObject*)(op))
+#endif
+
+#ifndef _PyObject_CAST_CONST
+#define _PyObject_CAST_CONST(op) ((const PyObject*)(op))
+#endif
+
+#ifndef _PyVarObject_CAST
+#define _PyVarObject_CAST(op) ((PyVarObject*)(op))
+#endif
+
+#ifndef _PyVarObject_CAST_CONST
+#define _PyVarObject_CAST_CONST(op) ((const PyVarObject*)(op))
+#endif
+
 #ifndef Py_IS_TYPE
 static inline int _Py_IS_TYPE(const PyObject *ob, const PyTypeObject *type) {
     return ob->ob_type == type;
