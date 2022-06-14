@@ -281,8 +281,11 @@ PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
     PercentStyle* self;
     self = (PercentStyle*)type->tp_alloc(type, fragmentLen);
-    if (self != nullptr){
-        self->ob_base.ob_size = fragmentLen;
+    if (self){
+        Py_SET_SIZE(self, fragmentLen);
+    } else {
+        PyErr_NoMemory();
+        return nullptr;
     }
     return (PyObject*)self;
 }

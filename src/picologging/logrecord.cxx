@@ -48,6 +48,9 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         NULL};
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", kwlist, 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
+        if (!PyErr_Occurred()) {
+            PyErr_Format(PyExc_ValueError, "Could not parse arguments");
+        }
         return NULL;
     self->name = name;
     Py_INCREF(name);
@@ -137,6 +140,9 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         Py_DECREF(self->msg);
         Py_DECREF(self->args);
         Py_DECREF(self->name);
+        if (!PyErr_Occurred()) {
+            PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
+        }
         return nullptr;
     }
 
@@ -153,7 +159,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         Py_DECREF(self->msg);
         Py_DECREF(self->args);
         Py_DECREF(self->name);
-        if (PyErr_Occurred() == nullptr) {
+        if (!PyErr_Occurred()) {
             PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
         }
         return NULL;
