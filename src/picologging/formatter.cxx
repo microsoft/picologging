@@ -4,13 +4,13 @@
 
 
 
-PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
+int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;
     char style = '%';
     bool validate = true;
     static char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", kwlist, &fmt, &dateFmt, &style, &validate))
-        return NULL;
+        return -1;
 
     PyObject* styleType = nullptr;
 
@@ -21,16 +21,16 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "Unsupported style");
-            return nullptr;
+            return -1;
     }
 
     PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
     if (PyErr_Occurred()){ // Got exception in PercentStyle.__init__()
-        return nullptr;
+        return -1;
     }
     if (styleCls == nullptr){
         PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
-        return nullptr;
+        return -1;
     }
 
     self->style = styleCls;
@@ -47,11 +47,11 @@ PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             Py_DECREF(self->style);
             Py_DECREF(fmt);
             Py_DECREF(dateFmt);
-            return nullptr;
+            return -1;
         }
     }
 
-    return (PyObject*)self;
+    return 0;
 }
 
 PyObject* Formatter_format(Formatter *self, PyObject *record){
@@ -96,7 +96,7 @@ PyTypeObject FormatterType = {
     .tp_name = "picologging.Formatter",
     .tp_basicsize = sizeof(Formatter),
     .tp_itemsize = 0,
-    .tp_dealloc = Formatter_dealloc,
+    .tp_dealloc = (destructor)Formatter_dealloc,
     .tp_repr = PyObject_Repr,
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
@@ -104,6 +104,6 @@ PyTypeObject FormatterType = {
     .tp_doc = PyDoc_STR("Formatter for log records."),
     .tp_methods = Formatter_methods,
     .tp_members = Formatter_members,
-    .tp_init = Formatter_init,
+    .tp_init = (initproc)Formatter_init,
     .tp_new = PyType_GenericNew,
 };

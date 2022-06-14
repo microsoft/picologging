@@ -12,7 +12,7 @@ typedef struct {
     PyObject *style;
 } Formatter;
 
-PyObject* Formatter_init(Formatter *self, PyObject *args, PyObject *kwds);
+int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds);
 PyObject* Formatter_format(Formatter *self, PyObject *record);
 PyObject* Formatter_dealloc(Formatter *self);
 

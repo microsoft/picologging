@@ -46,11 +46,11 @@ if (PyUnicode_Check(log_record->field )) { \
     } \
 }
 
-PyObject* PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
+int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *defaults = Py_None;
     static char *kwlist[] = {"fmt", "defaults", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &fmt, &defaults))
-        return NULL;
+        return -1;
 
     if (!PyUnicode_Check(fmt)){
         fmt = DEFAULT_FMT;
@@ -59,7 +59,7 @@ PyObject* PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         self->usesDefaultFmt = false;
     }
     self->fmt = fmt;
-    Py_IncRef(fmt);
+    Py_INCREF(fmt);
 
     std::string const format_string(PyUnicode_AsUTF8(fmt));
     auto fragments_begin = std::sregex_iterator(format_string.begin(), format_string.end(), fragment_search);
@@ -94,8 +94,8 @@ PyObject* PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         idx ++;
     }
     self->defaults = defaults;
-    Py_IncRef(defaults);
-    return (PyObject*)self;
+    Py_INCREF(defaults);
+    return 0;
 }
 
 PyObject* PercentStyle_usesTime(PercentStyle *self){
@@ -318,7 +318,7 @@ PyTypeObject PercentStyleType = {
     .tp_name = "picologging.PercentStyle",
     .tp_basicsize = offsetof(PercentStyle, fragments),
     .tp_itemsize = sizeof(FormatFragment),
-    .tp_dealloc = PercentStyle_dealloc,
+    .tp_dealloc = (destructor)PercentStyle_dealloc,
     .tp_repr = PyObject_Repr,
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
@@ -326,6 +326,6 @@ PyTypeObject PercentStyleType = {
     .tp_doc = PyDoc_STR("% formatter for log records."),
     .tp_methods = PercentStyle_methods,
     .tp_members = PercentStyle_members,
-    .tp_init = PercentStyle_init,
+    .tp_init = (initproc)PercentStyle_init,
     .tp_new = PercentStyle_new,
 };

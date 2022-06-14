@@ -48,7 +48,7 @@ typedef struct {
     FormatFragment fragments[1];
 } PercentStyle;
 
-PyObject* PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds);
+int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds);
 PyObject* PercentStyle_usesTime(PercentStyle *self);
 PyObject* PercentStyle_validate(PercentStyle *self);
 PyObject* PercentStyle_format(PercentStyle *self, PyObject *record);

@@ -30,7 +30,7 @@ _PyTime_t current_time()
     return t;
 }
 
-PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
+int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 {
     PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = nullptr, *module = nullptr, *funcname = nullptr;
     int levelno, lineno;
@@ -48,10 +48,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         NULL};
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", kwlist, 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
-        if (!PyErr_Occurred()) {
-            PyErr_Format(PyExc_ValueError, "Could not parse arguments");
-        }
-        return NULL;
+        return -1;
     self->name = name;
     Py_INCREF(name);
     self->msg = msg;
@@ -143,7 +140,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         if (!PyErr_Occurred()) {
             PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
         }
-        return nullptr;
+        return -1;
     }
 
     self->created = _PyFloat_FromPyTime(ctime);
@@ -162,7 +159,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         if (!PyErr_Occurred()) {
             PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
         }
-        return NULL;
+        return -1;
     }
     Py_INCREF(self->created);
 
@@ -182,7 +179,7 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(Py_None);
     self->asctime = Py_None;
     Py_INCREF(Py_None);
-    return (PyObject*)self;
+    return 0;
 }
 
 PyObject* LogRecord_dealloc(LogRecord *self)
@@ -315,8 +312,8 @@ PyTypeObject LogRecordType = {
     .tp_name = "picologging.LogRecord",
     .tp_basicsize = sizeof(LogRecord),
     .tp_itemsize = 0,
-    .tp_dealloc = LogRecord_dealloc,
-    .tp_repr = LogRecord_repr,
+    .tp_dealloc = (destructor)LogRecord_dealloc,
+    .tp_repr = (reprfunc)LogRecord_repr,
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
@@ -325,6 +322,6 @@ PyTypeObject LogRecordType = {
     .tp_members = LogRecord_members,
     .tp_getset = LogRecord_getset,
     .tp_dictoffset = offsetof(LogRecord, dict),
-    .tp_init = LogRecord_init,
+    .tp_init = (initproc)LogRecord_init,
     .tp_new = PyType_GenericNew,
 };
