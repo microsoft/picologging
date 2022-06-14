@@ -48,8 +48,8 @@ if (PyUnicode_Check(log_record->field )) { \
 
 int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *defaults = Py_None;
-    static char *kwlist[] = {"fmt", "defaults", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &fmt, &defaults))
+    static const char *kwlist[] = {"fmt", "defaults", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
         return -1;
 
     if (!PyUnicode_Check(fmt)){
@@ -251,8 +251,8 @@ PyObject *
 PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyObject *fmt = nullptr, *defaults = Py_None;
-    static char *kwlist[] = {"fmt", "defaults", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &fmt, &defaults))
+    static const char *kwlist[] = {"fmt", "defaults", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
         return NULL;
 
     ssize_t fragmentLen = 0; 

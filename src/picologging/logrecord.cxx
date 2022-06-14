@@ -35,7 +35,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = nullptr, *module = nullptr, *funcname = nullptr;
     int levelno, lineno;
     long msecs;
-    static char *kwlist[] = {
+    static const char *kwlist[] = {
         "name",
         "level",
         "pathname",
@@ -46,7 +46,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         "func",
         "sinfo",
         NULL};
-    if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", kwlist, 
+    if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", const_cast<char**>(kwlist), 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
         return -1;
     self->name = name;

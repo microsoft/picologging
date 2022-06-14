@@ -8,8 +8,8 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;
     char style = '%';
     bool validate = true;
-    static char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", kwlist, &fmt, &dateFmt, &style, &validate))
+    static const char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", const_cast<char**>(kwlist), &fmt, &dateFmt, &style, &validate))
         return -1;
 
     PyObject* styleType = nullptr;
