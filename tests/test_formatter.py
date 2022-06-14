@@ -71,3 +71,9 @@ def test_asctime_field():
     record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
     assert pico_f.format(record)
     assert pico_f.usesTime()
+
+
+def test_record_with_stack_info():
+    pico_f = Formatter("%(message)s")
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None, None, "hello")
+    assert pico_f.format(record) == "bork bork bork\nhello"

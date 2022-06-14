@@ -5,7 +5,7 @@
 
 static PyObject* DEFAULT_TIME_FORMAT = PyUnicode_FromString("%Y-%m-%d %H:%M:%S");
 static PyObject* DEFAULT_MSEC_FORMAT = PyUnicode_FromString("%s,%03d");
-
+static PyObject* LINE_BREAK = PyUnicode_FromString("\n");
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;
@@ -69,7 +69,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
     if (LogRecord_CheckExact(record)){
         LogRecord* logRecord = (LogRecord*)record;
         LogRecord_getMessage(logRecord);
-
+        PyObject* result = nullptr;
         if (self->usesTime){
             PyObject * asctime = Py_None;
             std::time_t created = (std::time_t)logRecord->created;
@@ -90,11 +90,28 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         }
 
         if (PercentStyle_CheckExact(self->style)){
-            return PercentStyle_format((PercentStyle*)self->style, record);
+            result = PercentStyle_format((PercentStyle*)self->style, record);
         } else {
-            return PyObject_CallMethodObjArgs(self->style, PyUnicode_FromString("format"), record, NULL);
-            // TODO : format exc_info, exc_text and stack_info.
+            result = PyObject_CallMethodObjArgs(self->style, PyUnicode_FromString("format"), record, NULL);
+            
         }
+        // TODO : format exc_info, exc_text and stack_info.
+        if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
+            // TODO:  Format exception text
+        }
+        if (logRecord->excText != Py_None){
+            if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){
+                PyUnicode_Append(&result, LINE_BREAK);
+            }
+            PyUnicode_Append(&result, logRecord->excText);
+        }
+        if (logRecord->stackInfo != Py_None){
+            if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){
+                PyUnicode_Append(&result, LINE_BREAK);
+            }
+            PyUnicode_Append(&result, logRecord->stackInfo);
+        }
+        return result;
     } else {
         PyErr_SetString(PyExc_TypeError, "Argument must be a LogRecord");
         return nullptr;
