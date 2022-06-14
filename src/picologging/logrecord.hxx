@@ -41,8 +41,9 @@ PyObject* LogRecord_repr(LogRecord *self);
 PyObject* LogRecord_getDict(PyObject *, void *);
 _PyTime_t current_time();
 
-PyTypeObject LogRecordType;
-
+extern "C" {
+PyAPI_DATA(PyTypeObject) LogRecordType;
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
+}
 
 #endif // PICOLOGGING_LOGRECORD_H
