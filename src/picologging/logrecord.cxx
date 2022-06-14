@@ -33,7 +33,17 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = EMPTY_STRING, *module = EMPTY_STRING, *funcname = nullptr;
     int levelno, lineno;
     long msecs;
-    static char *kwlist[] = {"name", "level", "pathname", "lineno", "msg", "args", "exc_info", "func", "sinfo", NULL};
+    static char *kwlist[] = {
+        "name",
+        "level",
+        "pathname",
+        "lineno",
+        "msg",
+        "args",
+        "exc_info",
+        "func",
+        "sinfo",
+        NULL};
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", kwlist, 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
         return NULL;
@@ -60,27 +70,21 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     switch (levelno) {
         case 50:
             levelname = CRITICAL;
-            Py_INCREF(CRITICAL);
             break;
         case 40:
             levelname = ERROR;
-            Py_INCREF(ERROR);
             break;
         case 30:
             levelname = WARNING;
-            Py_INCREF(WARNING);
             break;
         case 20:
             levelname = INFO;
-            Py_INCREF(INFO);
             break;
         case 10:
             levelname = DEBUG;
-            Py_INCREF(DEBUG);
             break;
         case 0:
             levelname = NOTSET;
-            Py_INCREF(NOTSET);
             break;
         default:
             levelname = PyUnicode_FromFormat("%d", levelno);
@@ -121,8 +125,18 @@ PyObject* LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 
     self->created = _PyFloat_FromPyTime(ctime);
     if (self->created == NULL) {
-        //TODO : cleanup refs.
-        if (PyErr_Occurred == nullptr) {
+        Py_DECREF(self->funcName);
+        Py_DECREF(self->stackInfo);
+        Py_DECREF(self->excText);
+        Py_DECREF(self->excInfo);
+        Py_DECREF(self->module);
+        Py_DECREF(self->filename);
+        Py_DECREF(self->pathname);
+        Py_DECREF(self->levelname);
+        Py_DECREF(self->msg);
+        Py_DECREF(self->args);
+        Py_DECREF(self->name);
+        if (PyErr_Occurred() == nullptr) {
             PyErr_Format(PyExc_EnvironmentError, "Could not get current time,");
         }
         return NULL;
