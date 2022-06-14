@@ -1,6 +1,5 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
-
 #include <regex>
 #include <cstdarg>
 
@@ -255,7 +254,7 @@ PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
         return NULL;
 
-    ssize_t fragmentLen = 0; 
+    int fragmentLen = 0; 
     if (fmt != nullptr && fmt != Py_None && PyUnicode_Check(fmt)){
         std::string const format_string(PyUnicode_AsUTF8(fmt));
         auto fragments_begin = std::sregex_iterator(format_string.begin(), format_string.end(), fragment_search);
@@ -314,7 +313,6 @@ static PyMemberDef PercentStyle_members[] = {
 };
 
 PyTypeObject PercentStyleType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "picologging.PercentStyle",
     .tp_basicsize = offsetof(PercentStyle, fragments),
     .tp_itemsize = sizeof(FormatFragment),

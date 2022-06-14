@@ -1,6 +1,7 @@
 #include <thread>
 #include <filesystem>
 #include "logrecord.hxx"
+#include "compat.hxx"
 
 namespace fs = std::filesystem;
 
@@ -99,9 +100,17 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(pathname);
 
     fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
+#ifdef WIN32
+    const wchar_t* filename_wchar = fs_path.filename().c_str();
+    self->filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar));
+    const wchar_t* modulename = fs_path.stem().c_str();
+    self->module = PyUnicode_FromWideChar(modulename, wcslen(modulename));
+#else
     self->filename = PyUnicode_FromString(fs_path.filename().c_str());
-    Py_INCREF(self->filename);
     self->module = PyUnicode_FromString(fs_path.stem().c_str());
+#endif
+    Py_INCREF(self->filename);
+    
     Py_INCREF(self->module);
     self->excInfo = exc_info;
     Py_INCREF(self->excInfo);
@@ -308,7 +317,6 @@ static PyGetSetDef LogRecord_getset[] = {
 };
 
 PyTypeObject LogRecordType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "picologging.LogRecord",
     .tp_basicsize = sizeof(LogRecord),
     .tp_itemsize = 0,

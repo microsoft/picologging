@@ -92,7 +92,6 @@ static PyMemberDef Formatter_members[] = {
 };
 
 PyTypeObject FormatterType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "picologging.Formatter",
     .tp_basicsize = sizeof(Formatter),
     .tp_itemsize = 0,
