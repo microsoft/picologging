@@ -50,6 +50,9 @@ possible_format_strings = [
     "%(threadName)s",
     "%(process)d",
     "%(processName)s",
+    "%(stack_info)s",
+    "%(exc_info)s",
+    "%(exc_text)s",
 ]
 
 @pytest.mark.parametrize("field", possible_format_strings)
