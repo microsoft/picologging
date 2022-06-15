@@ -1,6 +1,6 @@
 import logging
 
-from ._picologging import LogRecord, PercentStyle, Formatter  # NOQA
+from ._picologging import LogRecord, PercentStyle, Formatter, Logger  # NOQA
 
 __version__ = "0.1.0"
 __all__ = [

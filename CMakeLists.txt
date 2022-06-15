@@ -4,7 +4,7 @@ project(picologging)
 
 find_package(PythonExtensions REQUIRED)
 
-add_library(_picologging MODULE src/picologging/_picologging.cxx src/picologging/logrecord.cxx src/picologging/formatstyle.cxx src/picologging/formatter.cxx)
+add_library(_picologging MODULE src/picologging/_picologging.cxx src/picologging/logrecord.cxx src/picologging/formatstyle.cxx src/picologging/formatter.cxx src/picologging/logger.cxx)
 
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")

@@ -8,6 +8,7 @@
 #include "logrecord.hxx"
 #include "formatter.hxx"
 #include "formatstyle.hxx"
+#include "logger.hxx"
 
 //-----------------------------------------------------------------------------
 static PyMethodDef picologging_methods[] = {
@@ -32,7 +33,9 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
   if (PyType_Ready(&FormatterType) < 0)
     return NULL;
-
+  if (PyType_Ready(&LoggerType) < 0)
+    return NULL;
+  
   PyObject* m = PyModule_Create(&picologging_module_def);
   if (m == NULL)
     return NULL;
@@ -40,6 +43,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   Py_INCREF(&LogRecordType);
   Py_INCREF(&PercentStyleType);
   Py_INCREF(&FormatterType);
+  Py_INCREF(&LoggerType);
     
   if (PyModule_AddObject(m, "LogRecord", (PyObject *)&LogRecordType) < 0){
     Py_DECREF(&LogRecordType);
@@ -56,6 +60,10 @@ PyMODINIT_FUNC PyInit__picologging(void)
     Py_DECREF(m);
     return NULL;
   }
-
+  if (PyModule_AddObject(m, "Logger", (PyObject *)&LoggerType) < 0){
+    Py_DECREF(&LoggerType);
+    Py_DECREF(m);
+    return NULL;
+  }
   return m;
 }

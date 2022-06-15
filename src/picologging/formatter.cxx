@@ -96,7 +96,11 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         }
         // TODO : format exc_info, exc_text and stack_info.
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
-            // TODO:  Format exception text
+            // PyObject * excText = EMPTY_STRING;
+            // PyErr_Display(PyTuple_GetItem(logRecord->excInfo, 0), PyTuple_GetItem(logRecord->excInfo, 1), PyTuple_GetItem(logRecord->excInfo, 2));
+            // if (!PYUNICODE_ENDSWITH(excText, LINE_BREAK)){
+            //     PyUnicode_Append(&excText, LINE_BREAK);
+            // }
         }
         if (logRecord->excText != Py_None){
             if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){
@@ -133,7 +137,6 @@ PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
     // The base implementation just returns the value passed in.
     return stackInfo;
 }
-
 
 PyObject* Formatter_dealloc(Formatter *self) {
     Py_XDECREF(self->style);
