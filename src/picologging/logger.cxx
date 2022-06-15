@@ -1,4 +1,5 @@
 #include "logger.hxx"
+#include "compat.hxx"
 
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 {
@@ -19,6 +20,8 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->disabled = false;
     self->_cache = PyDict_New();
     Py_INCREF(self->_cache);
+    self->filters = PyList_New(0);
+    Py_INCREF(self->filters);
     return 0;
 }
 
@@ -27,6 +30,7 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->parent);
     Py_XDECREF(self->handlers);
     Py_XDECREF(self->_cache);
+    Py_XDECREF(self->filters);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }
@@ -35,16 +39,78 @@ PyObject* Logger_repr(Logger *self) {
     return PyUnicode_FromFormat("<Logger '%U' (%d)>", self->name, self->level);
 }
 
-PyObject* Logger_setLevel(Logger *self, PyObject *args) {
-    unsigned short level = 0;
-    if (!PyArg_ParseTuple(args, "H", &level))
+PyObject* Logger_setLevel(Logger *self, PyObject *level) {
+    if (!PyLong_Check(level)) {
+        PyErr_SetString(PyExc_TypeError, "level must be an integer");
         return NULL;
-    self->level = level;
+    }
+    self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
     Py_RETURN_NONE;
 }
 
+PyObject* Logger_getEffectiveLevel(Logger *self){
+    PyObject* logger = (PyObject*)self;
+    while (logger != Py_None) {
+        // TODO : We could support logging.Logger here through duck-typing..
+        // It depends on whether this is requested by the users or not.
+        if (!Logger_CheckExact(logger)) {
+            PyErr_SetString(PyExc_TypeError, "Parent logger is not a picologging.Logger");
+            return NULL;
+        }
+        if (((Logger*)logger)->level > 0){
+            return PyLong_FromUnsignedLong(((Logger*)logger)->level);
+        }
+        logger = ((Logger*)logger)->parent;
+        continue;
+    }
+    return PyLong_FromLong(0);
+}
+
+PyObject* Logger_addFilter(Logger* self, PyObject *filter) {
+    // Equivalent to `if not (filter in self.filters):`
+    if (PySequence_Contains(self->filters, filter) == 0){
+        PyList_Append(self->filters, filter);
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* Logger_removeFilter(Logger* self, PyObject *filter) {
+    if (PySequence_Contains(self->filters, filter) == 1){
+        return PyObject_CallMethod_ONEARG(self->filters, PyUnicode_FromString("remove"), filter);
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* Logger_filter(Logger* self, PyObject *record) {
+    bool ret = true;
+    for (int i = 0; i < PyList_GET_SIZE(self->filters); i++) {
+        PyObject *result = Py_None;
+        PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
+        if (PyObject_HasAttrString(filter, "filter")) {
+            result = PyObject_CallMethod_ONEARG(filter, PyUnicode_FromString("filter"), record);
+            if (result == NULL) {
+                return NULL;
+            }
+        } else {
+            result = PyObject_CallFunctionObjArgs(filter, record, NULL);
+        }
+        if (Py_IsFalse(result)) {
+            ret = false;
+            break;
+        }
+    }
+
+    if (ret)
+        Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
 static PyMethodDef Logger_methods[] = {
-    {"setLevel", (PyCFunction)Logger_setLevel, METH_VARARGS, "Set the level of the logger."},
+    {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
+    {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
+    {"addFilter", (PyCFunction)Logger_addFilter, METH_O, "Add a filter to the logger."},
+    {"removeFilter", (PyCFunction)Logger_removeFilter, METH_O, "Remove a filter from the logger."},
+    {"filter", (PyCFunction)Logger_filter, METH_O, "Filter a record."},
     {NULL}
 };
 
@@ -56,6 +122,7 @@ static PyMemberDef Logger_members[] = {
     {"handlers", T_OBJECT_EX, offsetof(Logger, handlers), 0, "Logger handlers"},
     {"disabled", T_BOOL, offsetof(Logger, disabled), 0, "Logger disabled"},
     {"_cache", T_OBJECT_EX, offsetof(Logger, _cache), 0, "Logger _cache"},
+    {"filters", T_OBJECT_EX, offsetof(Logger, filters), 0, "Logger filters"},
     {NULL}
 };
 

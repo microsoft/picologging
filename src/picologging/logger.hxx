@@ -15,9 +15,12 @@ typedef struct {
     PyObject *handlers;
     bool disabled;
     PyObject *_cache;
+    PyObject *filters;
 } Logger;
 
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds);
+PyObject* Logger_setLevel(Logger *self, PyObject *args);
+PyObject* Logger_getEffectiveLevel(Logger *self);
 PyObject* Logger_dealloc(Logger *self);
 
 extern PyTypeObject LoggerType;
