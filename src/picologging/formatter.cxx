@@ -3,9 +3,7 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
-static PyObject* DEFAULT_TIME_FORMAT = PyUnicode_FromString("%Y-%m-%d %H:%M:%S");
-static PyObject* DEFAULT_MSEC_FORMAT = PyUnicode_FromString("%s,%03d");
-static PyObject* LINE_BREAK = PyUnicode_FromString("\n");
+#define LINE_BREAK PyUnicode_FromString("\n")
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = Py_None, *dateFmt = Py_None;

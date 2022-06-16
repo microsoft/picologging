@@ -4,7 +4,7 @@
 
 // STD includes
 #include <stdio.h>
-
+#include "picologging.hxx"
 #include "logrecord.hxx"
 #include "formatter.hxx"
 #include "formatstyle.hxx"
@@ -17,7 +17,7 @@ static PyMethodDef picologging_methods[] = {
 
 //-----------------------------------------------------------------------------
 
-static struct PyModuleDef picologging_module_def = {
+struct PyModuleDef _picologging_module = {
   PyModuleDef_HEAD_INIT,
   "_picologging",
   "Internal \"_picologging\" module",
@@ -36,7 +36,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   if (PyType_Ready(&LoggerType) < 0)
     return NULL;
   
-  PyObject* m = PyModule_Create(&picologging_module_def);
+  PyObject* m = PyModule_Create(&_picologging_module);
   if (m == NULL)
     return NULL;
 
@@ -65,5 +65,42 @@ PyMODINIT_FUNC PyInit__picologging(void)
     Py_DECREF(m);
     return NULL;
   }
+  if (PyModule_AddStringConstant(m, "default_fmt", "%(message)s") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "default_datefmt", "%Y-%m-%d %H:%M:%S") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "default_style", "%") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "CRITICAL", "CRITICAL") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "ERROR", "ERROR") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "WARNING", "WARNING") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "INFO", "INFO") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "DEBUG", "DEBUG") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddStringConstant(m, "NOTSET", "NOTSET") < 0){
+    Py_DECREF(m);
+    return NULL;
+  }
+
   return m;
 }

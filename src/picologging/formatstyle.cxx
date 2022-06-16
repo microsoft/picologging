@@ -1,10 +1,9 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
+#include "picologging.hxx"
 #include <regex>
 #include <cstdarg>
 
-static PyObject* DEFAULT_FMT = PyUnicode_FromString("%(message)s");
-static PyObject* ASCTIME_SEARCH = PyUnicode_FromString("%(asctime)");
 std::regex const fragment_search("\\%\\(\\w+\\)[diouxefgcrsa%]");
 
 FieldMap field_map = {
@@ -52,7 +51,12 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         return -1;
 
     if (!PyUnicode_Check(fmt)){
-        fmt = DEFAULT_FMT;
+        PyObject* mod = PICOLOGGING_MODULE();
+        if (mod == nullptr){
+            PyErr_SetString(PyExc_TypeError, "Could not find _picologging module");
+            return -1;
+        }
+        fmt = PyDict_GetItemString(PyModule_GetDict(mod), "default_fmt");
         self->usesDefaultFmt = true;
     } else {
         self->usesDefaultFmt = false;
@@ -100,7 +104,7 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
 PyObject* PercentStyle_usesTime(PercentStyle *self){
     if (self->usesDefaultFmt)
         Py_RETURN_FALSE;
-    int ret = PyUnicode_Find(self->fmt, ASCTIME_SEARCH , 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+    int ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)") /* TODO : intern */ , 0, PyUnicode_GET_LENGTH(self->fmt), 1);
     if (ret >= 0){
         Py_RETURN_TRUE;
     } else if (ret == -1){

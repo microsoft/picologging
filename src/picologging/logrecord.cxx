@@ -2,18 +2,11 @@
 #include <filesystem>
 #include "logrecord.hxx"
 #include "compat.hxx"
+#include "picologging.hxx"
 
 namespace fs = std::filesystem;
 
 _PyTime_t startTime = current_time();
-
-static PyObject* CRITICAL = PyUnicode_FromString("CRITICAL");
-static PyObject* ERROR = PyUnicode_FromString("ERROR");
-static PyObject* WARNING = PyUnicode_FromString("WARNING");
-static PyObject* INFO = PyUnicode_FromString("INFO");
-static PyObject* DEBUG = PyUnicode_FromString("DEBUG");
-static PyObject* NOTSET = PyUnicode_FromString("NOTSET");
-static PyObject* EMPTY_STRING = PyUnicode_FromString("");
 
 static PyObject*
 _PyFloat_FromPyTime(_PyTime_t t)
@@ -50,6 +43,12 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", const_cast<char**>(kwlist), 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
         return -1;
+    PyObject* mod = PICOLOGGING_MODULE();
+    if (mod == nullptr){
+        PyErr_SetString(PyExc_TypeError, "Could not find _picologging module");
+        return -1;
+    }
+
     self->name = name;
     Py_INCREF(name);
     self->msg = msg;
@@ -82,22 +81,22 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->levelno = levelno;
     switch (levelno) {
         case 50:
-            levelname = CRITICAL;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "CRITICAL");
             break;
         case 40:
-            levelname = ERROR;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "ERROR");
             break;
         case 30:
-            levelname = WARNING;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "WARNING");
             break;
         case 20:
-            levelname = INFO;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "INFO");
             break;
         case 10:
-            levelname = DEBUG;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "DEBUG");
             break;
         case 0:
-            levelname = NOTSET;
+            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "NOTSET");
             break;
         default:
             levelname = PyUnicode_FromFormat("%d", levelno);
@@ -138,11 +137,11 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->lineno = lineno;
     if (funcname != NULL){
         self->funcName = funcname;
-        Py_INCREF(funcname);
     } else {
-        self->funcName = EMPTY_STRING;
-        Py_INCREF(EMPTY_STRING);
+        // TODO : See if PyNone is possible
+        self->funcName = PyUnicode_FromString("");
     }
+    Py_INCREF(self->funcName);
     _PyTime_t ctime = current_time();
     if (ctime == -1){
         goto error;
