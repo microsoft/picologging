@@ -94,7 +94,7 @@ PyObject* Logger_filter(Logger* self, PyObject *record) {
         } else {
             result = PyObject_CallFunctionObjArgs(filter, record, NULL);
         }
-        if (Py_IsFalse(result)) {
+        if (result == Py_False || result == Py_None) {
             ret = false;
             break;
         }
