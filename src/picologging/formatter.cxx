@@ -1,4 +1,5 @@
 #include <ctime>
+#include "picologging.hxx"
 #include "formatter.hxx"
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
@@ -92,13 +93,50 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         } else {
             result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
         }
-        // TODO : format exc_info, exc_text and stack_info.
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
-            // PyObject * excText = EMPTY_STRING;
-            // PyErr_Display(PyTuple_GetItem(logRecord->excInfo, 0), PyTuple_GetItem(logRecord->excInfo, 1), PyTuple_GetItem(logRecord->excInfo, 2));
-            // if (!PYUNICODE_ENDSWITH(excText, LINE_BREAK)){
-            //     PyUnicode_Append(&excText, LINE_BREAK);
-            // }
+            PyObject* mod = PICOLOGGING_MODULE();
+            PyObject* print_exception = PyDict_GetItemString(PyModule_GetDict(mod), "print_exception");
+            PyObject* sio_cls = PyDict_GetItemString(PyModule_GetDict(mod), "StringIO");
+            PyObject* sio = PyObject_CallFunctionObjArgs(sio_cls, NULL);
+            if (sio == nullptr){
+                Py_XDECREF(sio_cls);
+                Py_XDECREF(print_exception);
+                Py_XDECREF(mod);
+                return nullptr; // Got exception in StringIO.__init__()
+            }
+            if (PyObject_CallFunctionObjArgs(
+                print_exception,
+                PyTuple_GetItem(logRecord->excInfo, 0), 
+                PyTuple_GetItem(logRecord->excInfo, 1), 
+                PyTuple_GetItem(logRecord->excInfo, 2), 
+                Py_None,
+                sio,
+                NULL) == nullptr)
+            {
+                Py_XDECREF(sio_cls);
+                Py_XDECREF(print_exception);
+                Py_XDECREF(mod);
+                return nullptr; // Got exception in print_exception()
+            }
+            PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+            if (s == nullptr){
+                Py_XDECREF(sio);
+                Py_XDECREF(sio_cls);
+                Py_XDECREF(print_exception);
+                Py_XDECREF(mod);
+                return nullptr; // Got exception in StringIO.getvalue()
+            }
+            
+            PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+            Py_DECREF(sio);
+            Py_DECREF(sio_cls);
+            Py_DECREF(mod);
+            Py_DECREF(print_exception);
+            if (!PYUNICODE_ENDSWITH(s, LINE_BREAK)){
+                PyUnicode_Append(&s, LINE_BREAK);
+            }
+            Py_XDECREF(logRecord->excText);
+            logRecord->excText = s; // Use borrowed ref
         }
         if (logRecord->excText != Py_None){
             if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){

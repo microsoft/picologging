@@ -102,5 +102,31 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
   }
 
+  PyObject* traceback = PyImport_ImportModule("traceback");
+  if (traceback == NULL)
+    return NULL;
+  PyObject* print_exception = PyObject_GetAttrString(traceback, "print_exception");
+  if (print_exception == NULL)
+    return NULL;
+  Py_DECREF(traceback);
+  if (PyModule_AddObject(m, "print_exception", print_exception) < 0){
+    Py_DECREF(print_exception);
+    Py_DECREF(m);
+    return NULL;
+  }
+
+  PyObject* io = PyImport_ImportModule("io");
+  if (io == NULL)
+    return NULL;
+  PyObject* stringio = PyObject_GetAttrString(io, "StringIO");
+  if (stringio == NULL)
+    return NULL;
+  Py_DECREF(io);
+  if (PyModule_AddObject(m, "StringIO", stringio) < 0){
+    Py_DECREF(stringio);
+    Py_DECREF(m);
+    return NULL;
+  }
+
   return m;
 }
