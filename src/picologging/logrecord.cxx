@@ -138,8 +138,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     if (funcname != NULL){
         self->funcName = funcname;
     } else {
-        // TODO : See if PyNone is possible
-        self->funcName = PyUnicode_FromString("");
+        self->funcName = Py_None;
     }
     Py_INCREF(self->funcName);
     _PyTime_t ctime = current_time();
