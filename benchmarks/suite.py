@@ -24,7 +24,8 @@ def format_delta(a: float, b: float, d: float) -> Text:
             col = "spring_green2"
         else:
             col = "green1"
-        return Text(f"{a:.3f} ({d:.1f}%)", style=col)
+        x = b / a
+        return Text(f"{a:.3f} ({x:.1f}x)", style=col)
     else:
         return Text(f"{a:.3f} (-{d:.1f}%)", style="red")
 
