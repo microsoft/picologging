@@ -3,20 +3,20 @@
 #include <cstddef>
 #include "compat.hxx"
 #include "logrecord.hxx"
+#include "filterer.hxx"
 #include <unordered_map>
 
 #ifndef PICOLOGGING_LOGGER_H
 #define PICOLOGGING_LOGGER_H
 
 typedef struct LoggerT {
-    PyObject_HEAD
+    Filterer filterer;
     PyObject *name;
     unsigned short level;
     PyObject *parent;
     bool propagate;
     PyObject *handlers;
     bool disabled;
-    PyObject *filters;
     bool enabledForCritical = false;
     bool enabledForError = false;
     bool enabledForWarning = false;

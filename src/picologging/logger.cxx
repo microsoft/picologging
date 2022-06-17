@@ -3,6 +3,7 @@
 #include "compat.hxx"
 #include <frameobject.h>
 #include "picologging.hxx"
+#include "filterer.hxx"
 
 int getEffectiveLevel(Logger*self){
     PyObject* logger = (PyObject*)self;
@@ -24,6 +25,9 @@ int getEffectiveLevel(Logger*self){
 
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 {
+    if (FiltererType.tp_init((PyObject *) self, args, kwds) < 0)
+        return -1;
+
     PyObject *name = NULL;
     unsigned short level = 0;
     static const char *kwlist[] = {"name", "level", NULL};
@@ -39,8 +43,6 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->handlers = PyList_New(0);
     Py_INCREF(self->handlers);
     self->disabled = false;
-    self->filters = PyList_New(0);
-    Py_INCREF(self->filters);
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -63,7 +65,6 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->parent);
     Py_XDECREF(self->handlers);
-    Py_XDECREF(self->filters);
     Py_XDECREF(self->_const_handle);
     Py_XDECREF(self->_const_level);
     Py_XDECREF(self->_const_unknown);
@@ -89,45 +90,6 @@ PyObject* Logger_getEffectiveLevel(Logger *self){
     if (level == -1)
         return nullptr;
     return PyLong_FromLong(level);
-}
-
-PyObject* Logger_addFilter(Logger* self, PyObject *filter) {
-    // Equivalent to `if not (filter in self.filters):`
-    if (PySequence_Contains(self->filters, filter) == 0){
-        PyList_Append(self->filters, filter);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* Logger_removeFilter(Logger* self, PyObject *filter) {
-    if (PySequence_Contains(self->filters, filter) == 1){
-        return PyObject_CallMethod_ONEARG(self->filters, PyUnicode_FromString("remove"), filter);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* Logger_filter(Logger* self, PyObject *record) {
-    bool ret = true;
-    for (int i = 0; i < PyList_GET_SIZE(self->filters); i++) {
-        PyObject *result = Py_None;
-        PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
-        if (PyObject_HasAttrString(filter, "filter")) {
-            result = PyObject_CallMethod_ONEARG(filter, PyUnicode_FromString("filter"), record);
-            if (result == NULL) {
-                return NULL;
-            }
-        } else {
-            result = PyObject_CallFunctionObjArgs(filter, record, NULL);
-        }
-        if (result == Py_False || result == Py_None) {
-            ret = false;
-            break;
-        }
-    }
-
-    if (ret)
-        Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
 }
 
 LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObject *msg, PyObject *args, PyObject * exc_info, PyObject *extra, PyObject *stack_info, int stacklevel){
@@ -174,7 +136,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     LogRecord *record = Logger_logMessageAsRecord(
         self, LOG_LEVEL_DEBUG, msg, args_, /* TODO: Resolve */ Py_None, Py_None, Py_None, 1);
 
-    if (Logger_filter(self, (PyObject*)record) != Py_True)
+    if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True)
         Py_RETURN_NONE;
     
     int found = 0;
@@ -277,9 +239,6 @@ PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){}
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
-    {"addFilter", (PyCFunction)Logger_addFilter, METH_O, "Add a filter to the logger."},
-    {"removeFilter", (PyCFunction)Logger_removeFilter, METH_O, "Remove a filter from the logger."},
-    {"filter", (PyCFunction)Logger_filter, METH_O, "Filter a record."},
     // Logging methods
     {"debug", (PyCFunction)Logger_debug, METH_FASTCALL | METH_KEYWORDS, "Log a message at level DEBUG."},
     {"info", (PyCFunction)Logger_info, METH_FASTCALL | METH_KEYWORDS, "Log a message at level INFO."},
@@ -299,7 +258,6 @@ static PyMemberDef Logger_members[] = {
     {"propagate", T_BOOL, offsetof(Logger, propagate), 0, "Logger propagate"},
     {"handlers", T_OBJECT_EX, offsetof(Logger, handlers), 0, "Logger handlers"},
     {"disabled", T_BOOL, offsetof(Logger, disabled), 0, "Logger disabled"},
-    {"filters", T_OBJECT_EX, offsetof(Logger, filters), 0, "Logger filters"},
     {NULL}
 };
 

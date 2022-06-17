@@ -9,6 +9,7 @@
 #include "formatter.hxx"
 #include "formatstyle.hxx"
 #include "logger.hxx"
+#include "handler.hxx"
 
 //-----------------------------------------------------------------------------
 static PyMethodDef picologging_methods[] = {
@@ -33,7 +34,15 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
   if (PyType_Ready(&FormatterType) < 0)
     return NULL;
+  if (PyType_Ready(&FiltererType) < 0)
+    return NULL;
+
+  LoggerType.tp_base = &FiltererType;
   if (PyType_Ready(&LoggerType) < 0)
+    return NULL;
+
+  HandlerType.tp_base = &FiltererType;
+  if (PyType_Ready(&HandlerType) < 0)
     return NULL;
   
   PyObject* m = PyModule_Create(&_picologging_module);
@@ -44,6 +53,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   Py_INCREF(&PercentStyleType);
   Py_INCREF(&FormatterType);
   Py_INCREF(&LoggerType);
+  Py_INCREF(&HandlerType);
     
   if (PyModule_AddObject(m, "LogRecord", (PyObject *)&LogRecordType) < 0){
     Py_DECREF(&LogRecordType);
@@ -65,6 +75,11 @@ PyMODINIT_FUNC PyInit__picologging(void)
     Py_DECREF(m);
     return NULL;
   }
+  if (PyModule_AddObject(m, "Handler", (PyObject *)&HandlerType) < 0){
+    Py_DECREF(&HandlerType);
+    Py_DECREF(m);
+    return NULL;
+  }
   if (PyModule_AddStringConstant(m, "default_fmt", "%(message)s") < 0){
     Py_DECREF(m);
     return NULL;
@@ -74,30 +89,6 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
   }
   if (PyModule_AddStringConstant(m, "default_style", "%") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "CRITICAL", "CRITICAL") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "ERROR", "ERROR") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "WARNING", "WARNING") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "INFO", "INFO") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "DEBUG", "DEBUG") < 0){
-    Py_DECREF(m);
-    return NULL;
-  }
-  if (PyModule_AddStringConstant(m, "NOTSET", "NOTSET") < 0){
     Py_DECREF(m);
     return NULL;
   }
