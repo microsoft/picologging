@@ -52,6 +52,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   Py_INCREF(&LogRecordType);
   Py_INCREF(&PercentStyleType);
   Py_INCREF(&FormatterType);
+  Py_INCREF(&FiltererType);
   Py_INCREF(&LoggerType);
   Py_INCREF(&HandlerType);
     
@@ -67,6 +68,11 @@ PyMODINIT_FUNC PyInit__picologging(void)
   }
   if (PyModule_AddObject(m, "Formatter", (PyObject *)&FormatterType) < 0){
     Py_DECREF(&FormatterType);
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddObject(m, "Filterer", (PyObject *)&FiltererType) < 0){
+    Py_DECREF(&FiltererType);
     Py_DECREF(m);
     return NULL;
   }

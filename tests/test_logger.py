@@ -105,12 +105,22 @@ def test_filter_callable():
 def test_log_debug():
     logger = picologging.Logger('test', logging.DEBUG)
     stream = io.StringIO()
-    logger.handlers.append(logging.StreamHandler(stream))
+    handler = picologging.StreamHandler(stream)
+    handler.setFormatter(picologging.Formatter('%(message)s'))
+    logger.addHandler(handler)
     assert logger.debug("Hello World") == None
     result = stream.getvalue()
     assert result == "Hello World\n"
 
 def test_log_debug_info_level_logger():
+    logger = picologging.Logger('test', logging.INFO)
+    stream = io.StringIO()
+    logger.handlers.append(picologging.StreamHandler(stream))
+    assert logger.debug("Hello World") == None
+    result = stream.getvalue()
+    assert result == ""
+
+def test_log_debug_info_level_logger_logging_handler():
     logger = picologging.Logger('test', logging.INFO)
     stream = io.StringIO()
     logger.handlers.append(logging.StreamHandler(stream))

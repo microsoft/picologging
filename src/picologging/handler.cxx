@@ -1,3 +1,5 @@
+#include <mutex>
+
 #include "handler.hxx"
 #include "picologging.hxx"
 #include "formatter.hxx"
@@ -9,8 +11,8 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     unsigned short level = LOG_LEVEL_NOTSET;
     PyObject *formatter = NULL;
     PyObject *filters = NULL;
-    static char *kwlist[] = {"name", "level", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OHOO", kwlist, &name, &level)){
+    static const char *kwlist[] = {"name", "level", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OHOO", const_cast<char**>(kwlist), &name, &level)){
         return -1;
     }
     self->name = name;
@@ -19,26 +21,35 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     self->level = level;
     self->formatter = Py_None;
     Py_INCREF(self->formatter);
+    self->lock = new std::recursive_mutex();
     return 0;
 }
 
 PyObject* Handler_dealloc(Handler *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->formatter);
+    delete self->lock;
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
 
 PyObject* Handler_emit(Handler *self, PyObject *record){
-    // Base implementation
-    Py_RETURN_NONE;
+    Py_RETURN_NOTIMPLEMENTED;
 }
 
 PyObject* Handler_handle(Handler *self, PyObject *record) {
     if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True)
         Py_RETURN_NONE;
-    const std::lock_guard<std::mutex> lock(self->lock);
-    return Handler_emit(self, record);
+
+    try {
+        self->lock->lock();
+    } catch (const std::exception& e) {
+        PyErr_Format(PyExc_RuntimeError, "Cannot acquire thread lock, %s", e.what());
+        return nullptr;
+    }
+    PyObject* result = PyObject_CallMethod_ONEARG((PyObject*)self, PyUnicode_FromString("emit"), record);
+    self->lock->unlock();
+    return result;
 }
 
 PyObject* Handler_setLevel(Handler *self, PyObject *level){
@@ -51,10 +62,29 @@ PyObject* Handler_setLevel(Handler *self, PyObject *level){
     }
 }
 
+PyObject* Handler_format(Handler *self, PyObject *record){
+    if (self->formatter == Py_None){
+        Py_RETURN_NONE;
+    } else {
+        PyObject* result = PyObject_CallMethod_ONEARG(self->formatter, PyUnicode_FromString("format"), record);
+        return result;
+    }
+}
+
 PyObject* Handler_setFormatter(Handler *self, PyObject *formatter) {
     Py_XDECREF(self->formatter);
     self->formatter = formatter;
     Py_INCREF(self->formatter);
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_acquire(Handler *self){
+    self->lock->lock();
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_release(Handler *self){
+    self->lock->unlock();
     Py_RETURN_NONE;
 }
 
@@ -63,6 +93,9 @@ static PyMethodDef Handler_methods[] = {
     {"setFormatter", (PyCFunction)Handler_setFormatter, METH_O, "Set the formatter of the handler."},
     {"handle", (PyCFunction)Handler_handle, METH_O, "Handle a record."},
     {"emit", (PyCFunction)Handler_emit, METH_O, "Emit a record."},
+    {"format", (PyCFunction)Handler_format, METH_O, "Format a record."},
+    {"acquire", (PyCFunction)Handler_acquire, METH_NOARGS, "Acquire the lock."},
+    {"release", (PyCFunction)Handler_release, METH_NOARGS, "Release the lock."},
     {NULL}
 };
 

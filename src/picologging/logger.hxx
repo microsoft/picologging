@@ -33,6 +33,7 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds);
 PyObject* Logger_setLevel(Logger *self, PyObject *args);
 PyObject* Logger_getEffectiveLevel(Logger *self);
 PyObject* Logger_dealloc(Logger *self);
+PyObject* Logger_addHandler(Logger *self, PyObject *handler);
 
 PyObject* Logger_debug(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds);
 PyObject* Logger_info(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds);

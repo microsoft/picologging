@@ -4,6 +4,7 @@
 #include <frameobject.h>
 #include "picologging.hxx"
 #include "filterer.hxx"
+#include "handler.hxx"
 
 int getEffectiveLevel(Logger*self){
     PyObject* logger = (PyObject*)self;
@@ -146,16 +147,27 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
         for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
             found ++;
             PyObject* handler = PyList_GET_ITEM(cur->handlers, i);
-            PyObject* handlerLevel = PyObject_GetAttr(handler, self->_const_level);
-            if (handlerLevel == nullptr){
-                PyErr_SetString(PyExc_TypeError, "Handler has no level attribute");
-                return nullptr;
+            if (Handler_Check(handler)){
+                if (record->levelno >= ((Handler*)handler)->level){
+                    if (Handler_handle((Handler*)handler, (PyObject*)record) == nullptr){
+                        return nullptr;
+                    }
+                }
+            } else {
+                PyObject* handlerLevel = PyObject_GetAttr(handler, self->_const_level);
+                if (handlerLevel == nullptr){
+                    PyErr_SetString(PyExc_TypeError, "Handler has no level attribute");
+                    return nullptr;
+                }
+                
+                if (record->levelno >= PyLong_AsLong(handlerLevel)){
+                    if (PyObject_CallMethod_ONEARG(handler, self->_const_handle, (PyObject*)record) == nullptr){
+                        Py_DECREF(handlerLevel);
+                        return nullptr;
+                    }
+                }
+                Py_DECREF(handlerLevel);
             }
-            
-            if (record->levelno >= PyLong_AsLong(handlerLevel)){
-                PyObject_CallMethod_ONEARG(handler, self->_const_handle, (PyObject*)record);
-            }
-            Py_DECREF(handlerLevel);
         }
         if (!cur->propagate || cur->parent == Py_None) {
             has_parent = false;
@@ -233,12 +245,27 @@ PyObject* Logger_critical(Logger *self, PyObject *const *args, Py_ssize_t nargs,
     }
     return Logger_logAndHandle(self, args, nargs, kwds);
 }
-PyObject* Logger_exception(Logger *self, PyObject *args, PyObject *kwds){}
-PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){}
+PyObject* Logger_exception(Logger *self, PyObject *args, PyObject *kwds){
+    // TODO 
+    Py_RETURN_NONE;
+}
+PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){
+    // TODO 
+    Py_RETURN_NONE;
+}
+
+PyObject* Logger_addHandler(Logger *self, PyObject *handler) {
+    if (PySequence_Contains(self->handlers, handler)) {
+        Py_RETURN_NONE;
+    }
+    PyList_Append(self->handlers, handler);
+    Py_RETURN_NONE;
+}
 
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
+    {"addHandler", (PyCFunction)Logger_addHandler, METH_O, "Add a handler to the logger."},
     // Logging methods
     {"debug", (PyCFunction)Logger_debug, METH_FASTCALL | METH_KEYWORDS, "Log a message at level DEBUG."},
     {"info", (PyCFunction)Logger_info, METH_FASTCALL | METH_KEYWORDS, "Log a message at level INFO."},

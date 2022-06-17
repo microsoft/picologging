@@ -1,6 +1,6 @@
 #include <Python.h>
-#include <mutex>
 #include "filterer.hxx"
+#include <mutex>
 
 #ifndef PICOLOGGING_HANDLER_H
 #define PICOLOGGING_HANDLER_H
@@ -10,7 +10,7 @@ typedef struct {
     PyObject *name;
     unsigned short level;
     PyObject *formatter;
-    std::mutex lock;
+    std::recursive_mutex *lock;
 } Handler;
 
 int Handler_init(Handler *self, PyObject *args, PyObject *kwds);

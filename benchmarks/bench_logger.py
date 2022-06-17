@@ -72,7 +72,7 @@ def log_debug_picologging(level=logging.DEBUG):
     logger = picologging.Logger("test", level)
     tmp = StringIO()
 
-    handler = logging.StreamHandler(tmp)
+    handler = picologging.StreamHandler(tmp)
     handler.setLevel(level)
     formatter = picologging.Formatter('%(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
@@ -85,7 +85,7 @@ def log_debug_picologging_with_args(level=logging.DEBUG):
     logger = picologging.Logger("test", level)
     tmp = StringIO()
 
-    handler = logging.StreamHandler(tmp)
+    handler = picologging.StreamHandler(tmp)
     handler.setLevel(level)
     formatter = picologging.Formatter('%(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
