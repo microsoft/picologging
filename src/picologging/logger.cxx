@@ -53,6 +53,9 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
+    self->_const_handle = PyUnicode_FromString("handle");
+    self->_const_level = PyUnicode_FromString("level");
+    self->_const_unknown = PyUnicode_FromString("<unknown>");
     return 0;
 }
 
@@ -61,6 +64,9 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->parent);
     Py_XDECREF(self->handlers);
     Py_XDECREF(self->filters);
+    Py_XDECREF(self->_const_handle);
+    Py_XDECREF(self->_const_level);
+    Py_XDECREF(self->_const_unknown);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }
@@ -139,9 +145,9 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
     if (f == NULL) {
         f = orig_f;
     }
-    PyObject *co_filename = f != nullptr ? f->f_code->co_filename : PyUnicode_FromString("<unknown>");
+    PyObject *co_filename = f != nullptr ? f->f_code->co_filename : self->_const_unknown;
     PyObject *lineno = f != nullptr ? PyLong_FromLong(f->f_lineno) : PyLong_FromLong(0);
-    PyObject *co_name = f != nullptr ? f->f_code->co_name : PyUnicode_FromString("<unknown>");
+    PyObject *co_name = f != nullptr ? f->f_code->co_name : self->_const_unknown;
 
     PyObject* record = PyObject_CallFunctionObjArgs(
         (PyObject*)&LogRecordType,
@@ -178,14 +184,14 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
         for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
             found ++;
             PyObject* handler = PyList_GET_ITEM(cur->handlers, i);
-            PyObject* handlerLevel = PyObject_GetAttrString(handler, "level");
+            PyObject* handlerLevel = PyObject_GetAttr(handler, self->_const_level);
             if (handlerLevel == nullptr){
                 PyErr_SetString(PyExc_TypeError, "Handler has no level attribute");
                 return nullptr;
             }
             
             if (record->levelno >= PyLong_AsLong(handlerLevel)){
-                PyObject_CallMethod_ONEARG(handler, PyUnicode_FromString("handle"), (PyObject*)record);
+                PyObject_CallMethod_ONEARG(handler, self->_const_handle, (PyObject*)record);
             }
             Py_DECREF(handlerLevel);
         }
