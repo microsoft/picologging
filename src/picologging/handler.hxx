@@ -10,7 +10,6 @@ typedef struct {
     PyObject *name;
     unsigned short level;
     PyObject *formatter;
-    PyObject *filters;
     std::mutex lock;
 } Handler;
 

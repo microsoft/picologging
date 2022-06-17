@@ -19,21 +19,18 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     self->level = level;
     self->formatter = Py_None;
     Py_INCREF(self->formatter);
-    self->filters = PyList_New(0);
-    Py_INCREF(self->filters);
-
     return 0;
 }
 
 PyObject* Handler_dealloc(Handler *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->formatter);
-    Py_XDECREF(self->filters);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
 
 PyObject* Handler_emit(Handler *self, PyObject *record){
+    // Base implementation
     Py_RETURN_NONE;
 }
 
