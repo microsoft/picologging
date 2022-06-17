@@ -1,3 +1,4 @@
+import io
 import picologging
 import logging
 import pytest
@@ -99,3 +100,20 @@ def test_filter_callable():
     assert logger.filter(record) == True
     record = picologging.LogRecord('goodbye', logging.INFO, 'test', 1, 'test', (), {})
     assert logger.filter(record) == False
+
+
+def test_log_debug():
+    logger = picologging.Logger('test', logging.DEBUG)
+    stream = io.StringIO()
+    logger.handlers.append(logging.StreamHandler(stream))
+    assert logger.debug("Hello World") == None
+    result = stream.getvalue()
+    assert result == "Hello World\n"
+
+def test_log_debug_info_level_logger():
+    logger = picologging.Logger('test', logging.INFO)
+    stream = io.StringIO()
+    logger.handlers.append(logging.StreamHandler(stream))
+    assert logger.debug("Hello World") == None
+    result = stream.getvalue()
+    assert result == ""

@@ -1,5 +1,26 @@
 #include "logger.hxx"
+#include "logrecord.hxx"
 #include "compat.hxx"
+#include <frameobject.h>
+#include "picologging.hxx"
+
+int getEffectiveLevel(Logger*self){
+    PyObject* logger = (PyObject*)self;
+    while (logger != Py_None) {
+        // TODO : We could support logging.Logger here through duck-typing..
+        // It depends on whether this is requested by the users or not.
+        if (!Logger_CheckExact(logger)) {
+            PyErr_SetString(PyExc_TypeError, "Logger should be of type picologging.Logger");
+            return -1;
+        }
+        if (((Logger*)logger)->level > 0){
+            return ((Logger*)logger)->level;
+        }
+        logger = ((Logger*)logger)->parent;
+        continue;
+    }
+    return LOG_LEVEL_NOTSET;
+}
 
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 {
@@ -18,10 +39,20 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->handlers = PyList_New(0);
     Py_INCREF(self->handlers);
     self->disabled = false;
-    self->_cache = PyDict_New();
-    Py_INCREF(self->_cache);
     self->filters = PyList_New(0);
     Py_INCREF(self->filters);
+    switch (getEffectiveLevel(self)){
+        case LOG_LEVEL_DEBUG:
+            self->enabledForDebug = true;
+        case LOG_LEVEL_INFO:
+            self->enabledForInfo = true;
+        case LOG_LEVEL_WARNING:
+            self->enabledForWarning = true;
+        case LOG_LEVEL_ERROR:
+            self->enabledForError = true;
+        case LOG_LEVEL_CRITICAL:
+            self->enabledForCritical = true;
+    }
     return 0;
 }
 
@@ -29,7 +60,6 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->parent);
     Py_XDECREF(self->handlers);
-    Py_XDECREF(self->_cache);
     Py_XDECREF(self->filters);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
@@ -49,21 +79,10 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
 }
 
 PyObject* Logger_getEffectiveLevel(Logger *self){
-    PyObject* logger = (PyObject*)self;
-    while (logger != Py_None) {
-        // TODO : We could support logging.Logger here through duck-typing..
-        // It depends on whether this is requested by the users or not.
-        if (!Logger_CheckExact(logger)) {
-            PyErr_SetString(PyExc_TypeError, "Parent logger is not a picologging.Logger");
-            return NULL;
-        }
-        if (((Logger*)logger)->level > 0){
-            return PyLong_FromUnsignedLong(((Logger*)logger)->level);
-        }
-        logger = ((Logger*)logger)->parent;
-        continue;
-    }
-    return PyLong_FromLong(0);
+    int level = getEffectiveLevel(self);
+    if (level == -1)
+        return nullptr;
+    return PyLong_FromLong(level);
 }
 
 PyObject* Logger_addFilter(Logger* self, PyObject *filter) {
@@ -105,12 +124,161 @@ PyObject* Logger_filter(Logger* self, PyObject *record) {
     Py_RETURN_FALSE;
 }
 
+LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObject *msg, PyObject *args, PyObject * exc_info, PyObject *extra, PyObject *stack_info, int stacklevel){
+    PyFrameObject* frame = PyEval_GetFrame();
+    if (frame == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not get frame");
+        return nullptr;
+    }
+    PyFrameObject *f = frame->f_back;
+    PyFrameObject *orig_f = f;
+    while (f != NULL && stacklevel > 1) {
+        f = f->f_back;
+        stacklevel--;
+    }
+    if (f == NULL) {
+        f = orig_f;
+    }
+    PyObject *co_filename = f->f_code->co_filename;
+    PyObject *lineno = PyLong_FromLong(f->f_lineno);
+    PyObject *co_name = f->f_code->co_name;
+
+    PyObject* record = PyObject_CallFunctionObjArgs(
+        (PyObject*)&LogRecordType,
+        self->name,
+        PyLong_FromUnsignedLong(level),
+        co_filename,
+        lineno,
+        msg,
+        args,
+        exc_info,
+        co_name,
+        stack_info,
+        NULL
+    );
+    return (LogRecord*)record;
+}
+
+PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    PyObject *msg = args[0];
+    PyObject *args_ = PyTuple_New(nargs - 1);
+    for (int i = 1; i < nargs; i++) {
+        PyTuple_SET_ITEM(args_, i - 1, args[i]);
+    }
+    LogRecord *record = Logger_logMessageAsRecord(
+        self, LOG_LEVEL_DEBUG, msg, args_, /* TODO: Resolve */ Py_None, Py_None, Py_None, 1);
+    // TODO : call handlers.
+    if (Logger_filter(self, (PyObject*)record) != Py_True)
+        Py_RETURN_NONE;
+    
+    int found = 0;
+    Logger* cur = self;
+    bool has_parent = true;
+    while (has_parent){
+        for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
+            found ++;
+            PyObject* handler = PyList_GET_ITEM(cur->handlers, i);
+            PyObject* handlerLevel = PyObject_GetAttrString(handler, "level");
+            if (handlerLevel == nullptr){
+                PyErr_SetString(PyExc_TypeError, "Handler has no level attribute");
+                return nullptr;
+            }
+            
+            if (record->levelno >= PyLong_AsLong(handlerLevel)){
+                PyObject_CallMethod_ONEARG(handler, PyUnicode_FromString("handle"), (PyObject*)record);
+            }
+            Py_DECREF(handlerLevel);
+        }
+        if (!cur->propagate || cur->parent == Py_None) {
+            has_parent = false;
+        } else {
+            // TODO : Potential type check?
+            cur = (Logger*)cur->parent;
+        }
+    }
+    // TODO : call last resort handler
+    Py_RETURN_NONE;
+}
+
+PyObject* Logger_debug(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds) {
+    if (self->disabled || !self->enabledForDebug) {
+        Py_RETURN_NONE;
+    }
+
+    if (nargs < 1){
+        PyErr_SetString(PyExc_TypeError, "debug() requires 1 positional argument");
+        return nullptr;
+    }
+    return Logger_logAndHandle(self, args, nargs, kwds);
+}
+
+PyObject* Logger_info(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    if (self->disabled || !self->enabledForInfo) {
+        Py_RETURN_NONE;
+    }
+
+    if (nargs < 1){
+        PyErr_SetString(PyExc_TypeError, "info() requires 1 positional argument");
+        return nullptr;
+    }
+    return Logger_logAndHandle(self, args, nargs, kwds);
+}
+PyObject* Logger_warning(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    if (self->disabled || !self->enabledForWarning) {
+        Py_RETURN_NONE;
+    }
+
+    if (nargs < 1){
+        PyErr_SetString(PyExc_TypeError, "warning() requires 1 positional argument");
+        return nullptr;
+    }
+    return Logger_logAndHandle(self, args, nargs, kwds);
+}
+
+PyObject* Logger_fatal(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    return Logger_critical(self, args, nargs, kwds);
+}
+
+PyObject* Logger_error(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    if (self->disabled || !self->enabledForError) {
+        Py_RETURN_NONE;
+    }
+
+    if (nargs < 1){
+        PyErr_SetString(PyExc_TypeError, "error() requires 1 positional argument");
+        return nullptr;
+    }
+    return Logger_logAndHandle(self, args, nargs, kwds);
+}
+PyObject* Logger_critical(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+    if (self->disabled || !self->enabledForCritical) {
+        Py_RETURN_NONE;
+    }
+
+    if (nargs < 1){
+        PyErr_SetString(PyExc_TypeError, "critical() requires 1 positional argument");
+        return nullptr;
+    }
+    return Logger_logAndHandle(self, args, nargs, kwds);
+}
+PyObject* Logger_exception(Logger *self, PyObject *args, PyObject *kwds){}
+PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){}
+
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
     {"addFilter", (PyCFunction)Logger_addFilter, METH_O, "Add a filter to the logger."},
     {"removeFilter", (PyCFunction)Logger_removeFilter, METH_O, "Remove a filter from the logger."},
     {"filter", (PyCFunction)Logger_filter, METH_O, "Filter a record."},
+    // Logging methods
+    {"debug", (PyCFunction)Logger_debug, METH_FASTCALL | METH_KEYWORDS, "Log a message at level DEBUG."},
+    {"info", (PyCFunction)Logger_info, METH_FASTCALL | METH_KEYWORDS, "Log a message at level INFO."},
+    {"warning", (PyCFunction)Logger_warning, METH_FASTCALL | METH_KEYWORDS, "Log a message at level WARNING."},
+    {"error", (PyCFunction)Logger_error, METH_FASTCALL | METH_KEYWORDS, "Log a message at level ERROR."},
+    {"critical", (PyCFunction)Logger_critical, METH_FASTCALL | METH_KEYWORDS, "Log a message at level CRITICAL."},
+    {"exception", (PyCFunction)Logger_exception, METH_VARARGS, "Log a message at level ERROR."},
+    {"fatal", (PyCFunction)Logger_fatal, METH_FASTCALL | METH_KEYWORDS, "Log a message at level FATAL."},
+    {"log", (PyCFunction)Logger_log, METH_VARARGS, "Log a message at the specified level."},
     {NULL}
 };
 
@@ -121,7 +289,6 @@ static PyMemberDef Logger_members[] = {
     {"propagate", T_BOOL, offsetof(Logger, propagate), 0, "Logger propagate"},
     {"handlers", T_OBJECT_EX, offsetof(Logger, handlers), 0, "Logger handlers"},
     {"disabled", T_BOOL, offsetof(Logger, disabled), 0, "Logger disabled"},
-    {"_cache", T_OBJECT_EX, offsetof(Logger, _cache), 0, "Logger _cache"},
     {"filters", T_OBJECT_EX, offsetof(Logger, filters), 0, "Logger filters"},
     {NULL}
 };

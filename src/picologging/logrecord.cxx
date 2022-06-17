@@ -80,22 +80,22 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 
     self->levelno = levelno;
     switch (levelno) {
-        case 50:
+        case LOG_LEVEL_CRITICAL:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "CRITICAL");
             break;
-        case 40:
+        case LOG_LEVEL_ERROR:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "ERROR");
             break;
-        case 30:
+        case LOG_LEVEL_WARNING:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "WARNING");
             break;
-        case 20:
+        case LOG_LEVEL_INFO:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "INFO");
             break;
-        case 10:
+        case LOG_LEVEL_DEBUG:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "DEBUG");
             break;
-        case 0:
+        case LOG_LEVEL_NOTSET:
             levelname = PyDict_GetItemString(PyModule_GetDict(mod), "NOTSET");
             break;
         default:

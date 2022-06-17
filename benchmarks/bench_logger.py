@@ -42,58 +42,44 @@ def format_record_with_date_picologging():
     for _ in range(10_000):
         f.format(record)
 
-
-def logger_makerecord_logging():
-    logger = logging.getLogger(__name__)
-    for _ in range(10_000):
-        logger.makeRecord('hello', 40, '/serv/', 123, 'bork bork bork', (), None)
-
-
-def logger_makerecord_picologging():
-    logger = logging.getLogger(__name__)
-    picologging.install()
-    for _ in range(10_000):
-        r = logger.makeRecord('hello', 40, '/serv/', 123, 'bork bork bork', (), None)
-    assert isinstance(r, picologging.LogRecord)
-    picologging.uninstall()
-
-
-def log_error_logging():
-    logger = logging.getLogger()
-    logger.handlers = []
+def log_debug_logging(level=logging.DEBUG):
+    logger = logging.Logger("test", level)
     tmp = StringIO()
 
     handler = logging.StreamHandler(tmp)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(level)
     formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    logger.handlers.append(handler)
 
     for _ in range(10_000):
-        logger.error("There has been a logging issue %s %s %s", 1, 2, 3)
+        logger.debug("There has been a logging issue %s %s %s", 1, 2, 3)
 
 
-def log_error_picologging():
-    picologging.install()
-    logger = logging.getLogger()
-    logger.handlers = []
+def log_debug_picologging(level=logging.DEBUG):
+    logger = picologging.Logger("test", level)
     tmp = StringIO()
 
     handler = logging.StreamHandler(tmp)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(level)
     formatter = picologging.Formatter('%(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    logger.handlers.append(handler)
 
     for _ in range(10_000):
-        logger.error("There has been a picologging issue %s %s %s", 1, 2, 3)
-    picologging.uninstall()
+        logger.debug("There has been a picologging issue %s %s %s", 1, 2, 3)
+    
 
+def log_debug_outofscope_logging():
+    log_debug_logging(logging.INFO)
+
+def log_debug_outofscope_picologging():
+    log_debug_picologging(logging.INFO)
 
 __benchmarks__ = [
     (record_factory_logging, record_factory_picologging, "LogRecordFactory()"),
     (format_record_logging, format_record_picologging, "Formatter().format()"),
     (format_record_with_date_logging, format_record_with_date_picologging, "Formatter().format() with date"),
-    (log_error_logging, log_error_picologging, "logging.error()"),
-    (logger_makerecord_logging, logger_makerecord_picologging, "Logger.makeRecord()")
+    (log_debug_logging, log_debug_picologging, "Logger(level=DEBUG).debug()"),
+    (log_debug_outofscope_logging, log_debug_outofscope_picologging, "Logger(level=INFO).debug()"),
 ]
