@@ -139,9 +139,9 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
     if (f == NULL) {
         f = orig_f;
     }
-    PyObject *co_filename = f->f_code->co_filename;
-    PyObject *lineno = PyLong_FromLong(f->f_lineno);
-    PyObject *co_name = f->f_code->co_name;
+    PyObject *co_filename = f != nullptr ? f->f_code->co_filename : PyUnicode_FromString("<unknown>");
+    PyObject *lineno = f != nullptr ? PyLong_FromLong(f->f_lineno) : PyLong_FromLong(0);
+    PyObject *co_name = f != nullptr ? f->f_code->co_name : PyUnicode_FromString("<unknown>");
 
     PyObject* record = PyObject_CallFunctionObjArgs(
         (PyObject*)&LogRecordType,
@@ -167,7 +167,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, LOG_LEVEL_DEBUG, msg, args_, /* TODO: Resolve */ Py_None, Py_None, Py_None, 1);
-    // TODO : call handlers.
+
     if (Logger_filter(self, (PyObject*)record) != Py_True)
         Py_RETURN_NONE;
     
@@ -192,7 +192,11 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
         if (!cur->propagate || cur->parent == Py_None) {
             has_parent = false;
         } else {
-            // TODO : Potential type check?
+            if (!Logger_CheckExact(cur->parent))
+            {
+                PyErr_SetString(PyExc_TypeError, "Logger's parent is not an instance of picologging.Logger");
+                return nullptr;
+            }
             cur = (Logger*)cur->parent;
         }
     }
