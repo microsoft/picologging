@@ -65,6 +65,8 @@ PyObject* Handler_setLevel(Handler *self, PyObject *level){
 PyObject* Handler_format(Handler *self, PyObject *record){
     if (self->formatter == Py_None){
         Py_RETURN_NONE;
+    } else if (Formatter_CheckExact(self->formatter)) {
+        return Formatter_format((Formatter*) self->formatter, record);
     } else {
         PyObject* result = PyObject_CallMethod_ONEARG(self->formatter, PyUnicode_FromString("format"), record);
         return result;
