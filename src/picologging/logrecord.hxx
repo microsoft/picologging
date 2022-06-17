@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include <cstddef>
+#include <unordered_map>
 #include "compat.hxx"
 
 #ifndef PICOLOGGING_LOGRECORD_H
@@ -45,5 +46,15 @@ _PyTime_t current_time();
 extern PyTypeObject LogRecordType;
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
 
+typedef struct {
+    PyObject* filename;
+    PyObject* module;
+} FilepathCacheEntry;
+
+class FilepathCache {
+    std::unordered_map<Py_hash_t, FilepathCacheEntry> cache;
+public:
+    const FilepathCacheEntry& lookup(PyObject* filepath);
+};
 
 #endif // PICOLOGGING_LOGRECORD_H

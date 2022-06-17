@@ -22,6 +22,11 @@ typedef struct LoggerT {
     bool enabledForWarning = false;
     bool enabledForInfo = false;
     bool enabledForDebug = false;
+
+    // Constant strings.
+    PyObject* _const_handle;
+    PyObject* _const_level;
+    PyObject* _const_unknown;
 } Logger ;
 
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds);

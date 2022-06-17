@@ -8,6 +8,33 @@ namespace fs = std::filesystem;
 
 _PyTime_t startTime = current_time();
 
+const FilepathCacheEntry& FilepathCache::lookup(PyObject* pathname){
+    Py_hash_t hash = PyObject_Hash(pathname);
+    if (this->cache.find(hash) == this->cache.end()){
+        FilepathCacheEntry* entry = {};
+        fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
+#ifdef WIN32
+        const wchar_t* filename_wchar = fs_path.filename().c_str();
+        self->filename = 
+        const wchar_t* modulename = fs_path.stem().c_str();
+        this->cache[hash] = {
+            .filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar)),
+            .module = PyUnicode_FromWideChar(modulename, wcslen(modulename))
+        };
+#else
+        this->cache[hash] = {
+            .filename = PyUnicode_FromString(fs_path.filename().c_str()),
+            .module = PyUnicode_FromString(fs_path.stem().c_str())
+        };
+#endif
+        return this->cache[hash];
+    } else {
+        return this->cache[hash];
+    }
+}
+
+FilepathCache filepathCache = FilepathCache();
+
 static PyObject*
 _PyFloat_FromPyTime(_PyTime_t t)
 {
@@ -43,11 +70,6 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", const_cast<char**>(kwlist), 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
         return -1;
-    PyObject* mod = PICOLOGGING_MODULE();
-    if (mod == nullptr){
-        PyErr_SetString(PyExc_TypeError, "Could not find _picologging module");
-        return -1;
-    }
 
     self->name = name;
     Py_INCREF(name);
@@ -81,22 +103,22 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->levelno = levelno;
     switch (levelno) {
         case LOG_LEVEL_CRITICAL:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "CRITICAL");
+            levelname = PyUnicode_FromString("CRITICAL");
             break;
         case LOG_LEVEL_ERROR:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "ERROR");
+            levelname = PyUnicode_FromString("ERROR");
             break;
         case LOG_LEVEL_WARNING:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "WARNING");
+            levelname = PyUnicode_FromString("WARNING");
             break;
         case LOG_LEVEL_INFO:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "INFO");
+            levelname = PyUnicode_FromString("INFO");
             break;
         case LOG_LEVEL_DEBUG:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "DEBUG");
+            levelname = PyUnicode_FromString("DEBUG");
             break;
         case LOG_LEVEL_NOTSET:
-            levelname = PyDict_GetItemString(PyModule_GetDict(mod), "NOTSET");
+            levelname = PyUnicode_FromString("NOTSET");
             break;
         default:
             levelname = PyUnicode_FromFormat("%d", levelno);
@@ -107,19 +129,11 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(levelname);
     self->pathname = pathname;
     Py_INCREF(pathname);
+    auto filepath = filepathCache.lookup(pathname);
+    self->filename = filepath.filename;
+    self->module = filepath.module;
 
-    fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
-#ifdef WIN32
-    const wchar_t* filename_wchar = fs_path.filename().c_str();
-    self->filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar));
-    const wchar_t* modulename = fs_path.stem().c_str();
-    self->module = PyUnicode_FromWideChar(modulename, wcslen(modulename));
-#else
-    self->filename = PyUnicode_FromString(fs_path.filename().c_str());
-    self->module = PyUnicode_FromString(fs_path.stem().c_str());
-#endif
     Py_INCREF(self->filename);
-    
     Py_INCREF(self->module);
     self->excInfo = exc_info;
     Py_INCREF(self->excInfo);
