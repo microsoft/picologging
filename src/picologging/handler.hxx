@@ -19,6 +19,9 @@ PyObject* Handler_emit(Handler *self, PyObject *record);
 PyObject* Handler_handle(Handler *self, PyObject *record);
 PyObject* Handler_setLevel(Handler *self, PyObject *level);
 PyObject* Handler_setFormatter(Handler *self, PyObject *formatter);
+PyObject* Handler_format(Handler *self, PyObject *record);
+PyObject* Handler_acquire(Handler *self);
+PyObject* Handler_release(Handler *self);
 
 extern PyTypeObject HandlerType;
 #define Handler_CheckExact(op) Py_IS_TYPE(op, &HandlerType)

@@ -10,6 +10,7 @@
 #include "formatstyle.hxx"
 #include "logger.hxx"
 #include "handler.hxx"
+#include "streamhandler.hxx"
 
 //-----------------------------------------------------------------------------
 static PyMethodDef picologging_methods[] = {
@@ -45,6 +46,10 @@ PyMODINIT_FUNC PyInit__picologging(void)
   if (PyType_Ready(&HandlerType) < 0)
     return NULL;
   
+  StreamHandlerType.tp_base = &HandlerType;
+  if (PyType_Ready(&StreamHandlerType) < 0)
+    return NULL;
+  
   PyObject* m = PyModule_Create(&_picologging_module);
   if (m == NULL)
     return NULL;
@@ -55,6 +60,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   Py_INCREF(&FiltererType);
   Py_INCREF(&LoggerType);
   Py_INCREF(&HandlerType);
+  Py_INCREF(&StreamHandlerType);
     
   if (PyModule_AddObject(m, "LogRecord", (PyObject *)&LogRecordType) < 0){
     Py_DECREF(&LogRecordType);
@@ -83,6 +89,11 @@ PyMODINIT_FUNC PyInit__picologging(void)
   }
   if (PyModule_AddObject(m, "Handler", (PyObject *)&HandlerType) < 0){
     Py_DECREF(&HandlerType);
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddObject(m, "StreamHandler", (PyObject *)&StreamHandlerType) < 0){
+    Py_DECREF(&StreamHandlerType);
     Py_DECREF(m);
     return NULL;
   }
