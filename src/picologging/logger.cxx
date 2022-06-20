@@ -99,7 +99,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         PyErr_SetString(PyExc_RuntimeError, "Could not get frame");
         return nullptr;
     }
-    PyFrameObject *f = PyFrame_GETBACK(f);
+    PyFrameObject *f = PyFrame_GETBACK(frame);
     PyFrameObject *orig_f = f;
     while (f != NULL && stacklevel > 1) {
         f = PyFrame_GETBACK(f);
