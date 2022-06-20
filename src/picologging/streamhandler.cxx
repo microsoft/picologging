@@ -73,6 +73,7 @@ static PyMethodDef StreamHandler_methods[] = {
      {"flush", (PyCFunction)StreamHandler_flush, METH_FASTCALL, "Flush the stream."},
      {NULL}
 };
+// TODO : Implement setStream()
 
 static PyMemberDef StreamHandler_members[] = {
     {"stream", T_OBJECT_EX, offsetof(StreamHandler, stream), 0, "Stream"},

@@ -52,4 +52,14 @@ static inline void _Py_SET_SIZE(PyVarObject *ob, Py_ssize_t size) {
 #define PyObject_CallMethod_NOARGS(ob, name) PyObject_CallMethodObjArgs(ob, name, NULL)
 #endif
 
+#if PY_VERSION_HEX >= 0x030b0000 // Python 3.11.0
+#define PyFrame_GETBACK(f) PyFrame_GetBack(f)
+#define PyFrame_GETCODE(f) PyFrame_GetCode(f)
+#define PyFrame_GETLINENO(f) PyFrame_GetLineNumber(f)
+#else
+#define PyFrame_GETBACK(f) f->f_back
+#define PyFrame_GETCODE(f) f->f_code
+#define PyFrame_GETLINENO(f) f->f_lineno
+#endif
+
 #endif // COMPAT_H

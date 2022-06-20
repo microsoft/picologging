@@ -99,18 +99,18 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         PyErr_SetString(PyExc_RuntimeError, "Could not get frame");
         return nullptr;
     }
-    PyFrameObject *f = frame->f_back;
+    PyFrameObject *f = PyFrame_GETBACK(f);
     PyFrameObject *orig_f = f;
     while (f != NULL && stacklevel > 1) {
-        f = f->f_back;
+        f = PyFrame_GETBACK(f);
         stacklevel--;
     }
     if (f == NULL) {
         f = orig_f;
     }
-    PyObject *co_filename = f != nullptr ? f->f_code->co_filename : self->_const_unknown;
-    PyObject *lineno = f != nullptr ? PyLong_FromLong(f->f_lineno) : PyLong_FromLong(0);
-    PyObject *co_name = f != nullptr ? f->f_code->co_name : self->_const_unknown;
+    PyObject *co_filename = f != nullptr ? PyFrame_GETCODE(f)->co_filename : self->_const_unknown;
+    PyObject *lineno = f != nullptr ? PyLong_FromLong(PyFrame_GETLINENO(f)) : PyLong_FromLong(0);
+    PyObject *co_name = f != nullptr ? PyFrame_GETCODE(f)->co_name : self->_const_unknown;
 
     PyObject* record = PyObject_CallFunctionObjArgs(
         (PyObject*)&LogRecordType,
