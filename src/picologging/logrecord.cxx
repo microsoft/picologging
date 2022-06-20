@@ -15,7 +15,6 @@ const FilepathCacheEntry& FilepathCache::lookup(PyObject* pathname){
         fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
 #ifdef WIN32
         const wchar_t* filename_wchar = fs_path.filename().c_str();
-        self->filename = 
         const wchar_t* modulename = fs_path.stem().c_str();
         this->cache[hash] = {
             .filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar)),
