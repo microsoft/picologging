@@ -12,7 +12,8 @@ typedef struct {
     PyObject* _const_flush;
     bool stream_has_flush;
 } StreamHandler;
+PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs);
 
 extern PyTypeObject StreamHandlerType;
-
+#define StreamHandler_CheckExact(op) Py_IS_TYPE(op, &StreamHandlerType)
 #endif // PICOLOGGING_STREAMHANDLER_H
