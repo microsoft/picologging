@@ -33,6 +33,19 @@ def test_formatter_default_fmt_against_builtin():
     assert pico_f.format(pico_record) == logging_f.format(pico_record)
     assert pico_f.formatMessage(pico_record) == logging_f.formatMessage(pico_record)
 
+def test_formatter_custom_datefmt():
+    f = Formatter("%(name)s %(levelname)s %(message)s", datefmt="%Y-%m-%d")
+    assert f.datefmt == "%Y-%m-%d"
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
+    s = f.format(record)
+    assert s == 'hello WARNING bork bork bork'
+
+def test_formatter_explicit_none_datefmt_style():
+    f = Formatter("%(name)s %(levelname)s %(message)s", None, '%')
+    assert f.datefmt == None
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
+    s = f.format(record)
+    assert s == 'hello WARNING bork bork bork'
 
 possible_format_strings = [
     "%(message)s",

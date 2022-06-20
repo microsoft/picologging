@@ -7,8 +7,8 @@
 #define LINE_BREAK PyUnicode_FromString("\n")
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
-    PyObject *fmt = Py_None, *dateFmt = Py_None;
-    char style = '%';
+    PyObject *fmt = nullptr, *dateFmt = nullptr;
+    int style = '%';
     bool validate = true;
     static const char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", const_cast<char**>(kwlist), &fmt, &dateFmt, &style, &validate))
@@ -25,7 +25,10 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             PyErr_SetString(PyExc_ValueError, "Unsupported style");
             return -1;
     }
-
+    if (fmt == nullptr)
+        fmt = Py_None;
+    if (dateFmt == nullptr)
+        dateFmt = Py_None;
     PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
     if (PyErr_Occurred()){ // Got exception in PercentStyle.__init__()
         return -1;
@@ -39,12 +42,12 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     Py_INCREF(self->style);
 
     self->fmt = ((PercentStyle*)(self->style))->fmt;
-    Py_INCREF(fmt);
+    Py_INCREF(self->fmt);
 
     self->usesTime = (PercentStyle_usesTime((PercentStyle*)self->style) == Py_True);
 
     self->dateFmt = dateFmt;
-    Py_INCREF(dateFmt);
+    Py_INCREF(self->dateFmt);
 
     if (dateFmt != Py_None) {
         self->dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
@@ -55,8 +58,8 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     if (validate){
         if (PyObject_CallMethod(self->style, "validate", NULL) == nullptr){
             Py_DECREF(self->style);
-            Py_DECREF(fmt);
-            Py_DECREF(dateFmt);
+            Py_DECREF(self->fmt);
+            Py_DECREF(self->dateFmt);
             return -1;
         }
     }
@@ -174,6 +177,12 @@ PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
     return stackInfo;
 }
 
+PyObject* Formatter_repr(Formatter *self)
+{
+    return PyUnicode_FromFormat("<Formatter: fmt=%U>",
+            self->fmt);
+}
+
 PyObject* Formatter_dealloc(Formatter *self) {
     Py_XDECREF(self->style);
     Py_XDECREF(self->fmt);
@@ -207,7 +216,7 @@ PyTypeObject FormatterType = {
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    (reprfunc)PyObject_Repr,                   /* tp_repr */
+    (reprfunc)Formatter_repr,                   /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
