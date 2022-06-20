@@ -15,3 +15,20 @@ def test_stream_handler():
     handler.setFormatter(formatter)
     handler.handle(record)
     assert stream.getvalue() == 'test\n'
+
+def test_custom_handler():
+    class CustomHandler(picologging.Handler):
+        def __init__(self):
+            super().__init__()
+            self.records = []
+
+        def emit(self, record):
+            self.records.append(record)
+
+    handler = CustomHandler()
+    record = picologging.LogRecord('test', logging.INFO, __file__, 1, 'test', (), None, None, None)
+    formatter = picologging.Formatter('%(message)s')
+    handler.setFormatter(formatter)
+    handler.handle(record)
+    assert len(handler.records) == 1
+    assert handler.records[0] == record

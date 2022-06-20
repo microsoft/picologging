@@ -3,6 +3,7 @@
 #include "handler.hxx"
 #include "picologging.hxx"
 #include "formatter.hxx"
+#include "streamhandler.hxx"
 
 int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     if (FiltererType.tp_init((PyObject *) self, args, kwds) < 0)
@@ -47,7 +48,14 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
         PyErr_Format(PyExc_RuntimeError, "Cannot acquire thread lock, %s", e.what());
         return nullptr;
     }
-    PyObject* result = PyObject_CallMethod_ONEARG((PyObject*)self, PyUnicode_FromString("emit"), record);
+    PyObject* result = nullptr;
+    if (StreamHandler_CheckExact(((PyObject*)self))){
+        PyObject* args[1] = {record};
+        result = StreamHandler_emit((StreamHandler*)self, args, 1);
+    } else {
+        result = PyObject_CallMethod_ONEARG((PyObject*)self, PyUnicode_FromString("emit"), record);
+    }
+    
     self->lock->unlock();
     return result;
 }
