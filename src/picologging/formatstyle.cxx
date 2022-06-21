@@ -104,7 +104,7 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
 PyObject* PercentStyle_usesTime(PercentStyle *self){
     if (self->usesDefaultFmt)
         Py_RETURN_FALSE;
-    int ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)") /* TODO : intern */ , 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+    int ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
     if (ret >= 0){
         Py_RETURN_TRUE;
     } else if (ret == -1){
@@ -116,7 +116,8 @@ PyObject* PercentStyle_usesTime(PercentStyle *self){
 }
 
 PyObject* PercentStyle_validate(PercentStyle *self){
-    /// TODO
+    /// TODO: #6 #5 Implement percentage style validation.
+
     return Py_None;
 }
 
@@ -132,7 +133,7 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                     _PyUnicodeWriter_WriteStr doesn't do any type check (causes segfault)
                     so use the APPEND_STRING macro to use a fast-path if the field is string,
                     otherwise do a PyObject_Str first...
-                    TODO: Consider %d, %f format strings..
+                    TODO: #7 Consider %d, %f format strings..
                     */
                     case Field_Name:
                         APPEND_STRING(name)
@@ -309,6 +310,10 @@ PyObject* PercentStyle_dealloc(PercentStyle *self){
     return NULL;
 }
 
+PyObject* PercentStyle_repr(PercentStyle *self){
+    return PyUnicode_FromFormat("<PercentStyle fmt=%s>", self->fmt);
+}
+
 static PyMethodDef PercentStyle_methods[] = {
     {"usesTime", (PyCFunction)PercentStyle_usesTime, METH_NOARGS, "Get message"},
     {"validate", (PyCFunction)PercentStyle_validate, METH_NOARGS, "Get message"},
@@ -332,7 +337,7 @@ PyTypeObject PercentStyleType = {
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    (reprfunc)PyObject_Repr,                    /* tp_repr */
+    (reprfunc)PercentStyle_repr,                /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */

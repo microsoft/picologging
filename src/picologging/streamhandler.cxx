@@ -62,7 +62,8 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
     Py_DECREF(msg);
     Py_RETURN_NONE;
 error:
-    // TODO: handle error path (see handleError(record))
+    // TODO: #4 handle error path (see handleError(record))
+    PyErr_Print();
     Py_XDECREF(msg);
     return nullptr;
 }

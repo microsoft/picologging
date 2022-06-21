@@ -5,30 +5,40 @@
 #include "picologging.hxx"
 
 namespace fs = std::filesystem;
-
+#define CACHE_FILEPATH 1
 _PyTime_t startTime = current_time();
 
 const FilepathCacheEntry& FilepathCache::lookup(PyObject* pathname){
+    /*
+     * Notes: A vector ended up being significantly faster than an unordered_map,
+     * even though an unordered_map should probably be used.
+     * TODO #3 : Cap vector size or decide on a better map type.
+     */
     Py_hash_t hash = PyObject_Hash(pathname);
-    if (this->cache.find(hash) == this->cache.end()){
-        FilepathCacheEntry* entry = {};
-        fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
+    for (auto& entry : cache){
+        if (entry.first == hash){
+            return entry.second;
+        }
+    }
+    FilepathCacheEntry* entry = new FilepathCacheEntry();
+    fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
 #ifdef WIN32
-        const wchar_t* filename_wchar = fs_path.filename().c_str();
-        const wchar_t* modulename = fs_path.stem().c_str();
-        this->cache[hash] = {
-            .filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar)),
-            .module = PyUnicode_FromWideChar(modulename, wcslen(modulename))
-        };
+    const wchar_t* filename_wchar = fs_path.filename().c_str();
+    const wchar_t* modulename = fs_path.stem().c_str();
+    entry->filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar)),
+    entry->module = PyUnicode_FromWideChar(modulename, wcslen(modulename));
 #else
-        this->cache[hash] = {
-            .filename = PyUnicode_FromString(fs_path.filename().c_str()),
-            .module = PyUnicode_FromString(fs_path.stem().c_str())
-        };
+    entry->filename = PyUnicode_FromString(fs_path.filename().c_str());
+    entry->module = PyUnicode_FromString(fs_path.stem().c_str());
 #endif
-        return this->cache[hash];
-    } else {
-        return this->cache[hash];
+    cache.push_back({hash, *entry});
+    return *entry;
+}
+
+FilepathCache::~FilepathCache(){
+    for (auto& entry : cache){
+        Py_XDECREF(entry.second.filename);
+        Py_XDECREF(entry.second.module);
     }
 }
 
@@ -128,9 +138,23 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(levelname);
     self->pathname = pathname;
     Py_INCREF(pathname);
+
+#ifdef CACHE_FILEPATH
     auto filepath = filepathCache.lookup(pathname);
     self->filename = filepath.filename;
     self->module = filepath.module;
+#else
+    fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
+#ifdef WIN32
+    const wchar_t* filename_wchar = fs_path.filename().c_str();
+    const wchar_t* modulename = fs_path.stem().c_str();
+    self->filename = PyUnicode_FromWideChar(filename_wchar, wcslen(filename_wchar)),
+    self->module = PyUnicode_FromWideChar(modulename, wcslen(modulename));
+#else
+    self->filename = PyUnicode_FromString(fs_path.filename().c_str());
+    self->module = PyUnicode_FromString(fs_path.stem().c_str());
+#endif
+#endif
 
     Py_INCREF(self->filename);
     Py_INCREF(self->module);
@@ -165,10 +189,10 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(self->relativeCreated);
     
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
-    // TODO : See if there is a performant way to get the thread name.
+    // TODO #2 : See if there is a performant way to get the thread name.
     self->threadName = Py_None;
     Py_INCREF(Py_None);
-    // TODO : See if there is a performant way to get the process name.
+    // TODO #1 : See if there is a performant way to get the process name.
     self->processName = Py_None;
     Py_INCREF(Py_None);
     self->process = getpid();

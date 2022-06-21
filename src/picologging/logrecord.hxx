@@ -1,7 +1,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include <cstddef>
-#include <unordered_map>
+#include <vector>
 #include "compat.hxx"
 
 #ifndef PICOLOGGING_LOGRECORD_H
@@ -52,9 +52,10 @@ typedef struct {
 } FilepathCacheEntry;
 
 class FilepathCache {
-    std::unordered_map<Py_hash_t, FilepathCacheEntry> cache;
+    std::vector<std::pair<Py_hash_t, FilepathCacheEntry>> cache;
 public:
     const FilepathCacheEntry& lookup(PyObject* filepath);
+    ~FilepathCache();
 };
 
 #endif // PICOLOGGING_LOGRECORD_H
