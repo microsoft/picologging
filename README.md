@@ -35,13 +35,13 @@ Run `richbench benchmarks/` with the richbench CLI to see the benchmarks, here i
 
 |                             Benchmark | Min     | Max     | Mean    | Min (+)         | Max (+)         | Mean (+)        |
 |---------------------------------------|---------|---------|---------|-----------------|-----------------|-----------------|
-|                           LogRecord() | 0.222   | 0.235   | 0.226   | 0.045 (4.9x)    | 0.049 (4.8x)    | 0.047 (4.8x)    |
-|                  Formatter().format() | 0.080   | 0.085   | 0.082   | 0.005 (16.0x)   | 0.006 (14.5x)   | 0.005 (15.3x)   |
-|        Formatter().format() with date | 0.323   | 0.343   | 0.333   | 0.086 (3.8x)    | 0.097 (3.5x)    | 0.090 (3.7x)    |
-|           Logger(level=DEBUG).debug() | 0.698   | 0.747   | 0.715   | 0.082 (8.6x)    | 0.085 (8.8x)    | 0.083 (8.6x)    |
-| Logger(level=DEBUG).debug() with args | 0.738   | 0.755   | 0.743   | 0.107 (6.9x)    | 0.112 (6.8x)    | 0.109 (6.8x)    |
-|            Logger(level=INFO).debug() | 0.014   | 0.015   | 0.014   | 0.003 (4.3x)    | 0.004 (4.1x)    | 0.003 (4.3x)    |
-|  Logger(level=INFO).debug() with args | 0.015   | 0.016   | 0.016   | 0.004 (4.2x)    | 0.004 (3.6x)    | 0.004 (3.9x)    |
+|                           LogRecord() | 0.228   | 0.244   | 0.234   | 0.031 (7.5x)    | 0.031 (7.8x)    | 0.031 (7.6x)    |
+|                  Formatter().format() | 0.077   | 0.079   | 0.078   | 0.005 (15.3x)   | 0.005 (14.9x)   | 0.005 (15.1x)   |
+|        Formatter().format() with date | 0.299   | 0.359   | 0.313   | 0.083 (3.6x)    | 0.092 (3.9x)    | 0.086 (3.6x)    |
+|           Logger(level=DEBUG).debug() | 0.725   | 0.741   | 0.730   | 0.069 (10.6x)   | 0.070 (10.6x)   | 0.069 (10.6x)   |
+| Logger(level=DEBUG).debug() with args | 0.750   | 0.757   | 0.754   | 0.090 (8.3x)    | 0.095 (8.0x)    | 0.093 (8.1x)    |
+|            Logger(level=INFO).debug() | 0.014   | 0.015   | 0.015   | 0.003 (4.1x)    | 0.004 (3.7x)    | 0.004 (3.9x)    |
+|  Logger(level=INFO).debug() with args | 0.016   | 0.017   | 0.016   | 0.004 (4.1x)    | 0.004 (4.2x)    | 0.004 (4.1x)    |
 
 ## Limitations
 

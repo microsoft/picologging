@@ -14,3 +14,9 @@ def test_percentstyle_format_bad_argument():
         perc.format("") 
     with pytest.raises(AttributeError):
         perc.format({})
+
+def test_custom_attribute():
+    perc = PercentStyle("%(custom)s")
+    record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
+    record.custom = "custom"
+    assert perc.format(record) == "custom"
