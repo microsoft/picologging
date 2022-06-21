@@ -4,7 +4,7 @@ picologging.basicConfig()
 
 
 def test_picologging_handler(capsys):
-    logger = picologging.Logger('test')
+    logger = picologging.getLogger(__name__)
     try:
         1/0
     except ZeroDivisionError:

@@ -47,11 +47,15 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         return nullptr;
     }
     PyObject* msg = Handler_format(&self->handler, args[0]);
+    if (msg == nullptr)
+        return nullptr;
     if (!PyUnicode_CheckExact(msg)){
+        PyErr_SetString(PyExc_TypeError, "emit() argument must be a string");
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
     if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
+        PyErr_SetString(PyExc_RuntimeError, "Cannot write to stream");
         goto error;
     }
     flush(self);

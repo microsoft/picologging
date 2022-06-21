@@ -1,6 +1,6 @@
 # picologging
 
-**Status** This project is an early-alpha. There are some incomplete features (see Issues) 
+**Status** This project is an early-alpha. There are some incomplete features (see Issues).
 
 Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
 
@@ -14,7 +14,7 @@ $ pip install picologging
 
 ## Usage
 
-Run `picologging.install()` once your logging setup is configured, (typically after calling `logging.basicSetup()`).
+Import `picologging as logging` to use picologging instead of the standard library logging module.
 
 This patches all the loggers registered to use picologging loggers and formatters.
 
@@ -28,6 +28,10 @@ logger.info("A log message!")
 
 logger.warning("A log message with %s", "arguments")
 ```
+
+## Limitations
+
+See [docs/limitations.md](docs/limitations.md)
 
 ## Contributing
 

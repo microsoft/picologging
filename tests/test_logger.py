@@ -40,7 +40,7 @@ def test_get_effective_level():
     parent = picologging.Logger('parent', logging.DEBUG)
     logger.parent = parent
     assert logger.getEffectiveLevel() == logging.DEBUG
-    assert logger.level == 0
+    assert logger.level == logging.NOTSET
     logger.setLevel(logging.WARNING)
     assert logger.getEffectiveLevel() == logging.WARNING
 
@@ -49,7 +49,7 @@ def test_dodgy_parents():
     logger = picologging.Logger('test')
     parent = "potato"
     logger.parent = parent
-    with pytest.raises(TypeError):
+    with pytest.raises(AttributeError):
         logger.getEffectiveLevel()
 
 
@@ -127,3 +127,13 @@ def test_log_debug_info_level_logger_logging_handler():
     assert logger.debug("Hello World") == None
     result = stream.getvalue()
     assert result == ""
+
+def test_log_log():
+    logger = picologging.Logger('test', logging.DEBUG)
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+    handler.setFormatter(picologging.Formatter('%(message)s'))
+    logger.addHandler(handler)
+    assert logger.log(logging.DEBUG, "Hello World") == None
+    result = stream.getvalue()
+    assert result == "Hello World\n"

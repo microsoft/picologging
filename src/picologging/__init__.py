@@ -21,7 +21,6 @@ from logging import (
     BufferingFormatter,
     StrFormatStyle,
     StringTemplateStyle,
-    Manager,
     FileHandler,
 )
 import io
@@ -68,6 +67,7 @@ class Manager:
             rv = self.loggerDict[name]
         else:
             rv = Logger(name)
+            rv.manager = self
             self.loggerDict[name] = rv
         return rv
 

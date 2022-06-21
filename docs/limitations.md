@@ -1,3 +1,5 @@
+# Limitations
+
 ## Formatter Interface
 
 * Overriding `.formatStack()` is not supported

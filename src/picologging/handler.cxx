@@ -72,12 +72,19 @@ PyObject* Handler_setLevel(Handler *self, PyObject *level){
 
 PyObject* Handler_format(Handler *self, PyObject *record){
     if (self->formatter == Py_None){
-        Py_RETURN_NONE;
-    } else if (Formatter_CheckExact(self->formatter)) {
+        // Lazily initialize default formatter..
+        Py_DECREF(self->formatter);
+        self->formatter = PyObject_CallFunctionObjArgs((PyObject*)&FormatterType, NULL);
+        if (self->formatter == nullptr){
+            return nullptr;
+        }
+        Py_INCREF(self->formatter);
+    }
+
+    if (Formatter_CheckExact(self->formatter)) {
         return Formatter_format((Formatter*) self->formatter, record);
     } else {
-        PyObject* result = PyObject_CallMethod_ONEARG(self->formatter, PyUnicode_FromString("format"), record);
-        return result;
+        return PyObject_CallMethod_ONEARG(self->formatter, PyUnicode_FromString("format"), record);
     }
 }
 
