@@ -151,17 +151,22 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     PyObject *args_ = PyTuple_New(nargs - 1);
     for (int i = 1; i < nargs; i++) {
         PyTuple_SET_ITEM(args_, i - 1, args[i]);
+        Py_INCREF(args[i]); // TODO: verify the old reference is discarded.
     }
     PyObject* exc_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_exc_info) : nullptr;
     if (exc_info == nullptr){
         exc_info = Py_None;
     } else {
         if (PyExceptionClass_Check(exc_info)){
-            // TODO : Add references to tuple items.
             PyObject * unpackedExcInfo = PyTuple_New(3);
-            PyTuple_SET_ITEM(unpackedExcInfo, 0, (PyObject*)Py_TYPE(exc_info));
+            PyObject * excType = (PyObject*)Py_TYPE(exc_info);
+            PyTuple_SET_ITEM(unpackedExcInfo, 0, excType);
+            Py_INCREF(excType);
             PyTuple_SET_ITEM(unpackedExcInfo, 1, exc_info);
-            PyTuple_SET_ITEM(unpackedExcInfo, 2, PyObject_GetAttrString(exc_info, "__traceback__"));
+            Py_INCREF(exc_info);
+            PyObject* traceback = PyObject_GetAttrString(exc_info, "__traceback__");
+            PyTuple_SET_ITEM(unpackedExcInfo, 2, traceback);
+            Py_INCREF(traceback);
             exc_info = unpackedExcInfo;
         } else if (!PyTuple_CheckExact(exc_info)){ // Probably Py_TRUE
             PyObject * unpackedExcInfo = PyTuple_New(3);
@@ -319,6 +324,7 @@ PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyOb
     PyObject *args_ = PyTuple_New(nargs - 1);
     for (int i = 1; i < nargs; i++) {
         PyTuple_SET_ITEM(args_, i - 1, args[i]);
+        Py_INCREF(args[i]); // TODO: Verify the old reference is discarded.
     }
     return Logger_logAndHandle(self, ((PyTupleObject*)args_)->ob_item, nargs - 1, kwds, levelno);
 }
