@@ -29,6 +29,20 @@ logger.info("A log message!")
 logger.warning("A log message with %s", "arguments")
 ```
 
+## Benchmarks
+
+Run `richbench benchmarks/` with the richbench CLI to see the benchmarks, here is a sample on macOS 11:
+
+|                             Benchmark | Min     | Max     | Mean    | Min (+)         | Max (+)         | Mean (+)        |
+|---------------------------------------|---------|---------|---------|-----------------|-----------------|-----------------|
+|                           LogRecord() | 0.222   | 0.235   | 0.226   | 0.045 (4.9x)    | 0.049 (4.8x)    | 0.047 (4.8x)    |
+|                  Formatter().format() | 0.080   | 0.085   | 0.082   | 0.005 (16.0x)   | 0.006 (14.5x)   | 0.005 (15.3x)   |
+|        Formatter().format() with date | 0.323   | 0.343   | 0.333   | 0.086 (3.8x)    | 0.097 (3.5x)    | 0.090 (3.7x)    |
+|           Logger(level=DEBUG).debug() | 0.698   | 0.747   | 0.715   | 0.082 (8.6x)    | 0.085 (8.8x)    | 0.083 (8.6x)    |
+| Logger(level=DEBUG).debug() with args | 0.738   | 0.755   | 0.743   | 0.107 (6.9x)    | 0.112 (6.8x)    | 0.109 (6.8x)    |
+|            Logger(level=INFO).debug() | 0.014   | 0.015   | 0.014   | 0.003 (4.3x)    | 0.004 (4.1x)    | 0.003 (4.3x)    |
+|  Logger(level=INFO).debug() with args | 0.015   | 0.016   | 0.016   | 0.004 (4.2x)    | 0.004 (3.6x)    | 0.004 (3.9x)    |
+
 ## Limitations
 
 See [docs/limitations.md](docs/limitations.md)

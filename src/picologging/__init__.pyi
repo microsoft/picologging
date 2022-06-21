@@ -1,4 +1,27 @@
-from typing import Any, Iterable, Optional
+from _typeshed import Self, StrPath, SupportsWrite
+from collections.abc import Callable, Iterable, Mapping
+from io import TextIOWrapper
+from multiprocessing import Manager
+from string import Template
+from time import struct_time
+from types import TracebackType
+from typing import Any, Generic, Pattern, TextIO, TypeVar, Union, overload, Optional
+from typing_extensions import Literal, TypeAlias
+
+CRITICAL: int
+FATAL: int
+ERROR: int
+WARNING: int
+WARN: int
+INFO: int
+DEBUG: int
+NOTSET: int
+
+_SysExcInfoType: TypeAlias = Union[tuple[type[BaseException], BaseException, TracebackType | None], tuple[None, None, None]]
+_ExcInfoType: TypeAlias = None | bool | _SysExcInfoType | BaseException
+_ArgsType: TypeAlias = tuple[object, ...] | Mapping[str, object]
+_Level: TypeAlias = int # Not | str like it is in logging
+_FormatStyle: TypeAlias = Literal["%", "{", "$"]
 
 class LogRecord:
     """
@@ -56,79 +79,270 @@ class LogRecord:
         """
         ...
 
-def install():
-    """Install picologging over the logging module."""
-    ...
-
-def uninstall():
-    """Remove the picologging types from logging."""
-    ...
-
 class Formatter:
-    """
-    Formatter instances are used to convert a LogRecord to text.
-
-    Formatters need to know how a LogRecord is constructed. They are
-    responsible for converting a LogRecord to (usually) a string which can
-    be interpreted by either a human or an external system. The base Formatter
-    allows a formatting string to be specified. If none is supplied, the
-    style-dependent default value, "%(message)s", "{message}", or
-    "${message}", is used.
-
-    The Formatter can be initialized with a format string which makes use of
-    knowledge of the LogRecord attributes - e.g. the default value mentioned
-    above makes use of the fact that the user's message and arguments are pre-
-    formatted into a LogRecord's message attribute. Currently, the useful
-    attributes in a LogRecord are described by:
-
-    %(name)s            Name of the logger (logging channel)
-    %(levelno)s         Numeric logging level for the message (DEBUG, INFO,
-                        WARNING, ERROR, CRITICAL)
-    %(levelname)s       Text logging level for the message ("DEBUG", "INFO",
-                        "WARNING", "ERROR", "CRITICAL")
-    %(pathname)s        Full pathname of the source file where the logging
-                        call was issued (if available)
-    %(filename)s        Filename portion of pathname
-    %(module)s          Module (name portion of filename)
-    %(lineno)d          Source line number where the logging call was issued
-                        (if available)
-    %(funcName)s        Function name
-    %(created)f         Time when the LogRecord was created (time.time()
-                        return value)
-    %(asctime)s         Textual time when the LogRecord was created
-    %(msecs)d           Millisecond portion of the creation time
-    %(relativeCreated)d Time in milliseconds when the LogRecord was created,
-                        relative to the time the logging module was loaded
-                        (typically at application startup time)
-    %(thread)d          Thread ID (if available)
-    %(threadName)s      Thread name (if available)
-    %(process)d         Process ID (if available)
-    %(message)s         The result of record.getMessage(), computed just as
-                        the record is emitted
-    """
-
     datefmt: str
 
     def __init__(
         self,
-        fmt: Optional[str] = None,
-        datefmt: Optional[str] = None,
-        style: str = "%",
-        validate: bool = True,
+        fmt: str | None = ...,
+        datefmt: str | None = ...,
+        style: _FormatStyle = ...,
+        validate: bool = ...,
         *,
-        defaults=None
-    ): ...
-    def format(self, record: LogRecord) -> str:
-        """
-        Format the specified record as text.
+        defaults: Mapping[str, Any] | None = ...,
+    ) -> None: ...
 
-        The record's attribute dictionary is used as the operand to a
-        string formatting operation which yields the returned string.
-        Before formatting the dictionary, a couple of preparatory steps
-        are carried out. The message attribute of the record is computed
-        using LogRecord.getMessage(). If the formatting string uses the
-        time (as determined by a call to usesTime(), formatTime() is
-        called to format the event time. If there is exception information,
-        it is formatted using formatException() and appended to the message.
-        """
-        ...
+    def format(self, record: LogRecord) -> str: ...
+    def formatMessage(self, record: LogRecord) -> str: ...  # undocumented
+    def formatStack(self, stack_info: str) -> str: ...
+    def usesTime(self) -> bool: ...  # undocumented
+
+_FilterType: TypeAlias = Filter | Callable[[LogRecord], int]
+
+class Filterer:
+    filters: list[Filter]
+    def __init__(self) -> None: ...
+    def addFilter(self, filter: _FilterType) -> None: ...
+    def removeFilter(self, filter: _FilterType) -> None: ...
+    def filter(self, record: LogRecord) -> bool: ...
+
+class Handler(Filterer):
+    level: int  # undocumented
+    formatter: Formatter | None  # undocumented
+    name: str | None  # undocumented
+    def __init__(self, level: int = ...) -> None: ...
+    def acquire(self) -> None: ...
+    def release(self) -> None: ...
+    def setLevel(self, level: int) -> None: ...
+    def setFormatter(self, fmt: Formatter | None) -> None: ...
+    def filter(self, record: LogRecord) -> bool: ...
+    def handle(self, record: LogRecord) -> bool: ...
+    def format(self, record: LogRecord) -> str: ...
+    def emit(self, record: LogRecord) -> None: ...
+
+class Logger(Filterer):
+    propagate: bool
+    name: str
+    level: int
+    parent: Logger
+    handlers: list[Handler]
+    disabled: bool
+    manager: Optional[Manager]
+    def __init__(self, name: str, level: _Level = ...) -> None: ...
+    def setLevel(self, level: _Level) -> None: ...
+    def getEffectiveLevel(self) -> int: ...
+    def debug(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def info(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def warning(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def warn(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def error(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def exception(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def critical(
+        self,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    def log(
+        self,
+        level: int,
+        msg: object,
+        *args: object,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        stacklevel: int = ...,
+        extra: Mapping[str, object] | None = ...,
+    ) -> None: ...
+    
+    fatal = critical
+    def filter(self, record: LogRecord) -> bool: ...
+    def addHandler(self, hdlr: Handler) -> None: ...
+    def removeHandler(self, hdlr: Handler) -> None: ...
+    def handle(self, record: LogRecord) -> None: ...
+
+class Filter:
+    name: str  # undocumented
+    nlen: int  # undocumented
+    def __init__(self, name: str = ...) -> None: ...
+    def filter(self, record: LogRecord) -> bool: ...
+
+
+def getLogger(name: str | None = ...) -> Logger: ...
+
+def debug(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def info(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def warning(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def warn(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def error(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def critical(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def exception(
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+def log(
+    level: int,
+    msg: object,
+    *args: object,
+    exc_info: _ExcInfoType = ...,
+    stack_info: bool = ...,
+    stacklevel: int = ...,
+    extra: Mapping[str, object] | None = ...,
+) -> None: ...
+
+def basicConfig(
+    *,
+    filename: StrPath | None = ...,
+    filemode: str = ...,
+    format: str = ...,
+    datefmt: str | None = ...,
+    style: _FormatStyle = ...,
+    level: _Level | None = ...,
+    stream: SupportsWrite[str] | None = ...,
+    handlers: Iterable[Handler] | None = ...,
+    force: bool | None = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+) -> None: ...
+
+lastResort: StreamHandler[Any] | None
+
+_StreamT = TypeVar("_StreamT", bound=SupportsWrite[str])
+
+class StreamHandler(Handler, Generic[_StreamT]):
+    stream: _StreamT  # undocumented
+    @overload
+    def __init__(self: StreamHandler[TextIO], stream: None = ...) -> None: ...
+    @overload
+    def __init__(self: StreamHandler[_StreamT], stream: _StreamT) -> None: ...
+    def setStream(self, stream: _StreamT) -> _StreamT | None: ...
+
+class FileHandler(StreamHandler[TextIOWrapper]):
+    baseFilename: str  # undocumented
+    mode: str  # undocumented
+    encoding: str | None  # undocumented
+    delay: bool  # undocumented
+    errors: str | None  # undocumented
+    def __init__(
+        self, filename: StrPath, mode: str = ..., encoding: str | None = ..., delay: bool = ..., errors: str | None = ...
+    ) -> None: ...
+
+    def _open(self) -> TextIOWrapper: ...  # undocumented
+
+class NullHandler(Handler): ...
+
+root: Logger
+
+class PercentStyle:
+    _fmt: str
+    def __init__(self, fmt: str, *, defaults: Mapping[str, Any] | None = ...) -> None: ...
+    def usesTime(self) -> bool: ...
+    def validate(self) -> None: ...
+    def format(self, record: Any) -> str: ...
+
+class StrFormatStyle(PercentStyle):  # undocumented
+    fmt_spec: Pattern[str]
+    field_spec: Pattern[str]
+
+class StringTemplateStyle(PercentStyle):  # undocumented
+    _tpl: Template
+
+_STYLES: dict[str, tuple[PercentStyle, str]]
+
+BASIC_FORMAT: str

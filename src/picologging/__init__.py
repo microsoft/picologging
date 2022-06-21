@@ -21,7 +21,6 @@ from logging import (
     BufferingFormatter,
     StrFormatStyle,
     StringTemplateStyle,
-    FileHandler,
 )
 import io
 import warnings
@@ -80,7 +79,6 @@ class Manager:
 
 root = Logger(WARNING)
 manager = Manager(root)
-
 
 def basicConfig(**kwargs):
     """
@@ -311,3 +309,25 @@ def disable(level=CRITICAL):
     """
     root.manager.disable = level
     root.manager._clear_cache()
+
+class NullHandler(Handler):
+    """
+    This handler does nothing. It's intended to be used to avoid the
+    "No handlers could be found for logger XXX" one-off warning. This is
+    important for library code, which may contain code to log events. If a user
+    of the library does not configure logging, the one-off warning might be
+    produced; to avoid this, the library developer simply needs to instantiate
+    a NullHandler and add it to the top-level logger of the library module or
+    package.
+    """
+    def handle(self, record):
+        """Stub."""
+
+    def emit(self, record):
+        """Stub."""
+
+    def createLock(self):
+        self.lock = None
+
+    def _at_fork_reinit(self):
+        pass
