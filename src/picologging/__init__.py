@@ -178,7 +178,9 @@ def basicConfig(**kwargs):
                     errors = None
                 else:
                     encoding = io.text_encoding(encoding)
-                h = FileHandler(filename, mode, encoding=encoding, errors=errors)
+                # TODO #8 : Implement FileHandler
+                raise NotImplementedError("FileHandler not yet supported.")
+                # h = FileHandler(filename, mode, encoding=encoding, errors=errors)
             else:
                 stream = kwargs.pop("stream", None)
                 h = StreamHandler(stream)
@@ -325,9 +327,3 @@ class NullHandler(Handler):
 
     def emit(self, record):
         """Stub."""
-
-    def createLock(self):
-        self.lock = None
-
-    def _at_fork_reinit(self):
-        pass
