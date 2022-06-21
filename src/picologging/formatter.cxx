@@ -4,8 +4,6 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
-#define LINE_BREAK PyUnicode_FromString("\n")
-
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *dateFmt = nullptr;
     int style = '%';
@@ -63,7 +61,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             return -1;
         }
     }
-
+    self->_const_line_break = PyUnicode_FromString("\n");
     return 0;
 }
 
@@ -96,15 +94,20 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         } else {
             result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
         }
+        if (result == nullptr)
+            return nullptr;
+
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
-            PyObject* mod = PICOLOGGING_MODULE();
-            PyObject* print_exception = PyDict_GetItemString(PyModule_GetDict(mod), "print_exception");
-            PyObject* sio_cls = PyDict_GetItemString(PyModule_GetDict(mod), "StringIO");
+            PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
+            PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
+            PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference
+            Py_XINCREF(print_exception);
+            PyObject* sio_cls = PyDict_GetItemString(modDict, "StringIO");
+            Py_XINCREF(sio_cls);
             PyObject* sio = PyObject_CallFunctionObjArgs(sio_cls, NULL);
             if (sio == nullptr){
                 Py_XDECREF(sio_cls);
                 Py_XDECREF(print_exception);
-                Py_XDECREF(mod);
                 return nullptr; // Got exception in StringIO.__init__()
             }
             if (PyObject_CallFunctionObjArgs(
@@ -118,7 +121,6 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             {
                 Py_XDECREF(sio_cls);
                 Py_XDECREF(print_exception);
-                Py_XDECREF(mod);
                 return nullptr; // Got exception in print_exception()
             }
             PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
@@ -126,32 +128,39 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
                 Py_XDECREF(sio);
                 Py_XDECREF(sio_cls);
                 Py_XDECREF(print_exception);
-                Py_XDECREF(mod);
                 return nullptr; // Got exception in StringIO.getvalue()
             }
             
             PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
             Py_DECREF(sio);
             Py_DECREF(sio_cls);
-            Py_DECREF(mod);
             Py_DECREF(print_exception);
-            if (!PYUNICODE_ENDSWITH(s, LINE_BREAK)){
-                PyUnicode_Append(&s, LINE_BREAK);
+            if (!PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+                PyUnicode_Append(&s, self->_const_line_break);
             }
             Py_XDECREF(logRecord->excText);
             logRecord->excText = s; // Use borrowed ref
         }
         if (logRecord->excText != Py_None){
-            if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){
-                PyUnicode_Append(&result, LINE_BREAK);
+            if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)){
+                PyUnicode_Append(&result, self->_const_line_break);
             }
             PyUnicode_Append(&result, logRecord->excText);
         }
-        if (logRecord->stackInfo != Py_None){
-            if (!PYUNICODE_ENDSWITH(result, LINE_BREAK)){
-                PyUnicode_Append(&result, LINE_BREAK);
+        if (logRecord->stackInfo != Py_None && logRecord->stackInfo != Py_False){
+            if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)){
+                PyUnicode_Append(&result, self->_const_line_break);
             }
-            PyUnicode_Append(&result, logRecord->stackInfo);
+            if (PyUnicode_Check(logRecord->stackInfo)){
+                PyUnicode_Append(&result, logRecord->stackInfo);
+            } else {
+                PyObject* s = PyObject_Str(logRecord->stackInfo);
+                if (s == nullptr){
+                    return nullptr; // Got exception in str(stackInfo)
+                }
+                PyUnicode_Append(&result, s);
+                Py_DECREF(s);
+            }
         }
         return result;
     } else {

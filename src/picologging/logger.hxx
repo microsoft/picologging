@@ -29,6 +29,9 @@ typedef struct LoggerT {
     PyObject* _const_handle;
     PyObject* _const_level;
     PyObject* _const_unknown;
+    PyObject* _const_exc_info;
+    PyObject* _const_extra;
+    PyObject* _const_stack_info;
 
     StreamHandler* _fallback_handler;
 } Logger ;

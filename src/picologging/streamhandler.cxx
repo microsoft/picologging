@@ -67,6 +67,14 @@ error:
     return nullptr;
 }
 
+PyObject* StreamHandler_setStream(StreamHandler* self, PyObject* stream){
+    Py_XDECREF(self->stream);
+    self->stream = stream;
+    Py_INCREF(self->stream);
+    self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
+    Py_RETURN_NONE;
+}
+
 PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs) {
     flush(self);
     Py_RETURN_NONE;
@@ -75,9 +83,9 @@ PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssi
 static PyMethodDef StreamHandler_methods[] = {
      {"emit", (PyCFunction)StreamHandler_emit, METH_FASTCALL, "Emit a record."},
      {"flush", (PyCFunction)StreamHandler_flush, METH_FASTCALL, "Flush the stream."},
+     {"setStream", (PyCFunction)StreamHandler_setStream, METH_O, "Set the stream to write to."},
      {NULL}
 };
-// TODO : Implement setStream()
 
 static PyMemberDef StreamHandler_members[] = {
     {"stream", T_OBJECT_EX, offsetof(StreamHandler, stream), 0, "Stream"},

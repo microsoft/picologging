@@ -128,12 +128,26 @@ def test_log_debug_info_level_logger_logging_handler():
     result = stream.getvalue()
     assert result == ""
 
-def test_log_log():
-    logger = picologging.Logger('test', logging.DEBUG)
+@pytest.mark.parametrize("level", levels)
+def test_log_log(level):
+    logger = picologging.Logger('test', level)
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
     handler.setFormatter(picologging.Formatter('%(message)s'))
     logger.addHandler(handler)
-    assert logger.log(logging.DEBUG, "Hello World") == None
+    assert logger.log(level, "Hello World") == None
     result = stream.getvalue()
     assert result == "Hello World\n"
+
+
+def test_logger_with_explicit_level():
+    logger = picologging.Logger("test", logging.DEBUG)
+    tmp = io.StringIO()
+    handler = picologging.StreamHandler(tmp)
+    handler.setLevel(logging.DEBUG)
+    formatter = picologging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.handlers.append(handler)
+    logger.debug("There has been a picologging issue")
+    result = tmp.getvalue()
+    assert result == "test - DEBUG - There has been a picologging issue\n"

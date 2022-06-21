@@ -13,6 +13,7 @@ typedef struct {
     PyObject *style;
     bool usesTime;
     const char* dateFmtStr;
+    PyObject *_const_line_break;
 } Formatter;
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds);

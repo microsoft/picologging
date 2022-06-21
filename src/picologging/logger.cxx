@@ -64,6 +64,9 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->_const_handle = PyUnicode_FromString("handle");
     self->_const_level = PyUnicode_FromString("level");
     self->_const_unknown = PyUnicode_FromString("<unknown>");
+    self->_const_exc_info = PyUnicode_FromString("exc_info");
+    self->_const_extra = PyUnicode_FromString("extra");
+    self->_const_stack_info = PyUnicode_FromString("stack_info");
     self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
     if (self->_fallback_handler == nullptr){
         return -1;
@@ -80,6 +83,9 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->_const_handle);
     Py_XDECREF(self->_const_level);
     Py_XDECREF(self->_const_unknown);
+    Py_XDECREF(self->_const_exc_info);
+    Py_XDECREF(self->_const_extra);
+    Py_XDECREF(self->_const_stack_info);
     Py_XDECREF(self->_fallback_handler);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
@@ -146,8 +152,32 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     for (int i = 1; i < nargs; i++) {
         PyTuple_SET_ITEM(args_, i - 1, args[i]);
     }
+    PyObject* exc_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_exc_info) : nullptr;
+    if (exc_info == nullptr){
+        exc_info = Py_None;
+    } else {
+        if (PyExceptionClass_Check(exc_info)){
+            PyObject * unpackedExcInfo = PyTuple_New(3);
+            PyTuple_SET_ITEM(unpackedExcInfo, 0, (PyObject*)Py_TYPE(exc_info));
+            PyTuple_SET_ITEM(unpackedExcInfo, 1, exc_info);
+            PyTuple_SET_ITEM(unpackedExcInfo, 2, PyObject_GetAttrString(exc_info, "__traceback__"));
+            exc_info = unpackedExcInfo;
+        } else if (!PyTuple_CheckExact(exc_info)){ // Probably Py_TRUE
+            PyObject * unpackedExcInfo = PyTuple_New(3);
+            PyErr_GetExcInfo(&PyTuple_GET_ITEM(unpackedExcInfo, 0), &PyTuple_GET_ITEM(unpackedExcInfo, 1), &PyTuple_GET_ITEM(unpackedExcInfo, 2));
+            exc_info = unpackedExcInfo;
+        }
+    }
+    PyObject* extra = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_extra) : nullptr;
+    if (extra == nullptr){
+        extra = Py_None;
+    }
+    PyObject* stack_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_stack_info) : nullptr;
+    if (stack_info == nullptr){
+        stack_info = Py_False;
+    }
     LogRecord *record = Logger_logMessageAsRecord(
-        self, level, msg, args_, /* TODO: Resolve */ Py_None, Py_None, Py_None, 1);
+        self, level, msg, args_, exc_info, extra, stack_info, 1);
 
     if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True)
         Py_RETURN_NONE;
