@@ -38,11 +38,24 @@ if (PyUnicode_Check(log_record->field )) { \
         return nullptr; \
     } \
 } else { \
-    if (_PyUnicodeWriter_WriteStr(&writer, PyObject_Str(log_record->field )) != 0) { \
+    PyObject* strRepr = PyObject_Str(log_record->field ); \
+    if (_PyUnicodeWriter_WriteStr(&writer, strRepr) != 0) { \
         _PyUnicodeWriter_Dealloc(&writer); \
+        Py_DECREF(strRepr); \
         return nullptr; \
     } \
+    Py_DECREF(strRepr); \
 }
+
+#define APPEND_INT(field) {\
+    PyObject* field = PyUnicode_FromFormat("%d", log_record->field ); \
+    if (_PyUnicodeWriter_WriteStr(&writer, field) != 0) { \
+        _PyUnicodeWriter_Dealloc(&writer); \
+        Py_DECREF(field); \
+        return nullptr; \
+    } \
+    Py_DECREF(field); }\
+
 
 int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *defaults = Py_None;
@@ -145,10 +158,7 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(args)
                         break;
                     case Field_LevelNo:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->levelno)) != 0) {
-                            _PyUnicodeWriter_Dealloc(&writer);
-                            return nullptr;
-                        }
+                        APPEND_INT(levelno)
                         break;
                     case Field_LevelName:
                         APPEND_STRING(levelname)
@@ -163,34 +173,29 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(module)
                         break;
                     case Field_Lineno:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->lineno)) != 0) {
-                            _PyUnicodeWriter_Dealloc(&writer);
-                            return nullptr;
-                        }
+                        APPEND_INT(lineno)
                         break;
                     case Field_FuncName:
                         APPEND_STRING(funcName)
                         break;
-                    case Field_Created:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%f", log_record->created)) != 0) {
+                    case Field_Created: {
+                        PyObject *created = PyUnicode_FromFormat("%f", log_record->created);
+                        if (_PyUnicodeWriter_WriteStr(&writer, created) != 0) {
                             _PyUnicodeWriter_Dealloc(&writer);
+                            Py_DECREF(created);
                             return nullptr;
                         }
+                        Py_DECREF(created);
+                    }   
                         break;
                     case Field_Msecs:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->msecs)) != 0) {
-                            _PyUnicodeWriter_Dealloc(&writer);
-                            return nullptr;
-                        }
+                        APPEND_INT(msecs)
                         break;
                     case Field_RelativeCreated:
                         APPEND_STRING(relativeCreated)
                         break;
                     case Field_Thread:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->thread)) != 0) {
-                            _PyUnicodeWriter_Dealloc(&writer);
-                            return nullptr;
-                        }
+                        APPEND_INT(thread)
                         break;
                     case Field_ThreadName:
                         APPEND_STRING(threadName)
@@ -199,10 +204,7 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(processName)
                         break;
                     case Field_Process:
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyUnicode_FromFormat("%d", log_record->process)) != 0) {
-                            _PyUnicodeWriter_Dealloc(&writer);
-                            return nullptr;
-                        }
+                        APPEND_INT(process)
                         break;
                     case Field_ExcInfo:
                         APPEND_STRING(excInfo)
@@ -231,10 +233,12 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                             _PyUnicodeWriter_Dealloc(&writer);
                             return nullptr;
                         }
-                        if (_PyUnicodeWriter_WriteStr(&writer, PyObject_Str(PyObject_GetAttr(record, self->fragments[i].fragment))) != 0){
+                        if (_PyUnicodeWriter_WriteStr(&writer, PyObject_Str(attr)) != 0){
                             _PyUnicodeWriter_Dealloc(&writer);
+                            Py_DECREF(attr);
                             return nullptr;
                         }
+                        Py_DECREF(attr);
                         break;
                     }
                     default:
@@ -245,7 +249,12 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
             }
             return _PyUnicodeWriter_Finish(&writer);
         } else {
-            return PyUnicode_Format(self->fmt, PyObject_GetAttrString(record, "__dict__"));
+            PyObject* recordDict = PyObject_GetAttrString(record, "__dict__");
+            if (recordDict == nullptr)
+                return nullptr;
+            PyObject* result = PyUnicode_Format(self->fmt, recordDict);
+            Py_DECREF(recordDict);
+            return result;
         }
     }
 
@@ -254,7 +263,9 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
         Py_DECREF(dict);
         return nullptr;
     }
-    return PyUnicode_Format(self->fmt, dict);
+    PyObject* result = PyUnicode_Format(self->fmt, dict);
+    Py_DECREF(dict);
+    return result;
 }
 
 PyObject *

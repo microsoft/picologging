@@ -13,7 +13,7 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     PyObject *formatter = NULL;
     PyObject *filters = NULL;
     static const char *kwlist[] = {"name", "level", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OHOO", const_cast<char**>(kwlist), &name, &level)){
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OH", const_cast<char**>(kwlist), &name, &level)){
         return -1;
     }
     self->name = name;

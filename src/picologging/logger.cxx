@@ -157,6 +157,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
         exc_info = Py_None;
     } else {
         if (PyExceptionClass_Check(exc_info)){
+            // TODO : Add references to tuple items.
             PyObject * unpackedExcInfo = PyTuple_New(3);
             PyTuple_SET_ITEM(unpackedExcInfo, 0, (PyObject*)Py_TYPE(exc_info));
             PyTuple_SET_ITEM(unpackedExcInfo, 1, exc_info);
