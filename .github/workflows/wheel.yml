@@ -19,6 +19,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.6.1
         env:
           CIBW_PRERELEASE_PYTHONS: True
+          CIBW_ARCHS_MACOS: x86_64 universal2
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
