@@ -330,10 +330,18 @@ PyObject* Logger_addHandler(Logger *self, PyObject *handler) {
     Py_RETURN_NONE;
 }
 
+PyObject* Logger_removeHandler(Logger *self, PyObject *handler) {
+    if (PySequence_Contains(self->handlers, handler)) {
+        return PyObject_CallMethod_ONEARG(self->handlers, PyUnicode_FromString("remove"), handler);
+    }
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
     {"addHandler", (PyCFunction)Logger_addHandler, METH_O, "Add a handler to the logger."},
+    {"removeHandler", (PyCFunction)Logger_removeHandler, METH_O, "Remove a handler from the logger."},
     // Logging methods
     {"debug", (PyCFunction)Logger_debug, METH_FASTCALL | METH_KEYWORDS, "Log a message at level DEBUG."},
     {"info", (PyCFunction)Logger_info, METH_FASTCALL | METH_KEYWORDS, "Log a message at level INFO."},
