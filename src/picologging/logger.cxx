@@ -222,9 +222,11 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
             cur = (Logger*)cur->parent;
         }
     }
-    if (record->levelno >= ((Handler*)self->_fallback_handler)->level){
-        if (Handler_handle((Handler*)self->_fallback_handler, (PyObject*)record) == nullptr){
-            return nullptr;
+    if (found == 0){
+        if (record->levelno >= ((Handler*)self->_fallback_handler)->level){
+            if (Handler_handle((Handler*)self->_fallback_handler, (PyObject*)record) == nullptr){
+                return nullptr;
+            }
         }
     }
     Py_RETURN_NONE;

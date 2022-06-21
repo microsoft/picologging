@@ -140,7 +140,7 @@ def test_log_log(level):
     assert result == "Hello World\n"
 
 
-def test_logger_with_explicit_level():
+def test_logger_with_explicit_level(capsys):
     logger = picologging.Logger("test", logging.DEBUG)
     tmp = io.StringIO()
     handler = picologging.StreamHandler(tmp)
@@ -151,3 +151,6 @@ def test_logger_with_explicit_level():
     logger.debug("There has been a picologging issue")
     result = tmp.getvalue()
     assert result == "test - DEBUG - There has been a picologging issue\n"
+    cap = capsys.readouterr()
+    assert cap.out == ""
+    assert cap.err == ""

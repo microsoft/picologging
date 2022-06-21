@@ -3,6 +3,7 @@ import logging
 import picologging
 
 logging.basicConfig()
+picologging.basicConfig()
 
 
 def record_factory_logging():
@@ -93,7 +94,7 @@ def log_debug_picologging_with_args(level=logging.DEBUG):
 
     for _ in range(10_000):
         logger.debug("There has been a picologging issue %s %s %s", 1, 2, 3)
-    
+
 def log_debug_outofscope_logging():
     log_debug_logging(logging.INFO)
 
