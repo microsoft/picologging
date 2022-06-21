@@ -47,7 +47,7 @@ class LogRecord:
     lineno: int
     funcName: str
     created: float
-    msecs: float
+    msecs: int
     relativeCreated: float
     thread: Optional[int]
     threadName: Optional[str]
@@ -56,6 +56,8 @@ class LogRecord:
     exc_info: Any
     exc_text: Optional[str]
     stack_info: Optional[Any]
+    message: str
+    asctime: str
 
     def __init__(
         self,

@@ -257,6 +257,8 @@ PyObject* LogRecord_getMessage(LogRecord *self)
 
     if (PyUnicode_Check(self->msg)){
         msg = self->msg;
+        // Add new reference for return value, all other code paths return a new object
+        Py_INCREF(self->msg);
     } else {
         msg = PyObject_Str(self->msg);
     }
@@ -286,6 +288,7 @@ PyObject* LogRecord_repr(LogRecord *self)
 PyObject *
 LogRecord_getDict(PyObject *obj, void *context)
 {
+    // TODO : Check whether Dict needs to hold references?
     PyObject* dict = PyObject_GenericGetDict(obj, context);
     PyDict_SetItemString(dict, "name", ((LogRecord*)obj)->name);
     PyDict_SetItemString(dict, "msg", ((LogRecord*)obj)->msg);
