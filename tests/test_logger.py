@@ -167,3 +167,14 @@ def test_exception_capture():
     result = tmp.getvalue()
     assert "bork" in result
     assert "ZeroDivisionError: division by zero" in result
+
+def test_getlogger_no_args():
+    logger = logging.getLogger()
+    assert logger.name == "root"
+    assert logger.level == logging.WARNING
+    assert logger.parent is None
+
+    picologger = picologging.getLogger()
+    assert picologger.name == "root"
+    assert picologger.level == logging.WARNING
+    assert picologger.parent is None
