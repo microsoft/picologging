@@ -183,6 +183,7 @@ PyObject* Formatter_formatMessage(Formatter *self, PyObject* record){
 
 PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
     // The base implementation just returns the value passed in.
+    Py_INCREF(stackInfo);
     return stackInfo;
 }
 
