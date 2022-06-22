@@ -50,3 +50,22 @@ def test_init_with_name():
 def test_init_with_level():
     handler = picologging.Handler(level=picologging.DEBUG)
     assert handler.level == picologging.DEBUG
+
+def test_get_set_name():
+    handler = picologging.Handler(name='test')
+    assert handler.get_name() == 'test'
+    handler.set_name('foo')
+    assert handler.name == 'foo'
+    assert handler.get_name() == 'foo'
+
+def test_flush():
+    handler = picologging.Handler()
+    assert not handler.flush()
+
+def test_close():
+    handler = picologging.Handler()
+    assert not handler.close()
+
+def test_createLock():
+    handler = picologging.Handler()
+    assert not handler.createLock()

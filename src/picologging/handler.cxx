@@ -105,6 +105,39 @@ PyObject* Handler_release(Handler *self){
     Py_RETURN_NONE;
 }
 
+PyObject* Handler_flush(Handler *self){
+    //Abstract method. does nothing.
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_close(Handler *self){
+    // TODO: Decide if we want a global dictionary of handlers.
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_handleError(Handler *self, PyObject *record){
+    // TODO: Develop this behaviour further.
+    PyErr_Print();
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_getName(Handler *self){
+    Py_INCREF(self->name);
+    return self->name;
+}
+
+PyObject* Handler_setName(Handler *self, PyObject *name){
+    Py_XDECREF(self->name);
+    self->name = name;
+    Py_INCREF(self->name);
+    Py_RETURN_NONE;
+}
+
+PyObject* Handler_createLock(Handler *self){
+    // Lock is instantiated by constructor, just have this method for compatibility with logging.Handler
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef Handler_methods[] = {
     {"setLevel", (PyCFunction)Handler_setLevel, METH_O, "Set the level of the handler."},
     {"setFormatter", (PyCFunction)Handler_setFormatter, METH_O, "Set the formatter of the handler."},
@@ -113,6 +146,12 @@ static PyMethodDef Handler_methods[] = {
     {"format", (PyCFunction)Handler_format, METH_O, "Format a record."},
     {"acquire", (PyCFunction)Handler_acquire, METH_NOARGS, "Acquire the lock."},
     {"release", (PyCFunction)Handler_release, METH_NOARGS, "Release the lock."},
+    {"flush", (PyCFunction)Handler_flush, METH_NOARGS, "Ensure all logging output has been flushed."},
+    {"close", (PyCFunction)Handler_close, METH_NOARGS, "Tidy up any resources used by the handler."},
+    {"handleError", (PyCFunction)Handler_handleError, METH_O, "Handle an error during an emit()."},
+    {"get_name", (PyCFunction)Handler_getName, METH_NOARGS, "Get the name of the handler."},
+    {"set_name", (PyCFunction)Handler_setName, METH_O, "Set the name of the handler."},
+    {"createLock", (PyCFunction)Handler_createLock, METH_NOARGS, "Create a new lock instance."},
     {NULL}
 };
 
