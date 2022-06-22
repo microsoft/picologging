@@ -23,7 +23,7 @@ This patches all the loggers registered to use picologging loggers and formatter
 
 ```python
 import picologging as logging
-logging.basicSetup()
+logging.basicConfig()
 
 logger = logging.getLogger()
 
