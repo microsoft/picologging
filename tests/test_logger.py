@@ -154,3 +154,16 @@ def test_logger_with_explicit_level(capsys):
     cap = capsys.readouterr()
     assert cap.out == ""
     assert cap.err == ""
+
+def test_exception_capture():
+    logger = picologging.getLogger(__name__)
+    tmp = io.StringIO()
+    handler = picologging.StreamHandler(tmp)
+    logger.addHandler(handler)
+    try:
+        1/0
+    except ZeroDivisionError:
+        logger.exception("bork")
+    result = tmp.getvalue()
+    assert "bork" in result
+    assert "ZeroDivisionError: division by zero" in result

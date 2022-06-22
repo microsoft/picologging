@@ -55,7 +55,8 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
     }
     PyUnicode_Append(&msg, self->terminator);
     if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
-        PyErr_SetString(PyExc_RuntimeError, "Cannot write to stream");
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_RuntimeError, "Cannot write to stream");
         goto error;
     }
     flush(self);
@@ -63,7 +64,6 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
     Py_RETURN_NONE;
 error:
     // TODO: #4 handle error path (see handleError(record))
-    PyErr_Print();
     Py_XDECREF(msg);
     return nullptr;
 }
