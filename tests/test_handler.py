@@ -21,6 +21,10 @@ def test_stream_handler_defaults_to_stderr():
     handler = picologging.StreamHandler()
     assert handler.stream == sys.stderr
 
+    handler = picologging.StreamHandler(None)
+    assert handler.stream == sys.stderr
+
+
 def test_custom_handler():
     class CustomHandler(picologging.Handler):
         def __init__(self):

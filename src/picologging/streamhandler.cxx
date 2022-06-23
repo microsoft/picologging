@@ -12,7 +12,7 @@ int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", const_cast<char**>(kwlist), &stream)){
         return -1;
     }
-    if (stream == NULL){
+    if (stream == NULL || stream == Py_None){
         stream = PySys_GetObject("stderr");
     }
     self->stream = stream;
