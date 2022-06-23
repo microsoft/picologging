@@ -23,12 +23,16 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     self->formatter = Py_None;
     Py_INCREF(self->formatter);
     self->lock = new std::recursive_mutex();
+    self->_const_emit = PyUnicode_FromString("emit");
+    self->_const_format = PyUnicode_FromString("format");
     return 0;
 }
 
 PyObject* Handler_dealloc(Handler *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->formatter);
+    Py_XDECREF(self->_const_emit);
+    Py_XDECREF(self->_const_format);
     delete self->lock;
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
@@ -53,7 +57,7 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
         PyObject* args[1] = {record};
         result = StreamHandler_emit((StreamHandler*)self, args, 1);
     } else {
-        result = PyObject_CallMethod_ONEARG((PyObject*)self, PyUnicode_FromString("emit"), record);
+        result = PyObject_CallMethod_ONEARG((PyObject*)self, self->_const_emit, record);
     }
     
     self->lock->unlock();
@@ -86,10 +90,7 @@ PyObject* Handler_format(Handler *self, PyObject *record){
     if (Formatter_CheckExact(self->formatter)) {
         return Formatter_format((Formatter*) self->formatter, record);
     } else {
-        PyObject* format = PyUnicode_FromString("format");
-        PyObject* result = PyObject_CallMethod_ONEARG(self->formatter, result, record);
-        Py_DECREF(format);
-        return result;
+        return PyObject_CallMethod_ONEARG(self->formatter, self->_const_format, record);
     }
 }
 

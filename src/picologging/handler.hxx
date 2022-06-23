@@ -11,6 +11,8 @@ typedef struct {
     unsigned short level;
     PyObject *formatter;
     std::recursive_mutex *lock;
+    PyObject* _const_emit;
+    PyObject* _const_format;
 } Handler;
 
 int Handler_init(Handler *self, PyObject *args, PyObject *kwds);
