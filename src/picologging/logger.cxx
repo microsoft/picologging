@@ -326,7 +326,9 @@ PyObject* Logger_exception(Logger *self, PyObject *const *args, Py_ssize_t nargs
         kwds = PyDict_New();
     }
     PyDict_SetItemString(kwds, "exc_info", Py_True);
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_ERROR);
+    PyObject* result = Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_ERROR);
+    Py_DECREF(kwds);
+    return result;
 }
 
 PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
@@ -346,7 +348,9 @@ PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyOb
         PyTuple_SET_ITEM(args_, i - 1, args[i]);
         Py_INCREF(args[i]); // TODO: Verify the old reference is discarded.
     }
-    return Logger_logAndHandle(self, ((PyTupleObject*)args_)->ob_item, nargs - 1, kwds, levelno);
+    PyObject* result = Logger_logAndHandle(self, ((PyTupleObject*)args_)->ob_item, nargs - 1, kwds, levelno);
+    Py_DECREF(args_);
+    return result;
 }
 
 PyObject* Logger_addHandler(Logger *self, PyObject *handler) {
@@ -359,7 +363,10 @@ PyObject* Logger_addHandler(Logger *self, PyObject *handler) {
 
 PyObject* Logger_removeHandler(Logger *self, PyObject *handler) {
     if (PySequence_Contains(self->handlers, handler)) {
-        return PyObject_CallMethod_ONEARG(self->handlers, PyUnicode_FromString("remove"), handler);
+        PyObject* remove = PyUnicode_FromString("remove");
+        PyObject* result = PyObject_CallMethod_ONEARG(self->handlers, remove, handler);
+        Py_DECREF(remove);
+        return result;
     }
     Py_RETURN_NONE;
 }

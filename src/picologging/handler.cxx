@@ -76,6 +76,9 @@ PyObject* Handler_format(Handler *self, PyObject *record){
         Py_DECREF(self->formatter);
         self->formatter = PyObject_CallFunctionObjArgs((PyObject*)&FormatterType, NULL);
         if (self->formatter == nullptr){
+            // Reset to none if we failed to initialize
+            self->formatter = Py_None;
+            Py_INCREF(self->formatter);
             return nullptr;
         }
         Py_INCREF(self->formatter);
@@ -84,7 +87,10 @@ PyObject* Handler_format(Handler *self, PyObject *record){
     if (Formatter_CheckExact(self->formatter)) {
         return Formatter_format((Formatter*) self->formatter, record);
     } else {
-        return PyObject_CallMethod_ONEARG(self->formatter, PyUnicode_FromString("format"), record);
+        PyObject* format = PyUnicode_FromString("format");
+        PyObject* result = PyObject_CallMethod_ONEARG(self->formatter, result, record);
+        Py_DECREF(format);
+        return result;
     }
 }
 
