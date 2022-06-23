@@ -143,6 +143,8 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         stack_info,
         NULL
     );
+    Py_DECREF(lineno);
+
     return (LogRecord*)record;
 }
 
@@ -156,6 +158,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     PyObject* exc_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_exc_info) : nullptr;
     if (exc_info == nullptr){
         exc_info = Py_None;
+        Py_INCREF(exc_info);
     } else {
         if (PyExceptionClass_Check(exc_info)){
             PyObject * unpackedExcInfo = PyTuple_New(3);
@@ -177,16 +180,27 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     PyObject* extra = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_extra) : nullptr;
     if (extra == nullptr){
         extra = Py_None;
+        Py_INCREF(extra);
     }
     PyObject* stack_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_stack_info) : nullptr;
     if (stack_info == nullptr){
         stack_info = Py_False;
+        Py_INCREF(stack_info);
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, level, msg, args_, exc_info, extra, stack_info, 1);
+    Py_DECREF(msg);
+    Py_DECREF(args_);
+    Py_DECREF(exc_info);
+    Py_DECREF(extra);
+    Py_DECREF(stack_info);
+    if (record == nullptr)
+        return nullptr;
 
-    if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True)
+    if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True) {
+        Py_DECREF(record);
         Py_RETURN_NONE;
+    }
     
     int found = 0;
     Logger* cur = self;
@@ -198,12 +212,14 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
             if (Handler_Check(handler)){
                 if (record->levelno >= ((Handler*)handler)->level){
                     if (Handler_handle((Handler*)handler, (PyObject*)record) == nullptr){
+                        Py_DECREF(record);
                         return nullptr;
                     }
                 }
             } else {
                 PyObject* handlerLevel = PyObject_GetAttr(handler, self->_const_level);
                 if (handlerLevel == nullptr){
+                    Py_DECREF(record);
                     PyErr_SetString(PyExc_TypeError, "Handler has no level attribute");
                     return nullptr;
                 }
@@ -211,6 +227,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
                 if (record->levelno >= PyLong_AsLong(handlerLevel)){
                     if (PyObject_CallMethod_ONEARG(handler, self->_const_handle, (PyObject*)record) == nullptr){
                         Py_DECREF(handlerLevel);
+                        Py_DECREF(record);
                         return nullptr;
                     }
                 }
@@ -222,6 +239,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
         } else {
             if (!Logger_CheckExact(cur->parent))
             {
+                Py_DECREF(record);
                 PyErr_SetString(PyExc_TypeError, "Logger's parent is not an instance of picologging.Logger");
                 return nullptr;
             }
@@ -231,10 +249,12 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     if (found == 0){
         if (record->levelno >= ((Handler*)self->_fallback_handler)->level){
             if (Handler_handle((Handler*)self->_fallback_handler, (PyObject*)record) == nullptr){
+                Py_DECREF(record);
                 return nullptr;
             }
         }
     }
+    Py_DECREF(record);
     Py_RETURN_NONE;
 }
 
