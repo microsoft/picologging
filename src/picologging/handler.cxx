@@ -81,7 +81,6 @@ PyObject* Handler_format(Handler *self, PyObject *record){
             Py_INCREF(self->formatter);
             return nullptr;
         }
-        Py_INCREF(self->formatter);
     }
 
     if (Formatter_CheckExact(self->formatter)) {
