@@ -5,8 +5,9 @@
 int Filterer_init(Filterer *self, PyObject *args, PyObject *kwds)
 {
     self->filters = PyList_New(0);
+    if (self->filters == NULL)
+        return -1;
     Py_INCREF(self->filters);
-
     return 0;
 }
 
@@ -20,19 +21,24 @@ PyObject* Filterer_addFilter(Filterer* self, PyObject *filter) {
 
 PyObject* Filterer_removeFilter(Filterer* self, PyObject *filter) {
     if (PySequence_Contains(self->filters, filter) == 1){
-        return PyObject_CallMethod_ONEARG(self->filters, PyUnicode_FromString("remove"), filter);
+        PyObject* remove = PyUnicode_FromString("remove");
+        PyObject* result = PyObject_CallMethod_ONEARG(self->filters, remove, filter);
+        Py_DECREF(remove);
+        return result;
     }
     Py_RETURN_NONE;
 }
 
 PyObject* Filterer_filter(Filterer* self, PyObject *record) {
     bool ret = true;
+    PyObject *filterName = PyUnicode_FromString("filter");
     for (int i = 0; i < PyList_GET_SIZE(self->filters); i++) {
         PyObject *result = Py_None;
         PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
-        if (PyObject_HasAttrString(filter, "filter")) {
-            result = PyObject_CallMethod_ONEARG(filter, PyUnicode_FromString("filter"), record);
+        if (PyObject_HasAttr(filter, filterName)) {
+            result = PyObject_CallMethod_ONEARG(filter, filterName, record);
             if (result == NULL) {
+                Py_DECREF(filterName);
                 return NULL;
             }
         } else {
@@ -43,7 +49,7 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
             break;
         }
     }
-
+    Py_DECREF(filterName);
     if (ret)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;

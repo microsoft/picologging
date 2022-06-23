@@ -243,6 +243,7 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     Py_XDECREF(self->stackInfo);
     Py_XDECREF(self->message);
     Py_XDECREF(self->asctime);
+    Py_XDECREF(self->dict);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
@@ -288,7 +289,6 @@ PyObject* LogRecord_repr(LogRecord *self)
 PyObject *
 LogRecord_getDict(PyObject *obj, void *context)
 {
-    // TODO : Check whether Dict needs to hold references?
     PyObject* dict = PyObject_GenericGetDict(obj, context);
     PyDict_SetItemString(dict, "name", ((LogRecord*)obj)->name);
     PyDict_SetItemString(dict, "msg", ((LogRecord*)obj)->msg);
