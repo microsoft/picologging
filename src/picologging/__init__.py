@@ -77,7 +77,7 @@ class Manager:
         raise NotImplementedError("setLoggerClass is not supported in picologging.")
 
 
-root = Logger(WARNING)
+root = Logger(name="root", level=WARNING)
 manager = Manager(root)
 
 def basicConfig(**kwargs):
