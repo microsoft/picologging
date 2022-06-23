@@ -1,3 +1,4 @@
+import sys
 from ._picologging import (
     LogRecord,
     PercentStyle,
@@ -183,7 +184,7 @@ def basicConfig(**kwargs):
                 raise NotImplementedError("FileHandler not yet supported.")
                 # h = FileHandler(filename, mode, encoding=encoding, errors=errors)
             else:
-                stream = kwargs.pop("stream", None)
+                stream = kwargs.pop("stream", sys.stderr)
                 h = StreamHandler(stream)
             handlers = [h]
         dfs = kwargs.pop("datefmt", None)

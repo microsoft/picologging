@@ -1,5 +1,6 @@
 import picologging
 import io
+import sys
 
 def test_basic_handler():
     handler = picologging.Handler()
@@ -15,6 +16,14 @@ def test_stream_handler():
     assert handler.formatter == formatter
     handler.handle(record)
     assert stream.getvalue() == 'test\n'
+
+def test_stream_handler_defaults_to_stderr():
+    handler = picologging.StreamHandler()
+    assert handler.stream == sys.stderr
+
+    handler = picologging.StreamHandler(None)
+    assert handler.stream == sys.stderr
+
 
 def test_custom_handler():
     class CustomHandler(picologging.Handler):
