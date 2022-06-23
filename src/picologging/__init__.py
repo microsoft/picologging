@@ -1,3 +1,15 @@
+"""
+Picologging - an optimized logging library for Python.
+
+-------------------------------------------------------------------------------
+
+Some components of this Python package are from Python 3.11 logging library
+ for compatibility reasons.
+
+The logging module is Copyright (C) 2001-2019 Vinay Sajip. All Rights Reserved.
+
+CPython 3.11 is licensed under the PSF license.
+"""
 import sys
 import os
 from ._picologging import (
@@ -181,9 +193,7 @@ def basicConfig(**kwargs):
                     errors = None
                 else:
                     encoding = io.text_encoding(encoding)
-                # TODO #8 : Implement FileHandler
-                raise NotImplementedError("FileHandler not yet supported.")
-                # h = FileHandler(filename, mode, encoding=encoding, errors=errors)
+                h = FileHandler(filename, mode, encoding=encoding, errors=errors)
             else:
                 stream = kwargs.pop("stream", sys.stderr)
                 h = StreamHandler(stream)
