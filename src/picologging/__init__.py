@@ -21,6 +21,7 @@ from logging import (
     BufferingFormatter,
     StrFormatStyle,
     StringTemplateStyle,
+    getLevelName,
 )
 import io
 import warnings
