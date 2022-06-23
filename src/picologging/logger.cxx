@@ -101,6 +101,18 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         return NULL;
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+    switch (getEffectiveLevel(self)){
+        case LOG_LEVEL_DEBUG:
+            self->enabledForDebug = true;
+        case LOG_LEVEL_INFO:
+            self->enabledForInfo = true;
+        case LOG_LEVEL_WARNING:
+            self->enabledForWarning = true;
+        case LOG_LEVEL_ERROR:
+            self->enabledForError = true;
+        case LOG_LEVEL_CRITICAL:
+            self->enabledForCritical = true;
+    }
     Py_RETURN_NONE;
 }
 

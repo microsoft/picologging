@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.2.0 (main)
+## 0.3.0 (main)
+
+* Added `FileHandler` to picologging
+* Fixed an issue with the `Logger.setLevel()` method not correctly resetting level flags in the logger
+* Fixed a memory leak in the logging and handler types
+
+## 0.2.0 (23rd June 2022)
 
 * Adds `.close()`, `.flush()`, `.createLock()` abstract methods to Handler https://github.com/microsoft/picologging/pull/9
 * Corrected type stubs for Handler `__init__`

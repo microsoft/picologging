@@ -66,6 +66,11 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Trademarks
 
+Some components of this Python package are from CPython 3.11 logging library for compatibility reasons.
+
+CPython 3.11 is licensed under the PSF license.
+The logging module is Copyright (C) 2001-2019 Vinay Sajip. All Rights Reserved.
+
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
 trademarks or logos is subject to and must follow 
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
