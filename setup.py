@@ -37,6 +37,7 @@ setup(
             "rich",
             "pytest",
             "pytest-cov",
+            "scikit-build",
         ]
     }
 )
