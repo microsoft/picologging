@@ -1,6 +1,7 @@
 import os
 
 import picologging
+from picologging.handlers import WatchedFileHandler
 
 def test_filehandler(tmp_path):
     log_file = tmp_path / 'log.txt'
@@ -18,7 +19,7 @@ def test_filehandler(tmp_path):
 
 def test_watchedfilehandler(tmp_path):
     log_file = tmp_path / 'log.txt'
-    handler = picologging.WatchedFileHandler(log_file)
+    handler = WatchedFileHandler(log_file)
     logger = picologging.getLogger('test')
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
@@ -31,7 +32,7 @@ def test_watchedfilehandler(tmp_path):
 
 def test_watchedfilehandler_file_changed(tmp_path):
     log_file = tmp_path / 'log.txt'
-    handler = picologging.WatchedFileHandler(log_file)
+    handler = WatchedFileHandler(log_file)
     logger = picologging.getLogger('test')
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
@@ -48,7 +49,7 @@ def test_watchedfilehandler_file_changed(tmp_path):
 
 def test_watchedfilehandler_file_removed(tmp_path):
     log_file = tmp_path / 'log.txt'
-    handler = picologging.WatchedFileHandler(log_file)
+    handler = WatchedFileHandler(log_file)
     logger = picologging.getLogger('test')
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)

@@ -1,9 +1,8 @@
-from _typeshed import Self, StrPath, SupportsWrite
+from _typeshed import StrPath, SupportsWrite
 from collections.abc import Callable, Iterable, Mapping
 from io import TextIOWrapper
 from multiprocessing import Manager
 from string import Template
-from time import struct_time
 from types import TracebackType
 from typing import Any, Generic, Pattern, TextIO, TypeVar, Union, overload, Optional
 from typing_extensions import Literal, TypeAlias
@@ -322,17 +321,6 @@ class StreamHandler(Handler, Generic[_StreamT]):
     def setStream(self, stream: _StreamT) -> _StreamT | None: ...
 
 class FileHandler(StreamHandler[TextIOWrapper]):
-    baseFilename: str  # undocumented
-    mode: str  # undocumented
-    encoding: str | None  # undocumented
-    delay: bool  # undocumented
-    errors: str | None  # undocumented
-    def __init__(
-        self, filename: StrPath, mode: str = ..., encoding: str | None = ..., delay: bool = ..., errors: str | None = ...
-    ) -> None: ...
-
-
-class WatchedFileHandler(FileHandler):
     baseFilename: str  # undocumented
     mode: str  # undocumented
     encoding: str | None  # undocumented
