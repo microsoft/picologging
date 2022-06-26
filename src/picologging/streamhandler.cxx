@@ -53,6 +53,10 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         PyErr_SetString(PyExc_TypeError, "emit() argument must be a string");
         goto error;
     }
+    if (self->terminator == nullptr)
+        self->terminator = PyUnicode_FromString("\n");
+    if (self->_const_write == nullptr)
+        self->_const_write = PyUnicode_FromString("write");
     PyUnicode_Append(&msg, self->terminator);
     if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
         if (!PyErr_Occurred())
