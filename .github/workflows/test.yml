@@ -47,7 +47,7 @@ jobs:
        richbench benchmarks/
 
     - name: Run Coverage
-      if: ${{ matrix.os == "ubuntu-20.04" && matrix.python_version == '3.10' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' && matrix.python_version == '3.10' }}
       run: | 
         python setup.py build_ext --inplace --build-type Debug -DCOVERAGE=ON
         python -m pytest tests
