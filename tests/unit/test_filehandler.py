@@ -1,4 +1,11 @@
+import os
+import platform
+
+import pytest
+
 import picologging
+from picologging.handlers import WatchedFileHandler
+
 
 
 def test_filehandler(tmp_path):
@@ -24,4 +31,54 @@ def test_filehandler_delay(tmp_path):
     handler.close()
 
     with open(log_file, 'r') as f:
+        assert f.read() == "test\n"
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
+def test_watchedfilehandler(tmp_path):
+    log_file = tmp_path / "log.txt"
+    handler = WatchedFileHandler(log_file)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+    logger.warning("test")
+    handler.close()
+
+    with open(log_file, "r") as f:
+        assert f.read() == "test\n"
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
+def test_watchedfilehandler_file_changed(tmp_path):
+    log_file = tmp_path / "log.txt"
+    handler = WatchedFileHandler(log_file)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+
+    os.remove(log_file)
+    with open(log_file, "w"):
+        ...
+
+    logger.warning("test")
+    handler.close()
+
+    with open(log_file, "r") as f:
+        assert f.read() == "test\n"
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
+def test_watchedfilehandler_file_removed(tmp_path):
+    log_file = tmp_path / "log.txt"
+    handler = WatchedFileHandler(log_file)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+
+    os.remove(log_file)
+
+    logger.warning("test")
+    handler.close()
+
+    with open(log_file, "r") as f:
         assert f.read() == "test\n"
