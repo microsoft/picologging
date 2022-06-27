@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.4...3.22)
 
+option(COVERAGE "Enable coverage reporting" OFF)
+
 project(picologging)
 
 find_package(PythonExtensions REQUIRED)
@@ -11,6 +13,23 @@ if (MSVC)
 else()
     set_target_properties(_picologging PROPERTIES CXX_STANDARD 17)
 endif (MSVC)
+
+if(COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Enabling coverage")
+    # Add required flags (GCC & LLVM/Clang)
+    target_compile_options(_picologging PRIVATE
+            -O0        # no optimization
+            -g         # generate debug info
+            --coverage # sets all required flags
+            )
+    target_link_options(_picologging PRIVATE --coverage)
+endif(COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+
+if(FUZZING)
+    # TODO: Add fuzzing sanitizer
+    target_compile_options(_picologging PUBLIC -fsanitize=undefined,address)
+    target_link_options(_picologging PUBLIC -fsanitize=undefined,address -static-libasan)
+endif(FUZZING)
 
 python_extension_module(_picologging)
 install(TARGETS _picologging LIBRARY DESTINATION src/picologging)
