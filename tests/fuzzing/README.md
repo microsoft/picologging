@@ -7,7 +7,7 @@ Compilation:
 
 ```console
 $ CC="/usr/bin/clang" CXX="/usr/bin/clang++" python setup.py build_ext --inplace --build-type Debug -DCOVERAGE=ON -DFUZZING=ON
-$ LD_PRELOAD="$(python -c "import atheris; print(atheris.path())")/asan_with_fuzzer.so" python tests/fuzzing/fuzz_atheris.py
+$ ASAN_OPTIONS=detect_leaks=0 LD_PRELOAD="$(python -c "import atheris; print(atheris.path())")/asan_with_fuzzer.so" python tests/fuzzing/fuzz_atheris.py
 
 INFO: Instrumenting picologging
 INFO: Instrumenting traceback

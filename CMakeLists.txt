@@ -14,21 +14,30 @@ else()
     set_target_properties(_picologging PROPERTIES CXX_STANDARD 17)
 endif (MSVC)
 
-if(COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+if(COVERAGE)
     message(STATUS "Enabling coverage")
     # Add required flags (GCC & LLVM/Clang)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        target_compile_options(_picologging PRIVATE
+                -O0        # no optimization
+                -g         # generate debug info
+                --coverage # sets all required flags
+                -fprofile-abs-path
+                )
+        target_link_options(_picologging PRIVATE --coverage)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(_picologging PRIVATE
             -O0        # no optimization
             -g         # generate debug info
-            --coverage # sets all required flags
+            -fprofile-instr-generate -fcoverage-mapping # coverage flags
             )
-    target_link_options(_picologging PRIVATE --coverage)
-endif(COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+   
+    endif()
+endif(COVERAGE)
 
 if(FUZZING)
-    # TODO: Add fuzzing sanitizer
-    target_compile_options(_picologging PRIVATE -fsanitize=address,fuzzer-no-link)
-    target_link_options(_picologging PRIVATE -fsanitize=address,fuzzer-no-link)
+    target_compile_options(_picologging PRIVATE -fsanitize=address,fuzzer)
+    target_link_options(_picologging PRIVATE -fsanitize=address,fuzzer)
 endif(FUZZING)
 
 python_extension_module(_picologging)
