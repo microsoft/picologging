@@ -1,4 +1,3 @@
-from argparse import ArgumentError
 import io
 import sys
 import picologging
@@ -41,7 +40,7 @@ def test_non_flushable_stream():
 
 def test_emit_no_args():
     handler = picologging.StreamHandler()
-    with pytest.raises(ArgumentError):
+    with pytest.raises(ValueError):
         handler.emit()
 
 def test_emit_invalid_args_type():
