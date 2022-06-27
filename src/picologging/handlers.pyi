@@ -3,6 +3,7 @@ from _typeshed import StrPath
 
 from picologging import FileHandler
 
+
 class WatchedFileHandler(FileHandler):
     baseFilename: str  # undocumented
     mode: str  # undocumented

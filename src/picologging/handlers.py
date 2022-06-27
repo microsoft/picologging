@@ -20,9 +20,9 @@ class WatchedFileHandler(picologging.FileHandler):
     for such a handler. Furthermore, ST_INO is not supported under
     Windows; stat always returns zero for this value.
     """
-
     def __init__(self, filename, mode="a", encoding=None, delay=False):
-        super().__init__(filename, mode=mode, encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(self, filename, mode=mode,
+                                        encoding=encoding, delay=delay)
         self.dev, self.ino = -1, -1
         self._statstream()
 
@@ -60,7 +60,7 @@ class WatchedFileHandler(picologging.FileHandler):
         record to it.
         """
         self.reopenIfNeeded()
-        super().emit(record)
+        picologging.FileHandler.emit(self, record)
 
 
 class BaseRotatingHandler(picologging.FileHandler):
@@ -69,7 +69,6 @@ class BaseRotatingHandler(picologging.FileHandler):
     Not meant to be instantiated directly.  Instead, use RotatingFileHandler
     or TimedRotatingFileHandler.
     """
-
     namer = None
     rotator = None
 
@@ -77,7 +76,8 @@ class BaseRotatingHandler(picologging.FileHandler):
         """
         Use the specified filename for streamed logging
         """
-        super().__init__(self, filename, mode=mode, encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(self, filename, mode=mode,
+                                        encoding=encoding, delay=delay)
         self.mode = mode
         self.encoding = encoding
 
@@ -104,7 +104,7 @@ class BaseRotatingHandler(picologging.FileHandler):
         try:
             if self.shouldRollover(record):
                 self.doRollover()
-            super().emit(record)
+            picologging.FileHandler.emit(self, record)
         except Exception:
             self.handleError(record)
 
