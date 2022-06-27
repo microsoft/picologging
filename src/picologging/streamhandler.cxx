@@ -43,7 +43,7 @@ PyObject* flush (StreamHandler* self){
 
 PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs){
     if (nargs < 1){
-        PyErr_SetString(PyExc_TypeError, "emit() takes at least 1 argument");
+        PyErr_SetString(PyExc_ArgumentError, "emit() takes at least 1 argument");
         return nullptr;
     }
     PyObject* msg = Handler_format(&self->handler, args[0]);

@@ -7,24 +7,6 @@ def test_basic_handler():
     record = picologging.LogRecord('test', picologging.INFO, 'test', 1, 'test', (), None, None, None)
     handler.handle(record)
 
-def test_stream_handler():
-    stream = io.StringIO()
-    handler = picologging.StreamHandler(stream)
-    record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)
-    formatter = picologging.Formatter('%(message)s')
-    handler.setFormatter(formatter)
-    assert handler.formatter == formatter
-    handler.handle(record)
-    assert stream.getvalue() == 'test\n'
-
-def test_stream_handler_defaults_to_stderr():
-    handler = picologging.StreamHandler()
-    assert handler.stream == sys.stderr
-
-    handler = picologging.StreamHandler(None)
-    assert handler.stream == sys.stderr
-
-
 def test_custom_handler():
     class CustomHandler(picologging.Handler):
         def __init__(self):
