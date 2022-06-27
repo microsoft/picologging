@@ -59,4 +59,4 @@ class WatchedFileHandler(picologging.FileHandler):
         record to it.
         """
         self.reopenIfNeeded()
-        picologging.FileHandler.emit(self, record)
+        super().emit(record)
