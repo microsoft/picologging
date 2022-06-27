@@ -1,4 +1,5 @@
 import io
+from typing import Type
 import picologging
 import logging
 import pytest
@@ -13,6 +14,13 @@ def test_logger_attributes():
     assert logger.disabled == False
     assert logger.propagate == True
 
+level_names = [
+    "debug",
+    "info",
+    "warning",
+    "error",
+    "critical"
+]
 
 levels = [
     logging.DEBUG,
@@ -178,3 +186,45 @@ def test_getlogger_no_args():
     assert picologger.name == "root"
     assert picologger.level == logging.WARNING
     assert picologger.parent is None
+
+def test_logger_init_bad_args():
+    with pytest.raises(TypeError):
+        logger = picologging.Logger("goo", 10, dog=1)
+    
+    with pytest.raises(TypeError):
+        logger = picologging.Logger(name="test", level="potato")
+
+def test_logger_repr():
+    logger = picologging.Logger("goo", picologging.DEBUG)
+    assert repr(logger) == "<Logger 'goo' (10)>"
+
+def test_set_level_bad_type():
+    logger = picologging.Logger("goo", picologging.DEBUG)
+    with pytest.raises(TypeError):
+        logger.setLevel("potato")
+
+def test_add_remove_handlers():
+    logger = picologging.Logger("goo", picologging.DEBUG)
+    assert logger.handlers == []
+    test_handler = picologging.Handler()
+    logger.addHandler(test_handler)
+    # add it twice should have no effect
+    logger.addHandler(test_handler)
+    assert len(logger.handlers) == 1
+    assert test_handler in logger.handlers
+    logger.removeHandler(test_handler)
+    assert test_handler not in logger.handlers
+    assert logger.handlers == []
+
+
+@pytest.mark.parametrize("level_config", levels)
+def test_log_and_handle(level_config):
+    logger = picologging.Logger("test", level=level_config)
+    logger.info("gello")
+    logger.debug("hello")
+    logger.warning("hello")
+    logger.error("hello")
+    logger.fatal("hello")
+    logger.critical("hello")
+    logger.log(level_config, "hello")
+
