@@ -112,3 +112,33 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
+
+  coverage:
+    name: Coverage c++
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+        architecture: x64
+    - name: Get latest CMake and ninja
+      # Using 'latest' branch, the most recent CMake and ninja are installed.
+      uses: lukka/get-cmake@latest
+    - name: Install dependencies
+      run: python -m pip install -U pip setuptools wheel scikit-build ninja cmake pytest gcovr
+    - name: Run Coverage
+      run: |
+        python -m pip install -v -e .
+        python setup.py build_ext --inplace --build-type Debug -DCOVERAGE=ON
+        python -m pytest tests
+        mkdir .coverage
+        cd .coverage
+        gcov ../_skbuild/linux-x86_64-3.10/cmake-build/CMakeFiles/_picologging.dir/src/picologging/*.gcda
+        gcovr -g -r ../ --xml coverage.xml
+    - uses: codecov/codecov-action@v2
+      with:
+        verbose: true
+        directory: .coverage
