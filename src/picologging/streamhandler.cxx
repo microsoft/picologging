@@ -50,7 +50,7 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
     if (msg == nullptr)
         return nullptr;
     if (!PyUnicode_CheckExact(msg)){
-        PyErr_SetString(PyExc_TypeError, "emit() argument must be a string");
+        PyErr_SetString(PyExc_TypeError, "Result of self.handler.format() must be a string");
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);

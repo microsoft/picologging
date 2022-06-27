@@ -24,6 +24,9 @@ def test_stream_handler_bad_init_args():
     with pytest.raises(TypeError):
         picologging.StreamHandler(1, 2, 3, 4)
 
+    with pytest.raises(TypeError):
+        picologging.StreamHandler(dog=1)
+
 def test_stream_handler_invalid_stream_type():
     handler = picologging.StreamHandler("potato")
     record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)

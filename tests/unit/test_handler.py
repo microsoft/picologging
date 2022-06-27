@@ -1,6 +1,5 @@
 import picologging
-import io
-import sys
+import pytest
 
 def test_basic_handler():
     handler = picologging.Handler()
@@ -60,3 +59,35 @@ def test_close():
 def test_createLock():
     handler = picologging.Handler()
     assert not handler.createLock()
+
+def test_filtered_out():
+    def filter_out(f):
+        return False
+
+    class CustomHandler(picologging.Handler):
+        def __init__(self):
+            super().__init__()
+            self.records = []
+
+        def emit(self, record):
+            raise Exception("This should not be called")
+
+    handler = CustomHandler()
+    handler.addFilter(filter_out)
+    record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)
+    assert not handler.handle(record)
+
+def test_set_level_nonint():
+    handler = picologging.Handler()
+    with pytest.raises(TypeError):
+        handler.setLevel("potato")
+
+def test_custom_formatter():
+    class CustomFormatter():
+        def format(self, record):
+            return "foo"
+    
+    handler = picologging.Handler()
+    handler.setFormatter(CustomFormatter())
+    record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)
+    assert handler.format(record) == "foo"
