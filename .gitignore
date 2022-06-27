@@ -14,3 +14,7 @@ _skbuild
 *.prof
 *.pstats
 benchmarks/.profiles
+coverage/
+cov_report
+crash-*
+oom-*
