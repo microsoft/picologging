@@ -137,7 +137,7 @@ jobs:
         mkdir .coverage
         cd .coverage
         gcov ../_skbuild/linux-x86_64-3.10/cmake-build/CMakeFiles/_picologging.dir/src/picologging/*.gcda
-        gcovr -g --xml .
+        gcovr -g -r ../ -k --xml coverage.xml
     - uses: codecov/codecov-action@v2
       with:
         verbose: true
