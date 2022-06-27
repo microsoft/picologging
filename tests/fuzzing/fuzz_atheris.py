@@ -1,6 +1,4 @@
 import atheris
-
-from picologging import StreamHandler
 import io
 
 with atheris.instrument_imports():
@@ -9,13 +7,12 @@ with atheris.instrument_imports():
   picologging.basicConfig()
   logger = picologging.Logger("fuzz", picologging.DEBUG)
   tmp = io.StringIO()
-  logger.addHandler(StreamHandler(tmp))
+  logger.addHandler(picologging.StreamHandler(tmp))
 
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    logger.warning(fdp.ConsumeUnicode())
-    logger.warning(data)
+    logger.warning(fdp.ConsumeUnicode(1))
 
 atheris.Setup(sys.argv, TestOneInput)
 atheris.Fuzz()

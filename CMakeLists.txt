@@ -27,8 +27,8 @@ endif(COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
 if(FUZZING)
     # TODO: Add fuzzing sanitizer
-    target_compile_options(_picologging PUBLIC -fsanitize=undefined,address)
-    target_link_options(_picologging PUBLIC -fsanitize=undefined,address -static-libasan)
+    target_compile_options(_picologging PRIVATE -fsanitize=address,fuzzer-no-link)
+    target_link_options(_picologging PRIVATE -fsanitize=address,fuzzer-no-link)
 endif(FUZZING)
 
 python_extension_module(_picologging)
