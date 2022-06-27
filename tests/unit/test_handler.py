@@ -91,3 +91,8 @@ def test_custom_formatter():
     handler.setFormatter(CustomFormatter())
     record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)
     assert handler.format(record) == "foo"
+
+def test_handle_error():
+    handler = picologging.Handler()
+    record = picologging.LogRecord('test', picologging.INFO, __file__, 1, 'test', (), None, None, None)
+    assert not handler.handleError(record)
