@@ -220,11 +220,18 @@ def test_add_remove_handlers():
 @pytest.mark.parametrize("level_config", levels)
 def test_log_and_handle(level_config):
     logger = picologging.Logger("test", level=level_config)
-    logger.info("gello")
-    logger.debug("hello")
-    logger.warning("hello")
-    logger.error("hello")
-    logger.fatal("hello")
-    logger.critical("hello")
-    logger.log(level_config, "hello")
+    assert not logger.info("gello")
+    assert not logger.debug("hello")
+    assert not logger.warning("hello")
+    assert not logger.error("hello")
+    assert not logger.fatal("hello")
+    assert not logger.critical("hello")
+    assert not logger.log(level_config, "hello")
 
+def test_log_bad_arguments():
+    logger = picologging.Logger("test")
+    with pytest.raises(TypeError):
+        logger.log("potato", "message")
+    
+    with pytest.raises(TypeError):
+        logger.log()
