@@ -1,5 +1,4 @@
 import io
-from typing import Type
 import picologging
 import logging
 import pytest
@@ -196,7 +195,7 @@ def test_logger_init_bad_args():
 
 def test_logger_repr():
     logger = picologging.Logger("goo", picologging.DEBUG)
-    assert repr(logger) == "<Logger 'goo' (10)>"
+    assert repr(logger) == "<Logger 'goo' (DEBUG)>"
 
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)
