@@ -27,6 +27,43 @@ int getEffectiveLevel(Logger*self){
     return LOG_LEVEL_NOTSET;
 }
 
+PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);
+    if (self != NULL)
+    {
+        self->name = Py_None;
+        Py_INCREF(self->name);
+        self->parent = Py_None;
+        Py_INCREF(self->parent);
+        self->propagate = true;
+        self->handlers = PyList_New(0);
+        if (self->handlers == NULL){
+            Py_DECREF(self->parent);
+            return nullptr;
+        }
+        self->disabled = false;
+        self->manager = Py_None;
+        Py_INCREF(self->manager);
+        
+        self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
+        if (self->_fallback_handler == nullptr){
+            Py_DECREF(self->parent);
+            Py_DECREF(self->handlers);
+            Py_DECREF(self->manager);
+            return nullptr;
+        }
+        Py_INCREF(self->_fallback_handler);
+        self->_const_handle = PyUnicode_FromString("handle");
+        self->_const_level = PyUnicode_FromString("level");
+        self->_const_unknown = PyUnicode_FromString("<unknown>");
+        self->_const_exc_info = PyUnicode_FromString("exc_info");
+        self->_const_extra = PyUnicode_FromString("extra");
+        self->_const_stack_info = PyUnicode_FromString("stack_info");
+    }
+    return (PyObject*)self;
+}
+
 int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 {
     if (FiltererType.tp_init((PyObject *) self, args, kwds) < 0)
@@ -41,14 +78,7 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->name = name;
     Py_INCREF(self->name);
     self->level = level;
-    self->parent = Py_None;
-    Py_INCREF(self->parent);
-    self->propagate = true;
-    self->handlers = PyList_New(0);
-    Py_INCREF(self->handlers);
-    self->disabled = false;
-    self->manager = Py_None;
-    Py_INCREF(self->manager);
+
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -61,17 +91,7 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
-    self->_const_handle = PyUnicode_FromString("handle");
-    self->_const_level = PyUnicode_FromString("level");
-    self->_const_unknown = PyUnicode_FromString("<unknown>");
-    self->_const_exc_info = PyUnicode_FromString("exc_info");
-    self->_const_extra = PyUnicode_FromString("extra");
-    self->_const_stack_info = PyUnicode_FromString("stack_info");
-    self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
-    if (self->_fallback_handler == nullptr){
-        return -1;
-    }
-    Py_INCREF(self->_fallback_handler);
+    
     return 0;
 }
 
@@ -449,7 +469,7 @@ PyTypeObject LoggerType = {
     0,                                          /* tp_dictoffset */
     (initproc)Logger_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    Logger_new,                          /* tp_new */
     PyObject_Del,                               /* tp_free */
 };
 
