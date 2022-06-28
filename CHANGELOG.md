@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.3.0 (main)
+## 0.4.0
+
+* Add Fuzzing and coverage configuration for Clang/GCC by @tonybaloney in https://github.com/microsoft/picologging/pull/26
+* Add WatchedFileHandler by @aminalaee in https://github.com/microsoft/picologging/pull/23
+* Expand test suite with error cases by @tonybaloney in https://github.com/microsoft/picologging/pull/27
+* Refactor type field initializers to `__new__` by @tonybaloney in https://github.com/microsoft/picologging/pull/28
+* Add tests for FileHandler delay by @aminalaee in https://github.com/microsoft/picologging/pull/24
+* Add BaseRotatingHandler by @aminalaee in https://github.com/microsoft/picologging/pull/25
+
+## 0.3.0
 
 * Added `FileHandler` to picologging
 * Fixed an issue with the `Logger.setLevel()` method not correctly resetting level flags in the logger
