@@ -4,6 +4,20 @@
 #include "handler.hxx"
 #include "compat.hxx"
 
+PyObject* StreamHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    StreamHandler* self = (StreamHandler*)HandlerType.tp_new(type, args, kwds);
+    if (self != NULL)
+    {
+        self->terminator = PyUnicode_FromString("\n");
+        self->_const_write = PyUnicode_FromString("write");
+        self->_const_flush = PyUnicode_FromString("flush");
+        self->stream = Py_None;
+        self->stream_has_flush = false;
+    }
+    return (PyObject*)self;
+}
+
 int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
     if (HandlerType.tp_init((PyObject *) self, args, kwds) < 0)
         return -1;
@@ -17,9 +31,6 @@ int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
     }
     self->stream = stream;
     Py_INCREF(self->stream);
-    self->terminator = PyUnicode_FromString("\n");
-    self->_const_write = PyUnicode_FromString("write");
-    self->_const_flush = PyUnicode_FromString("flush");
     self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
     return 0;
 }
@@ -28,6 +39,7 @@ PyObject* StreamHandler_dealloc(StreamHandler *self) {
     Py_XDECREF(self->stream);
     Py_XDECREF(self->terminator);
     Py_XDECREF(self->_const_write);
+    Py_XDECREF(self->_const_flush);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
@@ -43,14 +55,14 @@ PyObject* flush (StreamHandler* self){
 
 PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs){
     if (nargs < 1){
-        PyErr_SetString(PyExc_TypeError, "emit() takes at least 1 argument");
+        PyErr_SetString(PyExc_ValueError, "emit() takes at least 1 argument");
         return nullptr;
     }
     PyObject* msg = Handler_format(&self->handler, args[0]);
     if (msg == nullptr)
         return nullptr;
     if (!PyUnicode_CheckExact(msg)){
-        PyErr_SetString(PyExc_TypeError, "emit() argument must be a string");
+        PyErr_SetString(PyExc_TypeError, "Result of self.handler.format() must be a string");
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
@@ -131,7 +143,7 @@ PyTypeObject StreamHandlerType = {
     0,                                          /* tp_dictoffset */
     (initproc)StreamHandler_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    StreamHandler_new,                          /* tp_new */
     PyObject_Del,                               /* tp_free */
 };
 

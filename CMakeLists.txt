@@ -26,12 +26,12 @@ if(COVERAGE)
                 )
         target_link_options(_picologging PRIVATE --coverage)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(_picologging PRIVATE
-            -O0        # no optimization
-            -g         # generate debug info
-            -fprofile-instr-generate -fcoverage-mapping # coverage flags
-            )
-   
+        target_compile_options(_picologging PRIVATE
+                -O0        # no optimization
+                -g         # generate debug info
+                -fprofile-instr-generate -fcoverage-mapping # coverage flags
+                )
+        target_link_options(_picologging PRIVATE --coverage)
     endif()
 endif(COVERAGE)
 
