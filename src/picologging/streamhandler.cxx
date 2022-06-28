@@ -43,14 +43,14 @@ PyObject* flush (StreamHandler* self){
 
 PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs){
     if (nargs < 1){
-        PyErr_SetString(PyExc_TypeError, "emit() takes at least 1 argument");
+        PyErr_SetString(PyExc_ValueError, "emit() takes at least 1 argument");
         return nullptr;
     }
     PyObject* msg = Handler_format(&self->handler, args[0]);
     if (msg == nullptr)
         return nullptr;
     if (!PyUnicode_CheckExact(msg)){
-        PyErr_SetString(PyExc_TypeError, "emit() argument must be a string");
+        PyErr_SetString(PyExc_TypeError, "Result of self.handler.format() must be a string");
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
