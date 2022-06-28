@@ -29,7 +29,7 @@ int getEffectiveLevel(Logger*self){
 
 PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
-    Logger* self = (Logger*)type->tp_alloc(type, 0);
+    Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);
     if (self != NULL)
     {
         self->name = Py_None;

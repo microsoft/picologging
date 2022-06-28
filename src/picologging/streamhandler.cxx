@@ -6,7 +6,7 @@
 
 PyObject* StreamHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
-    StreamHandler* self = (StreamHandler*)type->tp_alloc(type, 0);
+    StreamHandler* self = (StreamHandler*)HandlerType.tp_new(type, args, kwds);
     if (self != NULL)
     {
         self->terminator = PyUnicode_FromString("\n");

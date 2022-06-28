@@ -7,7 +7,7 @@
 
 PyObject* Handler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
-    Handler* self = (Handler*)type->tp_alloc(type, 0);
+    Handler* self = (Handler*)FiltererType.tp_new(type, args, kwds);
     if (self != NULL)
     {
         self->lock = new std::recursive_mutex();
