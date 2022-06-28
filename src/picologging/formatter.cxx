@@ -4,6 +4,19 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
+PyObject* Formatter_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    Formatter* self = (Formatter*)type->tp_alloc(type, 0);
+    if (self != NULL)
+    {
+        self->fmt = Py_None;
+        self->dateFmt = Py_None;
+        self->style = Py_None;
+        self->_const_line_break = PyUnicode_FromString("\n");
+    }
+    return (PyObject*)self;
+}
+
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *dateFmt = nullptr;
     int style = '%';
@@ -61,7 +74,6 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             return -1;
         }
     }
-    self->_const_line_break = PyUnicode_FromString("\n");
     return 0;
 }
 
@@ -254,6 +266,6 @@ PyTypeObject FormatterType = {
     0,                                          /* tp_dictoffset */
     (initproc)Formatter_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    Formatter_new,                          /* tp_new */
     PyObject_Del,                               /* tp_free */
 };

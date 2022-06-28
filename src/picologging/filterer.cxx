@@ -1,13 +1,21 @@
 #include "filterer.hxx"
 #include "compat.hxx"
 
+PyObject* Filterer_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    Filterer* self = (Filterer*)type->tp_alloc(type, 0);
+    if (self != NULL)
+    {
+        self->filters = PyList_New(0);
+        if (self->filters == NULL)
+            return nullptr;
+        Py_INCREF(self->filters);
+    }
+    return (PyObject*)self;
+}
 
 int Filterer_init(Filterer *self, PyObject *args, PyObject *kwds)
 {
-    self->filters = PyList_New(0);
-    if (self->filters == NULL)
-        return -1;
-    Py_INCREF(self->filters);
     return 0;
 }
 
@@ -111,6 +119,6 @@ PyTypeObject FiltererType = {
     0,                                          /* tp_dictoffset */
     (initproc)Filterer_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    Filterer_new,                          /* tp_new */
     PyObject_Del,                               /* tp_free */
 };

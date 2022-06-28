@@ -5,26 +5,33 @@
 #include "formatter.hxx"
 #include "streamhandler.hxx"
 
+PyObject* Handler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    Handler* self = (Handler*)type->tp_alloc(type, 0);
+    if (self != NULL)
+    {
+        self->lock = new std::recursive_mutex();
+        self->_const_emit = PyUnicode_FromString("emit");
+        self->_const_format = PyUnicode_FromString("format");
+        self->name = Py_None;
+        self->formatter = Py_None;
+        Py_INCREF(self->formatter);
+    }
+    return (PyObject*)self;
+}
+
 int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     if (FiltererType.tp_init((PyObject *) self, args, kwds) < 0)
         return -1;
     PyObject *name = Py_None;
     unsigned short level = LOG_LEVEL_NOTSET;
-    PyObject *formatter = NULL;
-    PyObject *filters = NULL;
     static const char *kwlist[] = {"name", "level", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OH", const_cast<char**>(kwlist), &name, &level)){
         return -1;
     }
     self->name = name;
     Py_INCREF(name);
-
     self->level = level;
-    self->formatter = Py_None;
-    Py_INCREF(self->formatter);
-    self->lock = new std::recursive_mutex();
-    self->_const_emit = PyUnicode_FromString("emit");
-    self->_const_format = PyUnicode_FromString("format");
     return 0;
 }
 
@@ -206,7 +213,7 @@ PyTypeObject HandlerType = {
     0,                                          /* tp_dictoffset */
     (initproc)Handler_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    Handler_new,                          /* tp_new */
     PyObject_Del,                               /* tp_free */
 };
 
