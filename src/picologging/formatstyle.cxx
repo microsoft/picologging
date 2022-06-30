@@ -63,7 +63,7 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
         return -1;
 
-    if (!PyUnicode_Check(fmt)){
+    if (fmt == Py_None) {
         PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
         if (mod == nullptr){
             PyErr_SetString(PyExc_TypeError, "Could not find _picologging module");
@@ -72,6 +72,10 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         fmt = PyDict_GetItemString(PyModule_GetDict(mod), "default_fmt"); // borrowed reference
         self->usesDefaultFmt = true;
     } else {
+        if (!PyUnicode_Check(fmt)) {
+            PyErr_SetString(PyExc_TypeError, "fmt must be a string");
+            return -1;
+        }
         self->usesDefaultFmt = false;
     }
     self->fmt = fmt;
