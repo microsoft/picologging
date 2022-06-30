@@ -134,9 +134,10 @@ jobs:
         python -m pip install -v -e .
         python setup.py build_ext --inplace --build-type Debug -DCOVERAGE=ON
         python -m pytest --cov=src tests
+        coverage xml -o coverage_python.xml
         gcov _skbuild/linux-x86_64-3.10/cmake-build/CMakeFiles/_picologging.dir/src/picologging/*.gcda
         gcovr -g -r . --xml coverage_cpp.xml
     - uses: codecov/codecov-action@v3
       with:
         verbose: true
-        files: ./coverage_cpp.xml,./coverage.xml
+        files: ./coverage_cpp.xml,./coverage_python.xml
