@@ -1,6 +1,7 @@
 from picologging import PercentStyle, LogRecord, INFO
 import pytest
 import threading
+import logging
 
 def test_percentstyle():
     perc = PercentStyle("%(msg)s %(levelno)d %(name)s")
@@ -48,3 +49,17 @@ def test_custom_field_not_an_attribute():
     record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
     with pytest.raises(AttributeError):
         assert perc.format(record)
+
+def test_percentstyle_repr():
+    perc = PercentStyle("%(msg)s %(levelno)d %(name)s")
+    assert repr(perc) == "<PercentStyle fmt='%(msg)s %(levelno)d %(name)s'>"
+
+def test_record_with_defaults():
+    perc = PercentStyle("%(msg)s %(levelno)d %(name)s %(fruit)s", defaults={"fruit": "banana"})
+    record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
+    assert perc.format(record) == "hello 20 test banana"
+
+def test_format_logging_record():
+    perc = PercentStyle("%(msg)s %(levelno)d %(name)s %(fruit)s", defaults={"fruit": "banana"})
+    record = logging.LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
+    assert perc.format(record) == "hello 20 test banana"

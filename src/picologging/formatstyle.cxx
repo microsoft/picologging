@@ -335,7 +335,7 @@ PyObject* PercentStyle_dealloc(PercentStyle *self){
 }
 
 PyObject* PercentStyle_repr(PercentStyle *self){
-    return PyUnicode_FromFormat("<PercentStyle fmt=%s>", self->fmt);
+    return PyUnicode_FromFormat("<PercentStyle fmt='%U'>", self->fmt);
 }
 
 static PyMethodDef PercentStyle_methods[] = {
