@@ -4,7 +4,7 @@
 
 // STD includes
 #include <stdio.h>
-#include <map>
+#include <unordered_map>
 #include "picologging.hxx"
 #include "logrecord.hxx"
 #include "formatter.hxx"
@@ -13,7 +13,7 @@
 #include "handler.hxx"
 #include "streamhandler.hxx"
 
-std::map<unsigned short,std::string> LEVELS_TO_NAMES = {
+const std::unordered_map<unsigned short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
   {LOG_LEVEL_INFO, "INFO"},
   {LOG_LEVEL_WARNING, "WARNING"},
@@ -23,7 +23,7 @@ std::map<unsigned short,std::string> LEVELS_TO_NAMES = {
 };
 
 std::string _getLevelName(unsigned short level) {
-  std::map<unsigned short,std::string>::iterator it;
+  std::unordered_map<unsigned short, std::string>::const_iterator it;
   it = LEVELS_TO_NAMES.find(level);
 
   if (it == LEVELS_TO_NAMES.end()){

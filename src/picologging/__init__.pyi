@@ -351,3 +351,5 @@ class StringTemplateStyle(PercentStyle):  # undocumented
 _STYLES: dict[str, tuple[PercentStyle, str]]
 
 BASIC_FORMAT: str
+
+def getLevelName(level: _Level) -> Any: ...
