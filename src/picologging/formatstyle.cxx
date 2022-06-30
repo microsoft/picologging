@@ -336,12 +336,6 @@ static PyMethodDef PercentStyle_methods[] = {
     {NULL}
 };
 
-static PyMemberDef PercentStyle_members[] = {
-    {"_fmt", T_OBJECT_EX, offsetof(PercentStyle, fmt), 0, "Format string"},
-    {"_defaults", T_OBJECT_EX, offsetof(PercentStyle, defaults), 0, "Default values"},
-    {NULL}
-};
-
 PyTypeObject PercentStyleType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "picologging.PercentStyle",                 /* tp_name */
@@ -371,7 +365,7 @@ PyTypeObject PercentStyleType = {
     0,                                          /* tp_iter */
     0,                                          /* tp_iternext */
     PercentStyle_methods,                       /* tp_methods */
-    PercentStyle_members,                       /* tp_members */
+    0,                       /* tp_members */
     0,                                          /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */

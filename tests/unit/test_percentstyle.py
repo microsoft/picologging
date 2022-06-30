@@ -20,3 +20,7 @@ def test_custom_attribute():
     record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
     record.custom = "custom"
     assert perc.format(record) == "custom"
+
+def test_percentstyle_bad_init_args():
+    with pytest.raises(TypeError):
+        PercentStyle(dog="good boy")
