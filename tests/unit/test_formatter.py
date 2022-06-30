@@ -1,7 +1,7 @@
 from picologging import Formatter, LogRecord
 import logging
 import pytest
-
+import datetime
 
 def test_formatter_default_fmt():
     f = Formatter()
@@ -101,3 +101,58 @@ def test_format_stack():
 def test_delete_formatter():
     pico_f = Formatter("%(message)s")
     del pico_f
+
+def test_formatter_bad_init_args():
+    with pytest.raises(TypeError):
+        Formatter(dog="good boy")
+
+def test_formatter_bad_style():
+    with pytest.raises(ValueError):
+        Formatter(style='!')
+
+def test_formatter_bad_style_type():
+    with pytest.raises(TypeError):
+        Formatter(style=123)
+
+def test_formatter_bad_fmt_type():
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
+    with pytest.raises((TypeError, ValueError)):
+        f = Formatter(fmt=123)
+        assert f.format(record) == "bork bork bork"
+
+def test_formatter_with_validate_flag_and_invalid_fmt():
+    f = Formatter(fmt="%(message ", validate=True)
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
+    assert f.format(record) == "%(message "
+
+def test_datefmt_bad_type():
+    with pytest.raises(TypeError):
+        Formatter(datefmt=123)
+
+def test_format_with_custom_datefmt():
+    actual_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    f = Formatter("%(name)s %(levelname)s %(message)s %(asctime)s", datefmt="%Y-%m-%d")
+    assert f.datefmt == "%Y-%m-%d"
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None)
+    s = f.format(record)
+    assert s == f'hello WARNING bork bork bork {actual_date}'
+    assert f.usesTime() == True
+    assert f.formatMessage(record) == s
+
+def test_formatter_repr():
+    f = Formatter("%(message)s")
+    assert repr(f) == "<Formatter: fmt='%(message)s'>"
+
+def test_exc_info_invalid_type():
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), (1,2,3))
+    f = Formatter()
+    with pytest.raises(AttributeError):
+        f.format(record)
+
+def test_exc_info_invalid_value_types():
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), [1,2,3])
+    f = Formatter()
+    with pytest.raises(TypeError):
+        f.format(record)
+
+# TODO : test defaults

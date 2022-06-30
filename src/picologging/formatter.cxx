@@ -26,6 +26,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         return -1;
 
     PyObject* styleType = nullptr;
+    if (style == 0) style = '%';
 
     switch (style){
         case '%':
@@ -33,7 +34,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
             styleType = (PyObject*)&PercentStyleType;
             break;
         default:
-            PyErr_SetString(PyExc_ValueError, "Unsupported style");
+            PyErr_Format(PyExc_ValueError, "Unknown style '%c'", style);
             return -1;
     }
     if (fmt == nullptr)
@@ -41,9 +42,6 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     if (dateFmt == nullptr)
         dateFmt = Py_None;
     PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
-    if (PyErr_Occurred()){ // Got exception in PercentStyle.__init__()
-        return -1;
-    }
     if (styleCls == nullptr){
         PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return -1;
@@ -62,6 +60,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 
     if (dateFmt != Py_None) {
         self->dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
+        if (self->dateFmtStr == nullptr) {
+            return -1;
+        }
     } else {
         self->dateFmtStr = nullptr;
     }
@@ -201,7 +202,7 @@ PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
 
 PyObject* Formatter_repr(Formatter *self)
 {
-    return PyUnicode_FromFormat("<Formatter: fmt=%U>",
+    return PyUnicode_FromFormat("<Formatter: fmt='%U'>",
             self->fmt);
 }
 
