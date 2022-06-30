@@ -94,6 +94,12 @@ def test_record_with_stack_info():
     record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None, None, "hello")
     assert pico_f.format(record) == "bork bork bork\nhello"
 
+def test_record_with_non_str_sstack_info():
+    pico_f = Formatter("%(message)s")
+    record = LogRecord('hello', logging.WARNING, __file__, 123, 'bork bork bork', (), None, None, ["hello", "world"])
+    assert pico_f.format(record) == "bork bork bork\n['hello', 'world']"
+
+
 def test_format_stack():
     pico_f = Formatter("%(message)s")
     assert pico_f.formatStack([1,2,3]) == [1,2,3]
