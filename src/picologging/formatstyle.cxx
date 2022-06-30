@@ -63,7 +63,7 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
         return -1;
 
-    if (!PyUnicode_Check(fmt)){
+    if (fmt == Py_None) {
         PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
         if (mod == nullptr){
             PyErr_SetString(PyExc_TypeError, "Could not find _picologging module");
@@ -72,6 +72,10 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         fmt = PyDict_GetItemString(PyModule_GetDict(mod), "default_fmt"); // borrowed reference
         self->usesDefaultFmt = true;
     } else {
+        if (!PyUnicode_Check(fmt)) {
+            PyErr_SetString(PyExc_TypeError, "fmt must be a string");
+            return -1;
+        }
         self->usesDefaultFmt = false;
     }
     self->fmt = fmt;
@@ -179,7 +183,9 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(funcName)
                         break;
                     case Field_Created: {
-                        PyObject *created = PyUnicode_FromFormat("%f", log_record->created);
+                        PyObject *asDouble = PyFloat_FromDouble(log_record->created);
+                        PyObject *created = PyUnicode_FromFormat("%S", asDouble);
+                        Py_DECREF(asDouble);
                         if (_PyUnicodeWriter_WriteStr(&writer, created) != 0) {
                             _PyUnicodeWriter_Dealloc(&writer);
                             Py_DECREF(created);
@@ -195,7 +201,14 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(relativeCreated)
                         break;
                     case Field_Thread:
-                        APPEND_INT(thread)
+                        {
+                        PyObject* field = PyUnicode_FromFormat("%lu", log_record->thread );
+                        if (_PyUnicodeWriter_WriteStr(&writer, field) != 0) {
+                            _PyUnicodeWriter_Dealloc(&writer);
+                            Py_DECREF(field);
+                            return nullptr;
+                        }
+                        Py_DECREF(field); }
                         break;
                     case Field_ThreadName:
                         APPEND_STRING(threadName)
@@ -322,19 +335,13 @@ PyObject* PercentStyle_dealloc(PercentStyle *self){
 }
 
 PyObject* PercentStyle_repr(PercentStyle *self){
-    return PyUnicode_FromFormat("<PercentStyle fmt=%s>", self->fmt);
+    return PyUnicode_FromFormat("<PercentStyle fmt='%U'>", self->fmt);
 }
 
 static PyMethodDef PercentStyle_methods[] = {
     {"usesTime", (PyCFunction)PercentStyle_usesTime, METH_NOARGS, "Get message"},
     {"validate", (PyCFunction)PercentStyle_validate, METH_NOARGS, "Get message"},
     {"format", (PyCFunction)PercentStyle_format, METH_O, "Get message"},
-    {NULL}
-};
-
-static PyMemberDef PercentStyle_members[] = {
-    {"_fmt", T_OBJECT_EX, offsetof(PercentStyle, fmt), 0, "Format string"},
-    {"_defaults", T_OBJECT_EX, offsetof(PercentStyle, defaults), 0, "Default values"},
     {NULL}
 };
 
@@ -367,7 +374,7 @@ PyTypeObject PercentStyleType = {
     0,                                          /* tp_iter */
     0,                                          /* tp_iternext */
     PercentStyle_methods,                       /* tp_methods */
-    PercentStyle_members,                       /* tp_members */
+    0,                       /* tp_members */
     0,                                          /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
