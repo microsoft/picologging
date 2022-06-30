@@ -183,7 +183,9 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(funcName)
                         break;
                     case Field_Created: {
-                        PyObject *created = PyUnicode_FromFormat("%f", log_record->created);
+                        PyObject *asDouble = PyFloat_FromDouble(log_record->created);
+                        PyObject *created = PyUnicode_FromFormat("%S", asDouble);
+                        Py_DECREF(asDouble);
                         if (_PyUnicodeWriter_WriteStr(&writer, created) != 0) {
                             _PyUnicodeWriter_Dealloc(&writer);
                             Py_DECREF(created);
@@ -199,7 +201,14 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
                         APPEND_STRING(relativeCreated)
                         break;
                     case Field_Thread:
-                        APPEND_INT(thread)
+                        {
+                        PyObject* field = PyUnicode_FromFormat("%lu", log_record->thread );
+                        if (_PyUnicodeWriter_WriteStr(&writer, field) != 0) {
+                            _PyUnicodeWriter_Dealloc(&writer);
+                            Py_DECREF(field);
+                            return nullptr;
+                        }
+                        Py_DECREF(field); }
                         break;
                     case Field_ThreadName:
                         APPEND_STRING(threadName)
