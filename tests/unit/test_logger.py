@@ -196,11 +196,17 @@ def test_logger_init_bad_args():
 
 @pytest.mark.parametrize("level", levels)
 def test_logger_repr(level):
-    logger = picologging.Logger("goo", level)
-    assert repr(logger) == f"<Logger 'goo' ({level_names[levels.index(level)]})>"
+    logger = picologging.Logger("test", level)
+    assert repr(logger) == f"<Logger 'test' ({level_names[levels.index(level)]})>"
 
-    logger = picologging.Logger("goo", level=100)
-    assert repr(logger) == f"<Logger 'goo' ()>"
+def test_logger_repr_effective_level():
+    logger = picologging.Logger("test")
+    logger.parent = picologging.Logger("parent", picologging.WARNING)
+    assert repr(logger) == f"<Logger 'test' (WARNING)>"
+
+def test_logger_repr_invalid_level():
+    logger = picologging.Logger("test", level=100)
+    assert repr(logger) == f"<Logger 'test' ()>"
 
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)
