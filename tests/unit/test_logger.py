@@ -1,6 +1,4 @@
 import io
-from re import L
-from typing import Type
 import picologging
 import logging
 import pytest
@@ -165,7 +163,7 @@ def test_logger_with_explicit_level(capsys):
     assert cap.err == ""
 
 def test_exception_capture():
-    logger = picologging.getLogger(__name__)
+    logger = picologging.Logger("test", logging.DEBUG)
     tmp = io.StringIO()
     handler = picologging.StreamHandler(tmp)
     logger.addHandler(handler)

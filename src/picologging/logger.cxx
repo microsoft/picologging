@@ -60,6 +60,7 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->_const_exc_info = PyUnicode_FromString("exc_info");
         self->_const_extra = PyUnicode_FromString("extra");
         self->_const_stack_info = PyUnicode_FromString("stack_info");
+        self->_const_line_break = PyUnicode_FromString("\n");
     }
     return (PyObject*)self;
 }
@@ -106,6 +107,7 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->_const_exc_info);
     Py_XDECREF(self->_const_extra);
     Py_XDECREF(self->_const_stack_info);
+    Py_XDECREF(self->_const_line_break);
     Py_XDECREF(self->_fallback_handler);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
@@ -162,6 +164,54 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
     PyObject *lineno = f != nullptr ? PyLong_FromLong(PyFrame_GETLINENO(f)) : PyLong_FromLong(0);
     PyObject *co_name = f != nullptr ? PyFrame_GETCODE(f)->co_name : self->_const_unknown;
 
+    if (stack_info == Py_True){
+        PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
+        PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
+        PyObject* print_stack = PyDict_GetItemString(modDict, "print_stack"); // PyDict_GetItemString returns a borrowed reference
+        if (print_stack == nullptr){
+            PyErr_SetString(PyExc_RuntimeError, "Could not get print_stack");
+            return nullptr;
+        }
+        Py_XINCREF(print_stack);
+        PyObject* sio_cls = PyDict_GetItemString(modDict, "StringIO");
+        Py_XINCREF(sio_cls);
+        PyObject* sio = PyObject_CallFunctionObjArgs(sio_cls, NULL);
+        if (sio == nullptr){
+            Py_XDECREF(sio_cls);
+            Py_XDECREF(print_stack);
+            return nullptr; // Got exception in StringIO.__init__()
+        }
+        if (PyObject_CallFunctionObjArgs(
+            print_stack,
+            orig_f,
+            Py_None,
+            sio,
+            NULL) == nullptr)
+        {
+            Py_XDECREF(sio_cls);
+            Py_XDECREF(print_stack);
+            return nullptr; // Got exception in print_stack()
+        }
+        PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+        if (s == nullptr){
+            Py_XDECREF(sio);
+            Py_XDECREF(sio_cls);
+            Py_XDECREF(print_stack);
+            return nullptr; // Got exception in StringIO.getvalue()
+        }
+        
+        PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+        Py_DECREF(sio);
+        Py_DECREF(sio_cls);
+        Py_DECREF(print_stack);
+        if (PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+            PyObject* s2 = PyUnicode_Substring(s, 0, PyUnicode_GetLength(s) - 1);
+            Py_DECREF(s);
+            s = s2;
+        }
+        stack_info = s;
+    }
+
     PyObject* record = PyObject_CallFunctionObjArgs(
         (PyObject*)&LogRecordType,
         self->name,
@@ -180,12 +230,19 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
     return (LogRecord*)record;
 }
 
-PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds, unsigned short level){
-    PyObject *msg = args[0];
+PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsigned short level){
+    PyObject *msg = PyTuple_GetItem(args, 0);
+    if (msg == NULL) {
+        PyErr_SetString(PyExc_TypeError, "log requires a message argument");
+        return NULL;
+    }
+    Py_ssize_t nargs = PyTuple_GET_SIZE(args);
     PyObject *args_ = PyTuple_New(nargs - 1);
+    if (args_ == nullptr)
+        return nullptr;
     for (int i = 1; i < nargs; i++) {
-        PyTuple_SET_ITEM(args_, i - 1, args[i]);
-        Py_INCREF(args[i]); // TODO: verify the old reference is discarded.
+        PyTuple_SET_ITEM(args_, i - 1, PyTuple_GET_ITEM(args, i));
+        Py_INCREF(PyTuple_GET_ITEM(args, i)); // TODO: verify the old reference is discarded.
     }
     PyObject* exc_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_exc_info) : nullptr;
     if (exc_info == nullptr){
@@ -290,97 +347,107 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t na
     Py_RETURN_NONE;
 }
 
-PyObject* Logger_debug(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds) {
+PyObject* Logger_debug(Logger *self, PyObject *args, PyObject *kwds) {
     if (self->disabled || !self->enabledForDebug) {
         Py_RETURN_NONE;
     }
 
-    if (nargs < 1){
+    if (PyTuple_GET_SIZE(args) < 1){
         PyErr_SetString(PyExc_TypeError, "debug() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_DEBUG);
+    return Logger_logAndHandle(self, args, kwds, LOG_LEVEL_DEBUG);
 }
 
-PyObject* Logger_info(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_info(Logger *self, PyObject *args, PyObject *kwds){
     if (self->disabled || !self->enabledForInfo) {
         Py_RETURN_NONE;
     }
 
-    if (nargs < 1){
+    if (PyTuple_GET_SIZE(args) < 1){
         PyErr_SetString(PyExc_TypeError, "info() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_INFO);
+    return Logger_logAndHandle(self, args, kwds, LOG_LEVEL_INFO);
 }
-PyObject* Logger_warning(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_warning(Logger *self, PyObject *args, PyObject *kwds){
     if (self->disabled || !self->enabledForWarning) {
         Py_RETURN_NONE;
     }
 
-    if (nargs < 1){
+    if (PyTuple_GET_SIZE(args) < 1){
         PyErr_SetString(PyExc_TypeError, "warning() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_WARNING);
+    return Logger_logAndHandle(self, args, kwds, LOG_LEVEL_WARNING);
 }
 
-PyObject* Logger_fatal(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
-    return Logger_critical(self, args, nargs, kwds);
+PyObject* Logger_fatal(Logger *self, PyObject *args, PyObject *kwds){
+    return Logger_critical(self, args, kwds);
 }
 
-PyObject* Logger_error(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_error(Logger *self, PyObject *args, PyObject *kwds){
     if (self->disabled || !self->enabledForError) {
         Py_RETURN_NONE;
     }
 
-    if (nargs < 1){
+    if (PyTuple_GET_SIZE(args) < 1){
         PyErr_SetString(PyExc_TypeError, "error() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_ERROR);
+    return Logger_logAndHandle(self, args, kwds, LOG_LEVEL_ERROR);
 }
 
-PyObject* Logger_critical(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_critical(Logger *self, PyObject *args, PyObject *kwds){
     if (self->disabled || !self->enabledForCritical) {
         Py_RETURN_NONE;
     }
 
-    if (nargs < 1){
+    if (PyTuple_GET_SIZE(args) < 1){
         PyErr_SetString(PyExc_TypeError, "critical() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_CRITICAL);
+    return Logger_logAndHandle(self, args, kwds, LOG_LEVEL_CRITICAL);
 }
 
-PyObject* Logger_exception(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_exception(Logger *self, PyObject *args, PyObject *kwds){
+    if (self->disabled || !self->enabledForError) {
+        Py_RETURN_NONE;
+    }
     if (kwds == nullptr){
         kwds = PyDict_New();
     }
     PyDict_SetItemString(kwds, "exc_info", Py_True);
-    PyObject* result = Logger_logAndHandle(self, args, nargs, kwds, LOG_LEVEL_ERROR);
+    PyObject* result = Logger_logAndHandle(self, args, kwds, LOG_LEVEL_ERROR);
     Py_DECREF(kwds);
     return result;
 }
 
-PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwds){
+PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){
+    Py_ssize_t nargs = PyTuple_GET_SIZE(args);
     if (nargs < 2){
-        PyErr_SetString(PyExc_TypeError, "log() requires 2 positional arguments");
+        PyErr_SetString(PyExc_TypeError, "log() requires at least 2 positional arguments");
         return nullptr;
     }
-    PyObject *level = args[0];
-    unsigned short levelno = PyLong_AsUnsignedLongMask(level);
-    if (PyErr_Occurred()){
-        PyErr_SetString(PyExc_TypeError, "level must be an integer");
+    if (!PyLong_Check(PyTuple_GET_ITEM(args, 0))){
+        PyErr_SetString(PyExc_TypeError, "log() requires a level argument");
         return nullptr;
     }
-    // Pop the level off the args and send the new tuple to the logAndHandle method
+    unsigned short level = PyLong_AsUnsignedLongMask(PyTuple_GET_ITEM(args, 0));
+
+    if (self->disabled || (self->level > level)) {
+        Py_RETURN_NONE;
+    }
+
     PyObject *args_ = PyTuple_New(nargs - 1);
+    if (args_ == nullptr)
+        return nullptr;
     for (int i = 1; i < nargs; i++) {
-        PyTuple_SET_ITEM(args_, i - 1, args[i]);
-        Py_INCREF(args[i]); // TODO: Verify the old reference is discarded.
+        PyTuple_SET_ITEM(args_, i - 1, PyTuple_GET_ITEM(args, i));
+        Py_INCREF(PyTuple_GET_ITEM(args, i)); // TODO: verify the old reference is discarded.
     }
-    PyObject* result = Logger_logAndHandle(self, ((PyTupleObject*)args_)->ob_item, nargs - 1, kwds, levelno);
+
+    PyObject* result = Logger_logAndHandle(self, args_, kwds, level);
     Py_DECREF(args_);
     return result;
 }
@@ -409,14 +476,14 @@ static PyMethodDef Logger_methods[] = {
     {"addHandler", (PyCFunction)Logger_addHandler, METH_O, "Add a handler to the logger."},
     {"removeHandler", (PyCFunction)Logger_removeHandler, METH_O, "Remove a handler from the logger."},
     // Logging methods
-    {"debug", (PyCFunction)Logger_debug, METH_FASTCALL | METH_KEYWORDS, "Log a message at level DEBUG."},
-    {"info", (PyCFunction)Logger_info, METH_FASTCALL | METH_KEYWORDS, "Log a message at level INFO."},
-    {"warning", (PyCFunction)Logger_warning, METH_FASTCALL | METH_KEYWORDS, "Log a message at level WARNING."},
-    {"error", (PyCFunction)Logger_error, METH_FASTCALL | METH_KEYWORDS, "Log a message at level ERROR."},
-    {"critical", (PyCFunction)Logger_critical, METH_FASTCALL | METH_KEYWORDS, "Log a message at level CRITICAL."},
-    {"exception", (PyCFunction)Logger_exception, METH_FASTCALL | METH_KEYWORDS, "Log a message at level ERROR."},
-    {"fatal", (PyCFunction)Logger_fatal, METH_FASTCALL | METH_KEYWORDS, "Log a message at level FATAL."},
-    {"log", (PyCFunction)Logger_log, METH_FASTCALL | METH_KEYWORDS, "Log a message at the specified level."},
+    {"debug", (PyCFunction)Logger_debug, METH_VARARGS | METH_KEYWORDS, "Log a message at level DEBUG."},
+    {"info", (PyCFunction)Logger_info, METH_VARARGS | METH_KEYWORDS, "Log a message at level INFO."},
+    {"warning", (PyCFunction)Logger_warning, METH_VARARGS | METH_KEYWORDS, "Log a message at level WARNING."},
+    {"error", (PyCFunction)Logger_error, METH_VARARGS | METH_KEYWORDS, "Log a message at level ERROR."},
+    {"critical", (PyCFunction)Logger_critical, METH_VARARGS | METH_KEYWORDS, "Log a message at level CRITICAL."},
+    {"exception", (PyCFunction)Logger_exception, METH_VARARGS | METH_KEYWORDS, "Log a message at level ERROR."},
+    {"fatal", (PyCFunction)Logger_fatal, METH_VARARGS | METH_KEYWORDS, "Log a message at level FATAL."},
+    {"log", (PyCFunction)Logger_log, METH_VARARGS | METH_KEYWORDS, "Log a message at the specified level."},
     {NULL}
 };
 
