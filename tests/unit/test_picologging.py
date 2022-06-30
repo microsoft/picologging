@@ -14,3 +14,9 @@ levels = [
 def test_getlevelname(level, level_name):
     assert picologging.getLevelName(level) == level_name
 
+
+def test_getlevelname_invalid_level():
+    assert picologging.getLevelName(100) == ""
+
+    with pytest.raises(TypeError):
+        picologging.getLevelName("100")

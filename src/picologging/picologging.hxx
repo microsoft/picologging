@@ -1,9 +1,11 @@
+#include <string>
 #include <Python.h>
 
 #ifndef PICOLOGGING_H
 #define PICOLOGGING_H
 
 extern struct PyModuleDef _picologging_module;
+std::string _getLevelName(unsigned short);
 
 #define PICOLOGGING_MODULE() PyState_FindModule(&_picologging_module)
 
