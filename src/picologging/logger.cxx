@@ -250,7 +250,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
         exc_info = Py_None;
         Py_INCREF(exc_info);
     } else {
-        if (PyExceptionClass_Check(exc_info)){
+        if (PyExceptionInstance_Check(exc_info)){
             PyObject * unpackedExcInfo = PyTuple_New(3);
             PyObject * excType = (PyObject*)Py_TYPE(exc_info);
             PyTuple_SET_ITEM(unpackedExcInfo, 0, excType);
@@ -261,7 +261,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
             PyTuple_SET_ITEM(unpackedExcInfo, 2, traceback);
             Py_INCREF(traceback);
             exc_info = unpackedExcInfo;
-        } else if (!PyTuple_CheckExact(exc_info)){ // Probably Py_TRUE
+        } else if (!PyTuple_CheckExact(exc_info)){ // Probably Py_TRUE, fetch current exception as tuple
             PyObject * unpackedExcInfo = PyTuple_New(3);
             PyErr_GetExcInfo(&PyTuple_GET_ITEM(unpackedExcInfo, 0), &PyTuple_GET_ITEM(unpackedExcInfo, 1), &PyTuple_GET_ITEM(unpackedExcInfo, 2));
             exc_info = unpackedExcInfo;
