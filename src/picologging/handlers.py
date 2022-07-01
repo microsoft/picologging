@@ -285,30 +285,30 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             t = os.stat(filename).st_mtime
         else:
             t = int(time.time())
-        self.rolloverAt = self.computeRollover(t)
+        self.rollover_at = self.computeRollover(t)
 
-    def computeRollover(self, currentTime):
+    def computeRollover(self, current_time):
         """
         Work out the rollover time based on the specified time.
         """
-        result = currentTime + self.interval
+        result = current_time + self.interval
         # If we are rolling over at midnight or weekly, then the interval is already known.
         # What we need to figure out is WHEN the next interval is.  In other words,
         # if you are rolling over at midnight, then your base interval is 1 day,
         # but you want to start that one day clock at midnight, not now.  So, we
-        # have to fudge the rolloverAt value in order to trigger the first rollover
+        # have to fudge the rollover_at value in order to trigger the first rollover
         # at the right time.  After that, the regular interval will take care of
         # the rest.  Note that this code doesn"t care about leap seconds. :)
         if self.when == "MIDNIGHT" or self.when.startswith("W"):
             # This could be done with less code, but I wanted it to be clear
             if self.utc:
-                t = time.gmtime(currentTime)
+                t = time.gmtime(current_time)
             else:
-                t = time.localtime(currentTime)
-            currentHour = t[3]
-            currentMinute = t[4]
-            currentSecond = t[5]
-            currentDay = t[6]
+                t = time.localtime(current_time)
+            current_hour = t[3]
+            current_minute = t[4]
+            current_second = t[5]
+            current_day = t[6]
             # r is the number of seconds left between now and the next rotation
             if self.atTime is None:
                 rotate_ts = _MIDNIGHT
@@ -316,15 +316,15 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 rotate_ts = ((self.atTime.hour * 60 + self.atTime.minute)*60 +
                     self.atTime.second)
 
-            r = rotate_ts - ((currentHour * 60 + currentMinute) * 60 +
-                currentSecond)
+            r = rotate_ts - ((current_hour * 60 + current_minute) * 60 +
+                current_second)
             if r < 0:
                 # Rotate time is before the current time (for example when
                 # self.rotateAt is 13:45 and it now 14:15), rotation is
                 # tomorrow.
                 r += _MIDNIGHT
-                currentDay = (currentDay + 1) % 7
-            result = currentTime + r
+                current_day = (current_day + 1) % 7
+            result = current_time + r
             # If we are rolling over on a certain day, add in the number of days until
             # the next rollover, but offset by 1 since we just calculated the time
             # until the next day starts.  There are three cases:
@@ -341,23 +341,23 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             # This is because the above time calculation takes us to midnight on this
             # day, i.e. the start of the next day.
             if self.when.startswith("W"):
-                day = currentDay # 0 is Monday
+                day = current_day # 0 is Monday
                 if day != self.dayOfWeek:
                     if day < self.dayOfWeek:
                         daysToWait = self.dayOfWeek - day
                     else:
                         daysToWait = 6 - day + self.dayOfWeek + 1
-                    newRolloverAt = result + (daysToWait * (60 * 60 * 24))
+                    now_rollover_at = result + (daysToWait * (60 * 60 * 24))
                     if not self.utc:
-                        dstNow = t[-1]
-                        dstAtRollover = time.localtime(newRolloverAt)[-1]
-                        if dstNow != dstAtRollover:
-                            if not dstNow:  # DST kicks in before next rollover, so we need to deduct an hour
+                        dst_now = t[-1]
+                        dstAtRollover = time.localtime(now_rollover_at)[-1]
+                        if dst_now != dstAtRollover:
+                            if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
                                 addend = -3600
                             else:           # DST bows out before next rollover, so we need to add an hour
                                 addend = 3600
-                            newRolloverAt += addend
-                    result = newRolloverAt
+                            now_rollover_at += addend
+                    result = now_rollover_at
         return result
 
     def shouldRollover(self, record):
@@ -370,7 +370,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         if os.path.exists(self.baseFilename) and not os.path.isfile(self.baseFilename):
             return False
         t = int(time.time())
-        if t >= self.rolloverAt:
+        if t >= self.rollover_at:
             return True
         return False
 
@@ -379,34 +379,34 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         Determine the files to delete when rolling over.
         More specific than the earlier method, which just used glob.glob().
         """
-        dirName, baseName = os.path.split(self.baseFilename)
-        fileNames = os.listdir(dirName)
+        dir_name, base_name = os.path.split(self.baseFilename)
+        file_names = os.listdir(dir_name)
         result = []
         # See bpo-44753: Don't use the extension when computing the prefix.
-        n, e = os.path.splitext(baseName)
+        n, e = os.path.splitext(base_name)
         prefix = n + "."
         plen = len(prefix)
-        for fileName in fileNames:
+        for file_name in file_names:
             if self.namer is None:
-                # Our files will always start with baseName
-                if not fileName.startswith(baseName):
+                # Our files will always start with base_name
+                if not file_name.startswith(base_name):
                     continue
             else:
                 # Our files could be just about anything after custom naming, but
                 # likely candidates are of the form
                 # foo.log.DATETIME_SUFFIX or foo.DATETIME_SUFFIX.log
-                if (not fileName.startswith(baseName) and fileName.endswith(e) and
-                    len(fileName) > (plen + 1) and not fileName[plen+1].isdigit()):
+                if (not file_name.startswith(base_name) and file_name.endswith(e) and
+                    len(file_name) > (plen + 1) and not file_name[plen+1].isdigit()):
                     continue
 
-            if fileName[:plen] == prefix:
-                suffix = fileName[plen:]
+            if file_name[:plen] == prefix:
+                suffix = file_name[plen:]
                 # See bpo-45628: The date/time suffix could be anywhere in the
                 # filename
                 parts = suffix.split(".")
                 for part in parts:
                     if self.extMatch.match(part):
-                        result.append(os.path.join(dirName, fileName))
+                        result.append(os.path.join(dir_name, file_name))
                         break
         if len(result) < self.backupCount:
             result = []
@@ -427,22 +427,22 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             self.stream.close()
             self.stream = None
         # get the time that this sequence started at and make it a TimeTuple
-        currentTime = int(time.time())
-        dstNow = time.localtime(currentTime)[-1]
-        t = self.rolloverAt - self.interval
+        current_time = int(time.time())
+        dst_now = time.localtime(current_time)[-1]
+        t = self.rollover_at - self.interval
         if self.utc:
-            timeTuple = time.gmtime(t)
+            time_tuple = time.gmtime(t)
         else:
-            timeTuple = time.localtime(t)
-            dstThen = timeTuple[-1]
-            if dstNow != dstThen:
-                if dstNow:
+            time_tuple = time.localtime(t)
+            dst_then = time_tuple[-1]
+            if dst_now != dst_then:
+                if dst_now:
                     addend = 3600
                 else:
                     addend = -3600
-                timeTuple = time.localtime(t + addend)
+                time_tuple = time.localtime(t + addend)
         dfn = self.rotation_filename(self.baseFilename + "." +
-                                     time.strftime(self.suffix, timeTuple))
+                                     time.strftime(self.suffix, time_tuple))
         if os.path.exists(dfn):
             os.remove(dfn)
         self.rotate(self.baseFilename, dfn)
@@ -451,16 +451,16 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 os.remove(s)
         if not self.delay:
             self.stream = self._open()
-        newRolloverAt = self.computeRollover(currentTime)
-        while newRolloverAt <= currentTime:
-            newRolloverAt = newRolloverAt + self.interval
+        now_rollover_at = self.computeRollover(current_time)
+        while now_rollover_at <= current_time:
+            now_rollover_at = now_rollover_at + self.interval
         #If DST changes and midnight or weekly rollover, adjust for this.
         if (self.when == "MIDNIGHT" or self.when.startswith("W")) and not self.utc:
-            dstAtRollover = time.localtime(newRolloverAt)[-1]
-            if dstNow != dstAtRollover:
-                if not dstNow:  # DST kicks in before next rollover, so we need to deduct an hour
+            dstAtRollover = time.localtime(now_rollover_at)[-1]
+            if dst_now != dstAtRollover:
+                if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
                     addend = -3600
                 else:           # DST bows out before next rollover, so we need to add an hour
                     addend = 3600
-                newRolloverAt += addend
-        self.rolloverAt = newRolloverAt
+                now_rollover_at += addend
+        self.rollover_at = now_rollover_at
