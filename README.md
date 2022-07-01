@@ -2,12 +2,13 @@
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/picologging)](https://pypi.org/project/picologging/) 
 [![PyPI](https://img.shields.io/pypi/v/picologging)](https://pypi.org/project/picologging/)
+[![codecov](https://codecov.io/gh/microsoft/picologging/branch/main/graph/badge.svg?token=KHs6FpQlVW)](https://codecov.io/gh/microsoft/picologging)
 
 **Status** This project is an *early-alpha*. There are some incomplete features (see Issues).
 
 Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
 
-Picologging is designed to be used as a _drop-in_ replacement for applications which already use logging, and supports the same API as the `logging` module.
+Picologging is designed to be used as a *drop-in* replacement for applications which already use logging, and supports the same API as the `logging` module.
 
 ## Installation
 

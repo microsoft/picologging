@@ -20,6 +20,7 @@ from ._picologging import (
     Filterer,
     Handler,
     StreamHandler,
+    getLevelName,
 )  # NOQA
 from logging import (
     _checkLevel,
@@ -35,7 +36,6 @@ from logging import (
     BufferingFormatter,
     StrFormatStyle,
     StringTemplateStyle,
-    getLevelName,
 )
 import io
 import warnings
