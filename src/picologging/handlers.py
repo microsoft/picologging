@@ -86,14 +86,12 @@ class BaseRotatingHandler(picologging.FileHandler):
         Determine if rollover should occur.
         Should be implemented in inherited classes.
         """
-        raise NotImplementedError()
 
     def doRollover(self, record):
         """
         Do a rollover.
         Should be implemented in inherited classes.
         """
-        raise NotImplementedError()
 
     def emit(self, record):
         """
