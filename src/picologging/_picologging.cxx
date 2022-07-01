@@ -4,6 +4,7 @@
 
 // STD includes
 #include <stdio.h>
+#include <unordered_map>
 #include "picologging.hxx"
 #include "logrecord.hxx"
 #include "formatter.hxx"
@@ -12,8 +13,39 @@
 #include "handler.hxx"
 #include "streamhandler.hxx"
 
+const std::unordered_map<unsigned short, std::string> LEVELS_TO_NAMES = {
+  {LOG_LEVEL_DEBUG, "DEBUG"},
+  {LOG_LEVEL_INFO, "INFO"},
+  {LOG_LEVEL_WARNING, "WARNING"},
+  {LOG_LEVEL_ERROR, "ERROR"},
+  {LOG_LEVEL_CRITICAL, "CRITICAL"},
+  {LOG_LEVEL_NOTSET, "NOTSET"},
+};
+
+std::string _getLevelName(unsigned short level) {
+  std::unordered_map<unsigned short, std::string>::const_iterator it;
+  it = LEVELS_TO_NAMES.find(level);
+
+  if (it == LEVELS_TO_NAMES.end()){
+    return "";
+  }
+
+  return it->second;
+}
+
+static PyObject *getLevelName(PyObject *self, PyObject *level) {
+    if (!PyLong_Check(level)) {
+        PyErr_SetString(PyExc_TypeError, "level must be an integer");
+        return NULL;
+    }
+
+    std::string levelName = _getLevelName((unsigned short)PyLong_AsUnsignedLongMask(level));
+    return PyUnicode_FromString(levelName.c_str());
+}
+
 //-----------------------------------------------------------------------------
 static PyMethodDef picologging_methods[] = {
+  {"getLevelName", (PyCFunction)getLevelName, METH_O, "Get level name by level number."},
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

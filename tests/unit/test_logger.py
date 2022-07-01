@@ -14,11 +14,12 @@ def test_logger_attributes():
     assert logger.propagate == True
 
 level_names = [
-    "debug",
-    "info",
-    "warning",
-    "error",
-    "critical"
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+    "NOTSET",
 ]
 
 levels = [
@@ -193,9 +194,19 @@ def test_logger_init_bad_args():
     with pytest.raises(TypeError):
         logger = picologging.Logger(name="test", level="potato")
 
-def test_logger_repr():
-    logger = picologging.Logger("goo", picologging.DEBUG)
-    assert repr(logger) == "<Logger 'goo' (10)>"
+@pytest.mark.parametrize("level", levels)
+def test_logger_repr(level):
+    logger = picologging.Logger("test", level)
+    assert repr(logger) == f"<Logger 'test' ({level_names[levels.index(level)]})>"
+
+def test_logger_repr_effective_level():
+    logger = picologging.Logger("test")
+    logger.parent = picologging.Logger("parent", picologging.WARNING)
+    assert repr(logger) == f"<Logger 'test' (WARNING)>"
+
+def test_logger_repr_invalid_level():
+    logger = picologging.Logger("test", level=100)
+    assert repr(logger) == f"<Logger 'test' ()>"
 
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)

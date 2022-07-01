@@ -114,7 +114,8 @@ PyObject* Logger_dealloc(Logger *self) {
 }
 
 PyObject* Logger_repr(Logger *self) {
-    return PyUnicode_FromFormat("<Logger '%U' (%d)>", self->name, self->level);
+    std::string level = _getLevelName(getEffectiveLevel(self));
+    return PyUnicode_FromFormat("<Logger '%U' (%s)>", self->name, level.c_str());
 }
 
 PyObject* Logger_setLevel(Logger *self, PyObject *level) {
