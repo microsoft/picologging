@@ -111,6 +111,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             return nullptr;
 
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
+            if (!PyTuple_Check(logRecord->excInfo)) {
+                PyErr_Format(PyExc_TypeError, "LogRecord.excInfo must be a tuple.");
+                return nullptr;
+            }
             PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
             PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
             PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference

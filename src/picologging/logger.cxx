@@ -184,7 +184,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         }
         if (PyObject_CallFunctionObjArgs(
             print_stack,
-            orig_f,
+            Py_None,
             Py_None,
             sio,
             NULL) == nullptr)
