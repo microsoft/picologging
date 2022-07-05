@@ -4,6 +4,7 @@
 #include "picologging.hxx"
 #include "formatter.hxx"
 #include "streamhandler.hxx"
+#include "filehandler.hxx"
 
 PyObject* Handler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
@@ -63,6 +64,9 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
     if (StreamHandler_CheckExact(((PyObject*)self))){
         PyObject* args[1] = {record};
         result = StreamHandler_emit((StreamHandler*)self, args, 1);
+    } else if (FileHandler_CheckExact(((PyObject*)self))){
+        PyObject* args[1] = {record};
+        result = FileHandler_emit((FileHandler*)self, args, 1);
     } else {
         result = PyObject_CallMethod_ONEARG((PyObject*)self, self->_const_emit, record);
     }

@@ -12,6 +12,7 @@
 #include "logger.hxx"
 #include "handler.hxx"
 #include "streamhandler.hxx"
+#include "filehandler.hxx"
 
 const std::unordered_map<unsigned short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
@@ -81,6 +82,10 @@ PyMODINIT_FUNC PyInit__picologging(void)
   StreamHandlerType.tp_base = &HandlerType;
   if (PyType_Ready(&StreamHandlerType) < 0)
     return NULL;
+
+  FileHandlerType.tp_base = &HandlerType;
+  if (PyType_Ready(&FileHandlerType) < 0)
+    return NULL;
   
   PyObject* m = PyModule_Create(&_picologging_module);
   if (m == NULL)
@@ -93,6 +98,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
   Py_INCREF(&LoggerType);
   Py_INCREF(&HandlerType);
   Py_INCREF(&StreamHandlerType);
+  Py_INCREF(&FileHandlerType);
     
   if (PyModule_AddObject(m, "LogRecord", (PyObject *)&LogRecordType) < 0){
     Py_DECREF(&LogRecordType);
@@ -126,6 +132,11 @@ PyMODINIT_FUNC PyInit__picologging(void)
   }
   if (PyModule_AddObject(m, "StreamHandler", (PyObject *)&StreamHandlerType) < 0){
     Py_DECREF(&StreamHandlerType);
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddObject(m, "FileHandler", (PyObject *)&FileHandlerType) < 0){
+    Py_DECREF(&FileHandlerType);
     Py_DECREF(m);
     return NULL;
   }
