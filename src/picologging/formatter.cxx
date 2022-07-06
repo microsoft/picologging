@@ -152,8 +152,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             Py_DECREF(sio);
             Py_DECREF(sio_cls);
             Py_DECREF(print_exception);
-            if (!PYUNICODE_ENDSWITH(s, self->_const_line_break)){
-                PyUnicode_Append(&s, self->_const_line_break);
+            if (PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+                PyObject* s2 = PyUnicode_Substring(s, 0, PyUnicode_GetLength(s) - 1);
+                Py_DECREF(s);
+                s = s2;
             }
             Py_XDECREF(logRecord->excText);
             logRecord->excText = s; // Use borrowed ref
