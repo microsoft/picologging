@@ -8,6 +8,9 @@ typedef struct {
     Handler handler;
     PyObject* stream;
     PyObject* terminator;
+    PyObject* _const_write;
+    PyObject* _const_flush;
+    PyObject* _const_close;
     PyObject* _const_io_mod;
 } FileHandler;
 PyObject* FileHandler_emit(FileHandler* self, PyObject* const* args, Py_ssize_t nargs);

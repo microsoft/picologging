@@ -10,6 +10,9 @@ PyObject* FileHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
     if (self != NULL){
         self->stream = Py_None;
         self->terminator = PyUnicode_FromString("\n");
+        self->_const_write = PyUnicode_FromString("write");
+        self->_const_flush = PyUnicode_FromString("flush");
+        self->_const_close = PyUnicode_FromString("close");
         self->_const_io_mod = PyImport_ImportModule("io");
     }
     return (PyObject*)self;
@@ -32,7 +35,7 @@ int FileHandler_init(FileHandler *self, PyObject *args, PyObject *kwds){
     // TODO: Use delay
     filename = PyOS_FSPath(filename);
 
-    self->stream = PyObject_CallMethod(self->_const_io_mod, "open", "ss", PyUnicode_AsUTF8(filename), "ab");
+    self->stream = PyObject_CallMethod(self->_const_io_mod, "open", "ss", PyUnicode_AsUTF8(filename), "a");
     Py_INCREF(self->stream);
 
     // As a result of PyOS_FSPath
@@ -43,7 +46,10 @@ int FileHandler_init(FileHandler *self, PyObject *args, PyObject *kwds){
 PyObject* FileHandler_dealloc(FileHandler *self) {
     Py_DECREF(self->stream);
     Py_DECREF(self->terminator);
-    Py_DECREF(self->_const_io_mod);
+    Py_XDECREF(self->_const_write);
+    Py_XDECREF(self->_const_flush);
+    Py_XDECREF(self->_const_close);
+    Py_XDECREF(self->_const_io_mod);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
@@ -61,7 +67,7 @@ PyObject* FileHandler_emit(FileHandler* self, PyObject* const* args, Py_ssize_t 
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
-    if (PyObject_CallMethod(self->stream, "write", "y", PyUnicode_AsUTF8(msg)) == nullptr) {
+    if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
         if (!PyErr_Occurred())
             PyErr_SetString(PyExc_RuntimeError, "Cannot write to file");
         goto error;
@@ -77,14 +83,14 @@ error:
 
 PyObject* FileHandler_flush(FileHandler* self){
     Handler_acquire(&self->handler);
-    PyObject_CallMethod(self->stream, "flush", NULL);
+    PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
     Handler_release(&self->handler);
     Py_RETURN_NONE;
 }
 
 PyObject* FileHandler_close(FileHandler* self) {
     Handler_acquire(&self->handler);
-    PyObject_CallMethod(self->stream, "close", NULL);
+    PyObject_CallMethod_NOARGS(self->stream, self->_const_close);
     Handler_release(&self->handler);
     Py_RETURN_NONE;
 }
