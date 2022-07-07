@@ -20,7 +20,7 @@ PyObject* Formatter_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *dateFmt = nullptr;
     int style = '%';
-    bool validate = true;
+    int validate = 1;
     static const char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", const_cast<char**>(kwlist), &fmt, &dateFmt, &style, &validate))
         return -1;
