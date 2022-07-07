@@ -24,15 +24,6 @@ from ._picologging import (
 )  # NOQA
 from logging import (
     _checkLevel,
-    _STYLES,
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    FATAL,
-    INFO,
-    NOTSET,
-    WARN,
-    WARNING,
     BufferingFormatter,
     StrFormatStyle,
     StringTemplateStyle,
@@ -42,6 +33,22 @@ import warnings
 
 __version__ = "0.4.0"
 
+CRITICAL = 50
+FATAL = CRITICAL
+ERROR = 40
+WARNING = 30
+WARN = WARNING
+INFO = 20
+DEBUG = 10
+NOTSET = 0
+
+BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
+
+_STYLES = {
+    '%': (PercentStyle, BASIC_FORMAT),
+    '{': (StrFormatStyle, '{levelname}:{name}:{message}'),
+    '$': (StringTemplateStyle, '${levelname}:${name}:${message}'),
+}
 
 class Manager:
     """

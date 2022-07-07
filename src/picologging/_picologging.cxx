@@ -148,9 +148,17 @@ PyMODINIT_FUNC PyInit__picologging(void)
   PyObject* print_exception = PyObject_GetAttrString(traceback, "print_exception");
   if (print_exception == NULL)
     return NULL;
+  PyObject* print_stack = PyObject_GetAttrString(traceback, "print_stack");
+  if (print_stack == NULL)
+    return NULL;
   Py_DECREF(traceback);
   if (PyModule_AddObject(m, "print_exception", print_exception) < 0){
     Py_DECREF(print_exception);
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddObject(m, "print_stack", print_stack) < 0){
+    Py_DECREF(print_stack);
     Py_DECREF(m);
     return NULL;
   }

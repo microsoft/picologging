@@ -111,6 +111,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             return nullptr;
 
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
+            if (!PyTuple_Check(logRecord->excInfo)) {
+                PyErr_Format(PyExc_TypeError, "LogRecord.excInfo must be a tuple.");
+                return nullptr;
+            }
             PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
             PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
             PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference
@@ -148,8 +152,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             Py_DECREF(sio);
             Py_DECREF(sio_cls);
             Py_DECREF(print_exception);
-            if (!PYUNICODE_ENDSWITH(s, self->_const_line_break)){
-                PyUnicode_Append(&s, self->_const_line_break);
+            if (PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+                PyObject* s2 = PyUnicode_Substring(s, 0, PyUnicode_GetLength(s) - 1);
+                Py_DECREF(s);
+                s = s2;
             }
             Py_XDECREF(logRecord->excText);
             logRecord->excText = s; // Use borrowed ref

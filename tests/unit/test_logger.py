@@ -56,8 +56,8 @@ def test_get_effective_level():
 def test_dodgy_parents():
     logger = picologging.Logger('test')
     parent = "potato"
-    logger.parent = parent
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
+        logger.parent = parent
         logger.getEffectiveLevel()
 
 
@@ -164,7 +164,7 @@ def test_logger_with_explicit_level(capsys):
     assert cap.err == ""
 
 def test_exception_capture():
-    logger = picologging.getLogger(__name__)
+    logger = picologging.Logger("test", logging.DEBUG)
     tmp = io.StringIO()
     handler = picologging.StreamHandler(tmp)
     logger.addHandler(handler)
@@ -230,13 +230,60 @@ def test_add_remove_handlers():
 @pytest.mark.parametrize("level_config", levels)
 def test_log_and_handle(level_config):
     logger = picologging.Logger("test", level=level_config)
-    assert not logger.info("gello")
-    assert not logger.debug("hello")
-    assert not logger.warning("hello")
-    assert not logger.error("hello")
-    assert not logger.fatal("hello")
-    assert not logger.critical("hello")
-    assert not logger.log(level_config, "hello")
+    tmp = io.StringIO()
+    logger.addHandler(picologging.StreamHandler(tmp))
+    assert not logger.info("info_message")
+    assert not logger.debug("debug_message")
+    assert not logger.warning("warning_message")
+    assert not logger.error("error_message")
+    assert not logger.fatal("fatal_message")
+    assert not logger.critical("critical_message")
+    assert not logger.log(level_config, "log_message")
+
+    tmp_value = tmp.getvalue()
+
+    if level_config <= picologging.DEBUG and level_config != picologging.NOTSET:
+        assert "debug_message" in tmp_value
+    else:
+        assert "debug_message" not in tmp_value
+    if level_config <= picologging.INFO and level_config != picologging.NOTSET:
+        assert "info_message" in tmp_value
+    else:
+        assert "info_message" not in tmp_value
+    if level_config <= picologging.WARNING and level_config != picologging.NOTSET:
+        assert "warning_message" in tmp_value
+    else:
+        assert "warning_message" not in tmp_value
+    if level_config <= picologging.ERROR and level_config != picologging.NOTSET:
+        assert "error_message" in tmp_value
+    else:
+        assert "error_message" not in tmp_value
+    if level_config <= picologging.FATAL and level_config != picologging.NOTSET:
+        assert "fatal_message" in tmp_value
+    else:
+        assert "fatal_message" not in tmp_value
+    if level_config <= picologging.CRITICAL and level_config != picologging.NOTSET:
+        assert "critical_message" in tmp_value
+    else:
+        assert "critical_message" not in tmp_value
+    assert "log_message" in tmp_value
+
+def test_log_xx_bad_arguments():
+    logger = picologging.Logger("test", level=picologging.DEBUG)
+    
+    with pytest.raises(TypeError):
+        logger.info()
+    with pytest.raises(TypeError):
+        logger.debug()
+    with pytest.raises(TypeError):
+        logger.warning()
+    with pytest.raises(TypeError):
+        logger.error()
+    with pytest.raises(TypeError):
+        logger.fatal()
+    with pytest.raises(TypeError):
+        logger.critical()
+
 
 def test_log_bad_arguments():
     logger = picologging.Logger("test")
@@ -245,3 +292,71 @@ def test_log_bad_arguments():
     
     with pytest.raises(TypeError):
         logger.log()
+
+
+def test_notset_parent_level_match():
+    logger_child = picologging.Logger("child", picologging.NOTSET)
+    logger_parent = picologging.Logger("parent", picologging.DEBUG)
+    logger_child.parent = logger_parent
+
+    parent_io = io.StringIO()
+    child_io = io.StringIO()
+    logger_child.addHandler(picologging.StreamHandler(child_io))
+    logger_parent.addHandler(picologging.StreamHandler(parent_io))
+
+    logger_child.info("child message")
+    logger_parent.info("parent message")
+    parent_value = parent_io.getvalue()
+    child_value = child_io.getvalue()
+    assert "child message" in child_value
+    assert "child message" in parent_value
+    assert "parent message" in parent_value
+    assert "parent message" not in child_value
+
+def test_error_parent_level():
+    logger_child = picologging.Logger("child", picologging.WARNING)
+    logger_parent = picologging.Logger("parent", picologging.ERROR)
+    logger_child.parent = logger_parent
+
+    parent_io = io.StringIO()
+    child_io = io.StringIO()
+    logger_child.addHandler(picologging.StreamHandler(child_io))
+    logger_parent.addHandler(picologging.StreamHandler(parent_io))
+
+    logger_child.info("info message")
+    logger_child.warning("warning message")
+    logger_child.error("error message")
+
+    parent_value = parent_io.getvalue()
+    child_value = child_io.getvalue()
+
+    assert "info message" not in child_value
+    assert "info message" not in parent_value
+    assert "warning message" in child_value
+    assert "warning message" in parent_value
+    assert "error message" in child_value
+    assert "error message" in parent_value
+
+def test_nested_frame_stack():
+    logger = picologging.Logger("test", level=picologging.DEBUG)
+    tmp = io.StringIO()
+    logger.addHandler(picologging.StreamHandler(tmp))
+    def f():
+        def g():
+            logger.info("message", stack_info=True)
+        g()
+    f()
+    result = tmp.getvalue()
+    assert "message" in result
+    assert " in g\n" in result
+    assert " in f\n" in result
+
+def test_exception_object_as_exc_info():
+    e = Exception("arghhh!!")
+    logger = picologging.Logger("test", level=picologging.DEBUG)
+    tmp = io.StringIO()
+    logger.addHandler(picologging.StreamHandler(tmp))
+    logger.info("message", exc_info=e)
+    result = tmp.getvalue()
+    assert "message" in result
+    assert "arghhh!!" in result

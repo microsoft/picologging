@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+* Logger now supports `sinfo=True` to add stack info to log messages
+* Fixed a bug where formatters using the `created` field were not correctly formatted
+* Fixed a bug where formatters using the thread id, `thread` field were formatted as signed int instead of unsigned long
+* Fixed a bug in the `__repr__` method of PercentStyle
+* Fixed a bug that the Logger.exception() method wasn't checking the log level for ERROR
+* Fixed a bug in the formatting of exception messages
+* Setting the parent of a logger which has a NOTSET level will now update it's logging level to adopt the next set parent's level
+
 ## 0.4.0
 
 * Add Fuzzing and coverage configuration for Clang/GCC by @tonybaloney in https://github.com/microsoft/picologging/pull/26
