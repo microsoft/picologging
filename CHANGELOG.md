@@ -2,6 +2,7 @@
 
 ## 0.5.0
 
+* String format `{field}` is now supported using `Formatter(style='{')`
 * Logger now supports `sinfo=True` to add stack info to log messages
 * Fixed a bug where formatters using the `created` field were not correctly formatted
 * Fixed a bug where formatters using the thread id, `thread` field were formatted as signed int instead of unsigned long
