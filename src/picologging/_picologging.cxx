@@ -63,7 +63,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
 {
   if (PyType_Ready(&LogRecordType) < 0)
     return NULL;
-  if (PyType_Ready(&PercentStyleType) < 0)
+  if (PyType_Ready(&FormatStyleType) < 0)
     return NULL;
   if (PyType_Ready(&FormatterType) < 0)
     return NULL;
@@ -87,7 +87,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
 
   Py_INCREF(&LogRecordType);
-  Py_INCREF(&PercentStyleType);
+  Py_INCREF(&FormatStyleType);
   Py_INCREF(&FormatterType);
   Py_INCREF(&FiltererType);
   Py_INCREF(&LoggerType);
@@ -99,8 +99,8 @@ PyMODINIT_FUNC PyInit__picologging(void)
     Py_DECREF(m);
     return NULL;
   }
-  if (PyModule_AddObject(m, "PercentStyle", (PyObject *)&PercentStyleType) < 0){
-    Py_DECREF(&PercentStyleType);
+  if (PyModule_AddObject(m, "FormatStyle", (PyObject *)&FormatStyleType) < 0){
+    Py_DECREF(&FormatStyleType);
     Py_DECREF(m);
     return NULL;
   }

@@ -30,8 +30,10 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 
     switch (style){
         case '%':
+        case '{':
+        case '$':
             /* Call the class object. */
-            styleType = (PyObject*)&PercentStyleType;
+            styleType = (PyObject*)&FormatStyleType;
             break;
         default:
             PyErr_Format(PyExc_ValueError, "Unknown style '%c'", style);
@@ -41,19 +43,19 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         fmt = Py_None;
     if (dateFmt == nullptr)
         dateFmt = Py_None;
-    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
+    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, PyUnicode_FromFormat("%c", style), NULL);
     if (styleCls == nullptr){
-        PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
+        //PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return -1;
     }
 
     self->style = styleCls;
     Py_INCREF(self->style);
 
-    self->fmt = ((PercentStyle*)(self->style))->fmt;
+    self->fmt = ((FormatStyle*)(self->style))->fmt;
     Py_INCREF(self->fmt);
 
-    self->usesTime = (PercentStyle_usesTime((PercentStyle*)self->style) == Py_True);
+    self->usesTime = (FormatStyle_usesTime((FormatStyle*)self->style) == Py_True);
 
     self->dateFmt = dateFmt;
     Py_INCREF(self->dateFmt);
@@ -102,8 +104,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.
         }
 
-        if (PercentStyle_CheckExact(self->style)){
-            result = PercentStyle_format((PercentStyle*)self->style, record);
+        if (FormatStyle_CheckExact(self->style)){
+            result = FormatStyle_format((FormatStyle*)self->style, record);
         } else {
             result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
         }
@@ -189,8 +191,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
 }
 
 PyObject* Formatter_usesTime(Formatter *self) {
-    if (PercentStyle_CheckExact(self->style)){
-        return PercentStyle_usesTime((PercentStyle*)self->style);
+    if (FormatStyle_CheckExact(self->style)){
+        return FormatStyle_usesTime((FormatStyle*)self->style);
     } else {
         return PyObject_CallMethod_NOARGS(self->style, PyUnicode_FromString("usesTime"));
     }

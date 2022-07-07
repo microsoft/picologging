@@ -14,7 +14,7 @@ import sys
 import os
 from ._picologging import (
     LogRecord,
-    PercentStyle,
+    FormatStyle,
     Formatter,
     Logger,
     Filterer,
@@ -25,8 +25,6 @@ from ._picologging import (
 from logging import (
     _checkLevel,
     BufferingFormatter,
-    StrFormatStyle,
-    StringTemplateStyle,
 )
 import io
 import warnings
@@ -45,9 +43,9 @@ NOTSET = 0
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 _STYLES = {
-    '%': (PercentStyle, BASIC_FORMAT),
-    '{': (StrFormatStyle, '{levelname}:{name}:{message}'),
-    '$': (StringTemplateStyle, '${levelname}:${name}:${message}'),
+    '%': BASIC_FORMAT,
+    '{': '{levelname}:{name}:{message}',
+    '$': '${levelname}:${name}:${message}',
 }
 
 class Manager:
@@ -209,7 +207,7 @@ def basicConfig(**kwargs):
         style = kwargs.pop("style", "%")
         if style not in _STYLES:
             raise ValueError("Style must be one of: %s" % ",".join(_STYLES.keys()))
-        fs = kwargs.pop("format", _STYLES[style][1])
+        fs = kwargs.pop("format", _STYLES[style])
         fmt = Formatter(fs, dfs, style)
         for h in handlers:
             if h.formatter is None:
@@ -415,3 +413,28 @@ class FileHandler(StreamHandler):
     def __repr__(self):
         level = getLevelName(self.level)
         return '<%s %s (%s)>' % (self.__class__.__name__, self.baseFilename, level)
+
+
+class PercentStyle(FormatStyle):
+    def __new__(cls, *args, **kwargs):
+        kwargs['style'] = '%'
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, fmt, defaults=None):
+        super().__init__(fmt, defaults, style='%')
+
+class StrFormatStyle(FormatStyle):
+    def __new__(cls, *args, **kwargs):
+        kwargs['style'] = '{'
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, fmt, defaults=None):
+        super().__init__(fmt, defaults, style='{')
+
+class StringTemplateStyle(FormatStyle):
+    def __new__(cls, *args, **kwargs):
+        kwargs['style'] = '$'
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, fmt, defaults=None):
+        super().__init__(fmt, defaults, style='$')
