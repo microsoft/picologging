@@ -31,10 +31,12 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     switch (style){
         case '%':
         case '{':
-        case '$':
             /* Call the class object. */
             styleType = (PyObject*)&FormatStyleType;
             break;
+        case '$':
+            PyErr_Format(PyExc_NotImplementedError, "String Templates are not supported in picologging.");
+            return -1;
         default:
             PyErr_Format(PyExc_ValueError, "Unknown style '%c'", style);
             return -1;

@@ -90,9 +90,6 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
         case '{':
             fragment_search = fragment_search_string_format;
             break;
-        case '$':
-            fragment_search = fragment_search_string_template;
-            break;
         default:
             PyErr_SetString(PyExc_ValueError, "Unknown style");
             return -1;
@@ -117,9 +114,6 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
                     break;
                 case '{':
                     field_name = match_str.substr(1, match_str.size() - 2);
-                    break;
-                case '$':
-                    field_name = match_str.substr(2, match_str.size() - 3);
                     break;
             } 
             if (match.position() != cursor){
@@ -163,9 +157,6 @@ PyObject* FormatStyle_usesTime(FormatStyle *self){
             break;
         case '{':
             ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("{asctime}"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
-            break;
-        case '$':
-            ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("${asctime}"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "Invalid style value");
@@ -322,7 +313,6 @@ PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
                 case '{':
                     result = PyObject_CallMethod_ONEARG(self->fmt, self->_const_format, recordDict);
                     break;
-                // TODO : Template..
             }
             Py_DECREF(recordDict);
             return result;
@@ -346,7 +336,6 @@ PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
             Py_DECREF(args);
             Py_DECREF(formatMethod);
             break;
-        // TODO : Template..
     }
     Py_DECREF(dict);
     return result;
@@ -369,9 +358,6 @@ FormatStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
             break;
         case '{':
             fragment_search = fragment_search_string_format;
-            break;
-        case '$':
-            fragment_search = fragment_search_string_template;
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "Unknown style");
