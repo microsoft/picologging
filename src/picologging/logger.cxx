@@ -137,6 +137,7 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
             self->enabledForCritical = true;
     }
     Py_RETURN_NONE;
+    // TODO: Should reset parent/child loggers
 }
 
 PyObject* Logger_getEffectiveLevel(Logger *self){
@@ -471,6 +472,46 @@ PyObject* Logger_removeHandler(Logger *self, PyObject *handler) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+Logger_get_parent(Logger *self, void *closure)
+{
+    if (self->parent == nullptr) {
+        Py_RETURN_NONE;
+    }
+    Py_INCREF(self->parent);
+    return self->parent;
+}
+
+static int
+Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
+{
+    if (value == nullptr) {
+        PyErr_SetString(PyExc_TypeError, "Cannot delete parent");
+        return -1;
+    }
+    if (!Logger_Check(value)) {
+        PyErr_Format(PyExc_TypeError, "parent must be a Logger, not %s", Py_TYPE(value)->tp_name);
+        return -1;
+    }
+    Py_XINCREF(value);
+    Py_XDECREF(self->parent);
+    self->parent = value;
+    // Rescan parent levels.
+    switch (getEffectiveLevel(self)){
+        case LOG_LEVEL_DEBUG:
+            self->enabledForDebug = true;
+        case LOG_LEVEL_INFO:
+            self->enabledForInfo = true;
+        case LOG_LEVEL_WARNING:
+            self->enabledForWarning = true;
+        case LOG_LEVEL_ERROR:
+            self->enabledForError = true;
+        case LOG_LEVEL_CRITICAL:
+            self->enabledForCritical = true;
+    }
+    return 0;
+}
+
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
@@ -491,12 +532,19 @@ static PyMethodDef Logger_methods[] = {
 static PyMemberDef Logger_members[] = {
     {"name", T_OBJECT_EX, offsetof(Logger, name), 0, "Logger name"},
     {"level", T_USHORT, offsetof(Logger, level), 0, "Logger level"},
-    {"parent", T_OBJECT_EX, offsetof(Logger, parent), 0, "Logger parent"},
     {"propagate", T_BOOL, offsetof(Logger, propagate), 0, "Logger propagate"},
     {"handlers", T_OBJECT_EX, offsetof(Logger, handlers), 0, "Logger handlers"},
     {"disabled", T_BOOL, offsetof(Logger, disabled), 0, "Logger disabled"},
     {"manager", T_OBJECT_EX, offsetof(Logger, manager), 0, "Logger manager"},
     {NULL}
+};
+
+static PyGetSetDef Logger_getsets[] = {
+    {"parent",
+     (getter)Logger_get_parent,
+     (setter)Logger_set_parent,
+     "Logger parent"},
+    {NULL, NULL, NULL, NULL }  /* sentinel */
 };
 
 PyTypeObject LoggerType = {
@@ -527,17 +575,17 @@ PyTypeObject LoggerType = {
     0,                                          /* tp_weaklistoffset */
     0,                                          /* tp_iter */
     0,                                          /* tp_iternext */
-    Logger_methods,                          /* tp_methods */
-    Logger_members,                          /* tp_members */
-    0,                                          /* tp_getset */
+    Logger_methods,                             /* tp_methods */
+    Logger_members,                             /* tp_members */
+    Logger_getsets,                             /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
     0,                                          /* tp_descr_get */
     0,                                          /* tp_descr_set */
     0,                                          /* tp_dictoffset */
-    (initproc)Logger_init,                   /* tp_init */
+    (initproc)Logger_init,                      /* tp_init */
     0,                                          /* tp_alloc */
-    Logger_new,                          /* tp_new */
+    Logger_new,                                 /* tp_new */
     PyObject_Del,                               /* tp_free */
 };
 

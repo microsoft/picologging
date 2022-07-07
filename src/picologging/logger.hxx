@@ -57,5 +57,6 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
 
 extern PyTypeObject LoggerType;
 #define Logger_CheckExact(op) Py_IS_TYPE(op, &LoggerType)
+#define Logger_Check(op) PyObject_TypeCheck(op, &LoggerType)
 
 #endif // PICOLOGGING_LOGGER_H

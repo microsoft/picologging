@@ -56,8 +56,8 @@ def test_get_effective_level():
 def test_dodgy_parents():
     logger = picologging.Logger('test')
     parent = "potato"
-    logger.parent = parent
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
+        logger.parent = parent
         logger.getEffectiveLevel()
 
 
@@ -313,6 +313,29 @@ def test_notset_parent_level_match():
     assert "parent message" in parent_value
     assert "parent message" not in child_value
 
+def test_error_parent_level():
+    logger_child = picologging.Logger("child", picologging.WARNING)
+    logger_parent = picologging.Logger("parent", picologging.ERROR)
+    logger_child.parent = logger_parent
+
+    parent_io = io.StringIO()
+    child_io = io.StringIO()
+    logger_child.addHandler(picologging.StreamHandler(child_io))
+    logger_parent.addHandler(picologging.StreamHandler(parent_io))
+
+    logger_child.info("info message")
+    logger_child.warning("warning message")
+    logger_child.error("error message")
+
+    parent_value = parent_io.getvalue()
+    child_value = child_io.getvalue()
+
+    assert "info message" not in child_value
+    assert "info message" not in parent_value
+    assert "warning message" in child_value
+    assert "warning message" in parent_value
+    assert "error message" in child_value
+    assert "error message" in parent_value
 
 def test_nested_frame_stack():
     logger = picologging.Logger("test", level=picologging.DEBUG)
