@@ -30,7 +30,7 @@ from logging import (
 import io
 import warnings
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 CRITICAL = 50
 FATAL = CRITICAL

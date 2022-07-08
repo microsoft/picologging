@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Callable, Pattern
+from typing import Any, Callable, Pattern
 from _typeshed import StrPath
-
-from picologging import FileHandler, LogRecord
+from queue import Queue, SimpleQueue
+from picologging import Handler, FileHandler, LogRecord
 
 
 class WatchedFileHandler(FileHandler):
@@ -66,3 +66,25 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
     def shouldRollover(self, record: LogRecord) -> int: ...  # undocumented
     def computeRollover(self, currentTime: int) -> int: ...  # undocumented
     def getFilesToDelete(self) -> list[str]: ...  # undocumented
+
+
+class QueueHandler(Handler):
+    queue: SimpleQueue[Any] | Queue[Any]  # undocumented
+
+    def __init__(self, queue: SimpleQueue[Any] | Queue[Any]) -> None: ...
+
+
+class QueueListener:
+    handlers: tuple[Handler, ...]  # undocumented
+    respect_handler_level: bool  # undocumented
+    queue: SimpleQueue[Any] | Queue[Any]  # undocumented
+    def __init__(
+        self, queue: SimpleQueue[Any] | Queue[Any], *handlers: Handler, respect_handler_level: bool = ...
+    ) -> None: ...
+   
+    def dequeue(self, block: bool) -> LogRecord: ...
+    def prepare(self, record: LogRecord) -> Any: ...
+    def start(self) -> None: ...
+    def stop(self) -> None: ...
+    def enqueue_sentinel(self) -> None: ...
+    def handle(self, record: LogRecord) -> None: ...
