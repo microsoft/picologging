@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+* Fixes a crash in 32-bit Linux wheels crashing when `validate=True` flag is used for the Formatter type
+
 ## 0.5.0
 
 * String format `{field}` is now supported using `Formatter(style='{')`
