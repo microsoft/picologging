@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+* Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging
+
 ## 0.5.1
 
 * Fixes a crash in 32-bit Linux wheels crashing when `validate=True` flag is used for the Formatter type
