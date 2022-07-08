@@ -119,6 +119,6 @@ __benchmarks__ = [
     (filehandler_logging, filehandler_picologging, "FileHandler()"),
     (watchedfilehandler_logging, watchedfilehandler_picologging, "WatchedFileHandler()"),
     (rotatingfilehandler_logging, rotatingfilehandler_picologging, "RotatingFileHandler()"),
-    # (queuehandler_logging, queuehandler_picologging, "QueueHandler()"),
-    # (queue_listener_logging, queue_listener_picologging, "QueueListener() + QueueHandler()"),
+    (queuehandler_logging, queuehandler_picologging, "QueueHandler()"),
+    (queue_listener_logging, queue_listener_picologging, "QueueListener() + QueueHandler()"),
 ]
