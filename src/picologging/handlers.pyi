@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Callable, Pattern
 from _typeshed import StrPath
 
-from picologging import FileHandler, LogRecord
+from picologging import Handler, FileHandler, LogRecord
 
 
 class WatchedFileHandler(FileHandler):
@@ -66,3 +66,10 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
     def shouldRollover(self, record: LogRecord) -> int: ...  # undocumented
     def computeRollover(self, currentTime: int) -> int: ...  # undocumented
     def getFilesToDelete(self) -> list[str]: ...  # undocumented
+
+
+class BufferingHandler(Handler):
+    capacity: int  # undocumented
+    buffer: list[LogRecord]  # undocumented
+    def __init__(self, capacity: int) -> None: ...
+    def shouldFlush(self, record: LogRecord) -> bool: ...
