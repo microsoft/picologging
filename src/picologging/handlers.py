@@ -480,22 +480,13 @@ class BufferingHandler(picologging.Handler):
         self.capacity = capacity
         self.buffer = []
 
-    def shouldFlush(self, record):
-        """
-        Should the handler flush its buffer?
-        Returns true if the buffer is up to capacity. This method can be
-        overridden to implement custom flushing strategies.
-        """
-        return (len(self.buffer) >= self.capacity)
-
     def emit(self, record):
         """
         Emit a record.
-        Append the record. If shouldFlush() tells us to, call flush() to process
-        the buffer.
+        Append the record.
         """
         self.buffer.append(record)
-        if self.shouldFlush(record):
+        if len(self.buffer) >= self.capacity:
             self.flush()
 
     def flush(self):
