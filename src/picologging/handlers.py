@@ -485,11 +485,11 @@ class QueueHandler(picologging.Handler):
         super().__init__()
         self.queue = queue
 
-    def emit(self, record):
+    def emit(self, record: picologging.LogRecord):
         """
         Emit a record.
 
-        Writes the LogRecord to the queue, preparing it for pickling first.
+        Writes the LogRecord to the queue, copying it first.
         """
         try:
             self.queue.put_nowait(record)

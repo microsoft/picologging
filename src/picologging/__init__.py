@@ -74,7 +74,7 @@ class Manager:
     holds the hierarchy of loggers.
     """
 
-    def __init__(self, rootnode):
+    def __init__(self, rootnode, cls=None):
         """
         Initialize the manager with the root node of the logger hierarchy.
         """
@@ -82,6 +82,10 @@ class Manager:
         self.disable = 0
         self.emittedNoHandlerWarning = False
         self.loggerDict = {}
+        if not cls:
+            self.cls = Logger
+        else:
+            self.cls = cls
 
     @property
     def disable(self):
@@ -105,13 +109,13 @@ class Manager:
         if name in self.loggerDict:
             rv = self.loggerDict[name]
         else:
-            rv = Logger(name)
+            rv = self.cls(name)
             rv.manager = self
             self.loggerDict[name] = rv
         return rv
 
     def setLoggerClass(self, klass):
-        raise NotImplementedError("setLoggerClass is not supported in picologging.")
+        self.cls = klass
 
     def setLogRecordFactory(self, factory):
         raise NotImplementedError("setLoggerClass is not supported in picologging.")
