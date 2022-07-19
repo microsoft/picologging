@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Callable, Pattern
 from _typeshed import StrPath
 from queue import Queue, SimpleQueue
+
 from picologging import Handler, FileHandler, LogRecord
 
 
@@ -88,3 +89,9 @@ class QueueListener:
     def stop(self) -> None: ...
     def enqueue_sentinel(self) -> None: ...
     def handle(self, record: LogRecord) -> None: ...
+
+
+class BufferingHandler(Handler):
+    capacity: int  # undocumented
+    buffer: list[LogRecord]  # undocumented
+    def __init__(self, capacity: int) -> None: ...
