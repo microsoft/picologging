@@ -10,7 +10,7 @@ def test_threaded_execution():
     logger.addHandler(handler)
 
     def _log_message():
-        picologging.getLogger("test").debug("from thread")
+        logger.debug("from thread")
 
     t = threading.Thread(target=_log_message)
     t.start()
