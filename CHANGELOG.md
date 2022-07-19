@@ -2,7 +2,10 @@
 
 ## 0.6.0
 
-* Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging
+* Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging by @tonybaloney in https://github.com/microsoft/picologging/pull/44
+* Fix a crash on ubuntu by @tonybaloney in https://github.com/microsoft/picologging/pull/42
+* Add BufferingHandler by @aminalaee in https://github.com/microsoft/picologging/pull/45
+* Fixes a crash on string literal within a loop in certain cases
 
 ## 0.5.1
 
