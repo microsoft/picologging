@@ -7,6 +7,7 @@ import picologging
 
 _MIDNIGHT = 24 * 60 * 60  # number of seconds in a day
 
+
 class WatchedFileHandler(picologging.FileHandler):
     """
     A handler for logging to a file, which watches the file
@@ -24,9 +25,11 @@ class WatchedFileHandler(picologging.FileHandler):
     for such a handler. Furthermore, ST_INO is not supported under
     Windows; stat always returns zero for this value.
     """
+
     def __init__(self, filename, mode="a", encoding=None, delay=False):
-        picologging.FileHandler.__init__(self, filename, mode=mode,
-                                        encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(
+            self, filename, mode=mode, encoding=encoding, delay=delay
+        )
         self.dev, self.ino = -1, -1
         self._statstream()
 
@@ -73,6 +76,7 @@ class BaseRotatingHandler(picologging.FileHandler):
     Not meant to be instantiated directly.  Instead, use RotatingFileHandler
     or TimedRotatingFileHandler.
     """
+
     namer = None
     rotator = None
 
@@ -80,8 +84,9 @@ class BaseRotatingHandler(picologging.FileHandler):
         """
         Use the specified filename for streamed logging
         """
-        picologging.FileHandler.__init__(self, filename, mode=mode,
-                                        encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(
+            self, filename, mode=mode, encoding=encoding, delay=delay
+        )
         self.mode = mode
         self.encoding = encoding
 
@@ -152,8 +157,10 @@ class RotatingFileHandler(BaseRotatingHandler):
     Handler for logging to a set of files, which switches from one file
     to the next when the current file reaches a certain size.
     """
-    def __init__(self, filename, mode="a", maxBytes=0, backupCount=0,
-                 encoding=None, delay=False):
+
+    def __init__(
+        self, filename, mode="a", maxBytes=0, backupCount=0, encoding=None, delay=False
+    ):
         """
         Open the specified file and use it as the stream for logging.
         By default, the file grows indefinitely. You can specify particular
@@ -178,7 +185,9 @@ class RotatingFileHandler(BaseRotatingHandler):
         # on each run.
         if maxBytes > 0:
             mode = "a"
-        BaseRotatingHandler.__init__(self, filename, mode, encoding=encoding, delay=delay)
+        BaseRotatingHandler.__init__(
+            self, filename, mode, encoding=encoding, delay=delay
+        )
         self.maxBytes = maxBytes
         self.backupCount = backupCount
 
@@ -230,9 +239,21 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
     If backupCount is > 0, when rollover is done, no more than backupCount
     files are kept - the oldest ones are deleted.
     """
-    def __init__(self, filename, when='h', interval=1, backupCount=0,
-                 encoding=None, delay=False, utc=False, atTime=None):
-        BaseRotatingHandler.__init__(self, filename, "a", encoding=encoding, delay=delay)
+
+    def __init__(
+        self,
+        filename,
+        when="h",
+        interval=1,
+        backupCount=0,
+        encoding=None,
+        delay=False,
+        utc=False,
+        atTime=None,
+    ):
+        BaseRotatingHandler.__init__(
+            self, filename, "a", encoding=encoding, delay=delay
+        )
         self.when = when.upper()
         self.backupCount = backupCount
         self.utc = utc
@@ -250,27 +271,32 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         # Case of the 'when' specifier is not important; lower or upper case
         # will work.
         if self.when == "S":
-            self.interval = 1 # one second
+            self.interval = 1  # one second
             self.suffix = "%Y-%m-%d_%H-%M-%S"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(\.\w+)?$"
         elif self.when == "M":
-            self.interval = 60 # one minute
+            self.interval = 60  # one minute
             self.suffix = "%Y-%m-%d_%H-%M"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}(\.\w+)?$"
         elif self.when == "H":
-            self.interval = 60 * 60 # one hour
+            self.interval = 60 * 60  # one hour
             self.suffix = "%Y-%m-%d_%H"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}(\.\w+)?$"
         elif self.when == "D" or self.when == "MIDNIGHT":
-            self.interval = 60 * 60 * 24 # one day
+            self.interval = 60 * 60 * 24  # one day
             self.suffix = "%Y-%m-%d"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
         elif self.when.startswith("W"):
-            self.interval = 60 * 60 * 24 * 7 # one week
+            self.interval = 60 * 60 * 24 * 7  # one week
             if len(self.when) != 2:
-                raise ValueError("You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s" % self.when)
+                raise ValueError(
+                    "You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s"
+                    % self.when
+                )
             if self.when[1] < "0" or self.when[1] > "6":
-                raise ValueError("Invalid day specified for weekly rollover: %s" % self.when)
+                raise ValueError(
+                    "Invalid day specified for weekly rollover: %s" % self.when
+                )
             self.dayOfWeek = int(self.when[1])
             self.suffix = "%Y-%m-%d"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
@@ -278,7 +304,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             raise ValueError("Invalid rollover interval specified: %s" % self.when)
 
         self.extMatch = re.compile(self.extMatch, re.ASCII)
-        self.interval = self.interval * interval # multiply by units requested
+        self.interval = self.interval * interval  # multiply by units requested
         # The following line added because the filename passed in could be a
         # path object (see Issue #27493), but self.baseFilename will be a string
         filename = self.baseFilename
@@ -314,11 +340,11 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             if self.atTime is None:
                 rotate_ts = _MIDNIGHT
             else:
-                rotate_ts = ((self.atTime.hour * 60 + self.atTime.minute)*60 +
-                    self.atTime.second)
+                rotate_ts = (
+                    self.atTime.hour * 60 + self.atTime.minute
+                ) * 60 + self.atTime.second
 
-            r = rotate_ts - ((current_hour * 60 + current_minute) * 60 +
-                current_second)
+            r = rotate_ts - ((current_hour * 60 + current_minute) * 60 + current_second)
             if r < 0:
                 # Rotate time is before the current time (for example when
                 # self.rotateAt is 13:45 and it now 14:15), rotation is
@@ -342,7 +368,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             # This is because the above time calculation takes us to midnight on this
             # day, i.e. the start of the next day.
             if self.when.startswith("W"):
-                day = current_day # 0 is Monday
+                day = current_day  # 0 is Monday
                 if day != self.dayOfWeek:
                     if day < self.dayOfWeek:
                         daysToWait = self.dayOfWeek - day
@@ -353,9 +379,11 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                         dst_now = t[-1]
                         dstAtRollover = time.localtime(now_rollover_at)[-1]
                         if dst_now != dstAtRollover:
-                            if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
+                            if (
+                                not dst_now
+                            ):  # DST kicks in before next rollover, so we need to deduct an hour
                                 addend = -3600
-                            else:           # DST bows out before next rollover, so we need to add an hour
+                            else:  # DST bows out before next rollover, so we need to add an hour
                                 addend = 3600
                             now_rollover_at += addend
                     result = now_rollover_at
@@ -396,8 +424,12 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 # Our files could be just about anything after custom naming, but
                 # likely candidates are of the form
                 # foo.log.DATETIME_SUFFIX or foo.DATETIME_SUFFIX.log
-                if (not file_name.startswith(base_name) and file_name.endswith(e) and
-                    len(file_name) > (plen + 1) and not file_name[plen+1].isdigit()):
+                if (
+                    not file_name.startswith(base_name)
+                    and file_name.endswith(e)
+                    and len(file_name) > (plen + 1)
+                    and not file_name[plen + 1].isdigit()
+                ):
                     continue
 
             if file_name[:plen] == prefix:
@@ -413,7 +445,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             result = []
         else:
             result.sort()
-            result = result[:len(result) - self.backupCount]
+            result = result[: len(result) - self.backupCount]
         return result
 
     def doRollover(self):
@@ -442,8 +474,9 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 else:
                     addend = -3600
                 time_tuple = time.localtime(t + addend)
-        dfn = self.rotation_filename(self.baseFilename + "." +
-                                     time.strftime(self.suffix, time_tuple))
+        dfn = self.rotation_filename(
+            self.baseFilename + "." + time.strftime(self.suffix, time_tuple)
+        )
         if os.path.exists(dfn):
             os.remove(dfn)
         self.rotate(self.baseFilename, dfn)
@@ -455,13 +488,15 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         now_rollover_at = self.computeRollover(current_time)
         while now_rollover_at <= current_time:
             now_rollover_at = now_rollover_at + self.interval
-        #If DST changes and midnight or weekly rollover, adjust for this.
+        # If DST changes and midnight or weekly rollover, adjust for this.
         if (self.when == "MIDNIGHT" or self.when.startswith("W")) and not self.utc:
             dstAtRollover = time.localtime(now_rollover_at)[-1]
             if dst_now != dstAtRollover:
-                if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
+                if (
+                    not dst_now
+                ):  # DST kicks in before next rollover, so we need to deduct an hour
                     addend = -3600
-                else:           # DST bows out before next rollover, so we need to add an hour
+                else:  # DST bows out before next rollover, so we need to add an hour
                     addend = 3600
                 now_rollover_at += addend
         self.rollover_at = now_rollover_at
@@ -503,6 +538,7 @@ class QueueListener:
     LogRecords being added to a queue, removes them and passes them to a
     list of handlers for processing.
     """
+
     _sentinel = None
 
     def __init__(self, queue, *handlers, respect_handler_level=False):
@@ -570,7 +606,7 @@ class QueueListener:
         The thread will terminate if it sees a sentinel object in the queue.
         """
         q = self.queue
-        has_task_done = hasattr(q, 'task_done')
+        has_task_done = hasattr(q, "task_done")
         while True:
             try:
                 record = self.dequeue(True)
@@ -613,6 +649,7 @@ class BufferingHandler(picologging.Handler):
     record is added to the buffer, a check is made to see if the buffer should
     be flushed. If it should, then flush() is expected to do what's needed.
     """
+
     def __init__(self, capacity):
         """
         Initialize the handler with the buffer size.
