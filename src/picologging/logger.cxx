@@ -280,7 +280,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, level, msg, args_, exc_info, extra, stack_info, 1);
-    Py_DECREF(msg);
+
     Py_DECREF(args_);
     Py_DECREF(exc_info);
     Py_DECREF(extra);
@@ -299,7 +299,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     while (has_parent){
         for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
             found ++;
-            PyObject* handler = PyList_GET_ITEM(cur->handlers, i);
+            PyObject* handler = PyList_GET_ITEM(cur->handlers, i); // borrowed
             if (Handler_Check(handler)){
                 if (record->levelno >= ((Handler*)handler)->level){
                     if (Handler_handle((Handler*)handler, (PyObject*)record) == nullptr){

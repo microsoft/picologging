@@ -30,7 +30,7 @@ from logging import (
 import io
 import warnings
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 CRITICAL = 50
 FATAL = CRITICAL
@@ -46,27 +46,28 @@ BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 class PercentStyle(FormatStyle):
     def __new__(cls, *args, **kwargs):
-        kwargs['style'] = '%'
+        kwargs["style"] = "%"
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, fmt, defaults=None):
-        super().__init__(fmt, defaults, style='%')
+        super().__init__(fmt, defaults, style="%")
 
 
 class StrFormatStyle(FormatStyle):
     def __new__(cls, *args, **kwargs):
-        kwargs['style'] = '{'
+        kwargs["style"] = "{"
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, fmt, defaults=None):
-        super().__init__(fmt, defaults, style='{')
+        super().__init__(fmt, defaults, style="{")
 
 
 _STYLES = {
-    '%': (PercentStyle, BASIC_FORMAT),
-    '{': (StrFormatStyle, '{levelname}:{name}:{message}'),
-    '$': (StringTemplateStyle, '${levelname}:${name}:${message}'),
+    "%": (PercentStyle, BASIC_FORMAT),
+    "{": (StrFormatStyle, "{levelname}:{name}:{message}"),
+    "$": (StringTemplateStyle, "${levelname}:${name}:${message}"),
 }
+
 
 class Manager:
     """
@@ -74,7 +75,7 @@ class Manager:
     holds the hierarchy of loggers.
     """
 
-    def __init__(self, rootnode):
+    def __init__(self, rootnode, cls=None):
         """
         Initialize the manager with the root node of the logger hierarchy.
         """
@@ -82,6 +83,10 @@ class Manager:
         self.disable = 0
         self.emittedNoHandlerWarning = False
         self.loggerDict = {}
+        if not cls:
+            self.cls = Logger
+        else:
+            self.cls = cls
 
     @property
     def disable(self):
@@ -105,13 +110,13 @@ class Manager:
         if name in self.loggerDict:
             rv = self.loggerDict[name]
         else:
-            rv = Logger(name)
+            rv = self.cls(name)
             rv.manager = self
             self.loggerDict[name] = rv
         return rv
 
     def setLoggerClass(self, klass):
-        raise NotImplementedError("setLoggerClass is not supported in picologging.")
+        self.cls = klass
 
     def setLogRecordFactory(self, factory):
         raise NotImplementedError("setLoggerClass is not supported in picologging.")
@@ -119,6 +124,7 @@ class Manager:
 
 root = Logger(name="root", level=WARNING)
 manager = Manager(root)
+
 
 def basicConfig(**kwargs):
     """
@@ -350,6 +356,7 @@ def disable(level=CRITICAL):
     root.manager.disable = level
     root.manager._clear_cache()
 
+
 class NullHandler(Handler):
     """
     This handler does nothing. It's intended to be used to avoid the
@@ -360,31 +367,34 @@ class NullHandler(Handler):
     a NullHandler and add it to the top-level logger of the library module or
     package.
     """
+
     def handle(self, record):
         """Stub."""
 
     def emit(self, record):
         """Stub."""
 
+
 class FileHandler(StreamHandler):
     """
     A handler class which writes formatted logging records to disk files.
     """
-    def __init__(self, filename, mode='a', encoding=None, delay=False):
+
+    def __init__(self, filename, mode="a", encoding=None, delay=False):
         """
         Open the specified file and use it as the stream for logging.
         """
         # Issue #27493: add support for Path objects to be passed in
         filename = os.fspath(filename)
-        #keep the absolute path, otherwise derived classes which use this
-        #may come a cropper when the current directory changes
+        # keep the absolute path, otherwise derived classes which use this
+        # may come a cropper when the current directory changes
         self.baseFilename = os.path.abspath(filename)
         self.mode = mode
         self.encoding = encoding
         self.delay = delay
         if delay:
-            #We don't open the stream, but we still need to call the
-            #Handler constructor to set level, formatter, lock etc.
+            # We don't open the stream, but we still need to call the
+            # Handler constructor to set level, formatter, lock etc.
             Handler.__init__(self)
             self.stream = None
         else:
@@ -432,4 +442,4 @@ class FileHandler(StreamHandler):
 
     def __repr__(self):
         level = getLevelName(self.level)
-        return '<%s %s (%s)>' % (self.__class__.__name__, self.baseFilename, level)
+        return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
