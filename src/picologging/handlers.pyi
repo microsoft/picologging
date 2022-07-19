@@ -102,3 +102,16 @@ class BufferingHandler(Handler):
     capacity: int  # undocumented
     buffer: list[LogRecord]  # undocumented
     def __init__(self, capacity: int) -> None: ...
+
+class MemoryHandler(BufferingHandler):
+    flushLevel: int  # undocumented
+    target: Handler | None  # undocumented
+    flushOnClose: bool  # undocumented
+    def __init__(
+        self,
+        capacity: int,
+        flushLevel: int = ...,
+        target: Handler | None = ...,
+        flushOnClose: bool = ...,
+    ) -> None: ...
+    def setTarget(self, target: Handler | None) -> None: ...

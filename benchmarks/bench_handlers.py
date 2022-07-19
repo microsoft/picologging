@@ -6,6 +6,7 @@ import picologging.handlers as picologging_handlers
 import queue
 import io
 
+
 def filehandler_logging():
     with tempfile.NamedTemporaryFile() as f:
         logger = logging.Logger("test", logging.DEBUG)
@@ -53,7 +54,9 @@ def watchedfilehandler_picologging():
 def rotatingfilehandler_logging():
     with tempfile.NamedTemporaryFile() as f:
         logger = logging.Logger("test", logging.DEBUG)
-        handler = logging_handlers.RotatingFileHandler(f.name, maxBytes=10_000, backupCount=5)
+        handler = logging_handlers.RotatingFileHandler(
+            f.name, maxBytes=10_000, backupCount=5
+        )
         logger.handlers.append(handler)
 
         for _ in range(1_000):
@@ -64,12 +67,15 @@ def rotatingfilehandler_logging():
 def rotatingfilehandler_picologging():
     with tempfile.NamedTemporaryFile() as f:
         logger = picologging.Logger("test", picologging.DEBUG)
-        handler = picologging_handlers.RotatingFileHandler(f.name, maxBytes=10_000, backupCount=5)
+        handler = picologging_handlers.RotatingFileHandler(
+            f.name, maxBytes=10_000, backupCount=5
+        )
         logger.handlers.append(handler)
 
         for _ in range(1_000):
             logger.debug("There has been a picologging issue")
         handler.close()
+
 
 def queuehandler_logging():
     logger = logging.Logger("test", picologging.DEBUG)
@@ -79,6 +85,7 @@ def queuehandler_logging():
     for _ in range(10_000):
         logger.debug("test")
 
+
 def queuehandler_picologging():
     logger = picologging.Logger("test", picologging.DEBUG)
     q = queue.Queue()
@@ -86,6 +93,7 @@ def queuehandler_picologging():
     logger.addHandler(handler)
     for _ in range(10_000):
         logger.debug("test")
+
 
 def queue_listener_logging():
     logger = logging.Logger("test", picologging.DEBUG)
@@ -101,6 +109,7 @@ def queue_listener_logging():
 
     listener.stop()
 
+
 def queue_listener_picologging():
     logger = picologging.Logger("test", picologging.DEBUG)
     stream = io.StringIO()
@@ -115,10 +124,48 @@ def queue_listener_picologging():
 
     listener.stop()
 
+
+def memoryhandler_logging():
+    with tempfile.NamedTemporaryFile() as f:
+        logger = logging.Logger("test", logging.DEBUG)
+        target = logging.FileHandler(f.name)
+        handler = logging_handlers.MemoryHandler(capacity=100, target=target)
+        logger.handlers.append(handler)
+
+        for _ in range(1_000):
+            logger.debug("There has been a logging issue")
+        handler.close()
+
+
+def memoryhandler_picologging():
+    with tempfile.NamedTemporaryFile() as f:
+        logger = picologging.Logger("test", picologging.DEBUG)
+        target = picologging.FileHandler(f.name)
+        handler = picologging_handlers.MemoryHandler(capacity=100, target=target)
+        logger.handlers.append(handler)
+
+        for _ in range(1_000):
+            logger.debug("There has been a picologging issue")
+        handler.close()
+
+
 __benchmarks__ = [
     (filehandler_logging, filehandler_picologging, "FileHandler()"),
-    (watchedfilehandler_logging, watchedfilehandler_picologging, "WatchedFileHandler()"),
-    (rotatingfilehandler_logging, rotatingfilehandler_picologging, "RotatingFileHandler()"),
+    (
+        watchedfilehandler_logging,
+        watchedfilehandler_picologging,
+        "WatchedFileHandler()",
+    ),
+    (
+        rotatingfilehandler_logging,
+        rotatingfilehandler_picologging,
+        "RotatingFileHandler()",
+    ),
     (queuehandler_logging, queuehandler_picologging, "QueueHandler()"),
-    (queue_listener_logging, queue_listener_picologging, "QueueListener() + QueueHandler()"),
+    (
+        queue_listener_logging,
+        queue_listener_picologging,
+        "QueueListener() + QueueHandler()",
+    ),
+    (memoryhandler_logging, memoryhandler_picologging, "MemoryHandler()"),
 ]
