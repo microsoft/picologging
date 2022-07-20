@@ -9,7 +9,7 @@ with open("./README.md", "r") as fh:
 setup(
     name="picologging",
     packages=find_packages(where="src"),
-    package_dir={'': 'src'},
+    package_dir={"": "src"},
     version="0.7.0",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
@@ -31,12 +31,13 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     install_requires=[],
-    python_requires='>=3.7',
-    extras_require = {
+    python_requires=">=3.7",
+    extras_require={
         "dev": [
             "rich",
             "pytest",
             "pytest-cov",
+            "black",
         ]
-    }
+    },
 )
