@@ -35,17 +35,23 @@ logger.warning("A log message with %s", "arguments")
 
 ## Benchmarks
 
-Run `richbench benchmarks/` with the richbench CLI to see the benchmarks, here is a sample on macOS 11:
+Run `richbench benchmarks/ --markdown` with the richbench CLI to see the benchmarks, here is a sample on macOS 11:
 
 |                             Benchmark | Min     | Max     | Mean    | Min (+)         | Max (+)         | Mean (+)        |
 |---------------------------------------|---------|---------|---------|-----------------|-----------------|-----------------|
-|                           LogRecord() | 0.228   | 0.244   | 0.234   | 0.031 (7.5x)    | 0.031 (7.8x)    | 0.031 (7.6x)    |
-|                  Formatter().format() | 0.077   | 0.079   | 0.078   | 0.005 (15.3x)   | 0.005 (14.9x)   | 0.005 (15.1x)   |
-|        Formatter().format() with date | 0.299   | 0.359   | 0.313   | 0.083 (3.6x)    | 0.092 (3.9x)    | 0.086 (3.6x)    |
-|           Logger(level=DEBUG).debug() | 0.725   | 0.741   | 0.730   | 0.069 (10.6x)   | 0.070 (10.6x)   | 0.069 (10.6x)   |
-| Logger(level=DEBUG).debug() with args | 0.750   | 0.757   | 0.754   | 0.090 (8.3x)    | 0.095 (8.0x)    | 0.093 (8.1x)    |
-|            Logger(level=INFO).debug() | 0.014   | 0.015   | 0.015   | 0.003 (4.1x)    | 0.004 (3.7x)    | 0.004 (3.9x)    |
-|  Logger(level=INFO).debug() with args | 0.016   | 0.017   | 0.016   | 0.004 (4.1x)    | 0.004 (4.2x)    | 0.004 (4.1x)    |
+|                         FileHandler() | 0.138   | 0.151   | 0.143   | 0.055 (2.5x)    | 0.063 (2.4x)    | 0.058 (2.5x)    |
+|                  WatchedFileHandler() | 0.189   | 0.197   | 0.193   | 0.097 (1.9x)    | 0.101 (1.9x)    | 0.099 (1.9x)    |
+|                 RotatingFileHandler() | 0.287   | 0.304   | 0.296   | 0.174 (1.6x)    | 0.178 (1.7x)    | 0.176 (1.7x)    |
+|                        QueueHandler() | 1.109   | 1.195   | 1.130   | 0.142 (7.8x)    | 0.151 (7.9x)    | 0.147 (7.7x)    |
+|      QueueListener() + QueueHandler() | 0.157   | 0.167   | 0.162   | 0.034 (4.6x)    | 0.039 (4.3x)    | 0.037 (4.3x)    |
+|                       MemoryHandler() | 0.126   | 0.144   | 0.133   | 0.051 (2.5x)    | 0.059 (2.5x)    | 0.054 (2.5x)    |
+|                           LogRecord() | 0.225   | 0.248   | 0.233   | 0.026 (8.7x)    | 0.029 (8.5x)    | 0.028 (8.4x)    |
+|                  Formatter().format() | 0.076   | 0.086   | 0.081   | 0.004 (18.7x)   | 0.005 (18.9x)   | 0.004 (19.1x)   |
+|        Formatter().format() with date | 0.298   | 0.311   | 0.304   | 0.081 (3.7x)    | 0.087 (3.6x)    | 0.084 (3.6x)    |
+|           Logger(level=DEBUG).debug() | 0.726   | 0.743   | 0.734   | 0.059 (12.3x)   | 0.061 (12.3x)   | 0.060 (12.3x)   |
+| Logger(level=DEBUG).debug() with args | 0.761   | 0.809   | 0.777   | 0.081 (9.4x)    | 0.087 (9.3x)    | 0.084 (9.2x)    |
+|            Logger(level=INFO).debug() | 0.016   | 0.018   | 0.017   | 0.004 (4.3x)    | 0.005 (3.8x)    | 0.004 (4.1x)    |
+|  Logger(level=INFO).debug() with args | 0.018   | 0.019   | 0.018   | 0.005 (3.8x)    | 0.005 (3.8x)    | 0.005 (3.7x)    |
 
 ## Limitations
 
