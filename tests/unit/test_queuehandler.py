@@ -3,6 +3,7 @@ import picologging
 import queue
 import io
 
+
 def test_queue_handler_dispatch():
     logger = picologging.Logger("test", picologging.DEBUG)
     q = queue.Queue()

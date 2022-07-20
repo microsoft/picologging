@@ -6,33 +6,36 @@ from datetime import datetime, timedelta
 import pytest
 
 import picologging
-from picologging.handlers import WatchedFileHandler, RotatingFileHandler, TimedRotatingFileHandler
-
+from picologging.handlers import (
+    WatchedFileHandler,
+    RotatingFileHandler,
+    TimedRotatingFileHandler,
+)
 
 
 def test_filehandler(tmp_path):
-    log_file = tmp_path / 'log.txt'
+    log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file)
-    logger = picologging.getLogger('test')
+    logger = picologging.getLogger("test")
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
-    logger.warning('test')
+    logger.warning("test")
     handler.close()
 
-    with open(log_file, 'r') as f:
+    with open(log_file, "r") as f:
         assert f.read() == "test\n"
 
 
 def test_filehandler_delay(tmp_path):
-    log_file = tmp_path / 'log.txt'
+    log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file, delay=True)
-    logger = picologging.getLogger('test')
+    logger = picologging.getLogger("test")
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
-    logger.warning('test')
+    logger.warning("test")
     handler.close()
 
-    with open(log_file, 'r') as f:
+    with open(log_file, "r") as f:
         assert f.read() == "test\n"
 
 
@@ -191,7 +194,7 @@ def test_timed_rotatingfilehandler_rollover_removes_old_files(tmp_path):
     logger.warning("test")
     handler.rollover_at = time.time() - 1
     logger.warning("test")
-    
+
     assert len(os.listdir(tmp_path)) == 2
 
 
@@ -208,7 +211,7 @@ def test_timed_rotatingfilehandler_rollover_keeps_non_related_files(tmp_path):
     logger.warning("test")
     handler.rollover_at = time.time() - 1
     logger.warning("test")
-    
+
     assert len(os.listdir(tmp_path)) == 3
 
 
@@ -228,7 +231,7 @@ def test_timed_rotatingfilehandler_rollover_removes_existing_log(tmp_path, monke
     monkeypatch.setattr(handler, "rotation_filename", lambda _: existing_log_file)
     handler.rollover_at = time.time() - 1
     logger.warning("test")
-    
+
     assert len(os.listdir(tmp_path)) == 2
 
 

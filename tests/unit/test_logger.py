@@ -3,15 +3,17 @@ import picologging
 import logging
 import pytest
 
+
 def test_logger_attributes():
-    logger = picologging.Logger('test')
-    assert logger.name == 'test'
+    logger = picologging.Logger("test")
+    assert logger.name == "test"
     assert logger.level == logging.NOTSET
     assert logger.parent == None
     assert logger.propagate == True
     assert logger.handlers == []
     assert logger.disabled == False
     assert logger.propagate == True
+
 
 level_names = [
     "DEBUG",
@@ -31,21 +33,22 @@ levels = [
     logging.NOTSET,
 ]
 
+
 @pytest.mark.parametrize("level", levels)
 def test_logging_custom_level(level):
-    logger = picologging.Logger('test', level)
+    logger = picologging.Logger("test", level)
     assert logger.level == level
 
 
 def test_set_level():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
     logger.setLevel(logging.DEBUG)
     assert logger.level == logging.DEBUG
 
 
 def test_get_effective_level():
-    logger = picologging.Logger('test')
-    parent = picologging.Logger('parent', logging.DEBUG)
+    logger = picologging.Logger("test")
+    parent = picologging.Logger("parent", logging.DEBUG)
     logger.parent = parent
     assert logger.getEffectiveLevel() == logging.DEBUG
     assert logger.level == logging.NOTSET
@@ -54,7 +57,7 @@ def test_get_effective_level():
 
 
 def test_dodgy_parents():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
     parent = "potato"
     with pytest.raises(TypeError):
         logger.parent = parent
@@ -62,7 +65,7 @@ def test_dodgy_parents():
 
 
 def test_add_filter():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
     filter = logging.Filter("filter1")
     logger.addFilter(filter)
     assert logger.filters == [filter]
@@ -72,7 +75,7 @@ def test_add_filter():
 
 
 def test_remove_filter():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
     filter = logging.Filter("filter1")
     logger.addFilter(filter)
     assert logger.filters == [filter]
@@ -81,17 +84,17 @@ def test_remove_filter():
 
 
 def test_no_filter():
-    logger = picologging.Logger('test')
-    record = picologging.LogRecord('test', logging.INFO, 'test', 1, 'test', (), {})
+    logger = picologging.Logger("test")
+    record = picologging.LogRecord("test", logging.INFO, "test", 1, "test", (), {})
     assert logger.filter(record) == True
 
 
 def test_filter_record():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
     filter = logging.Filter("hello")
     logger.addFilter(filter)
-    record = picologging.LogRecord('hello', logging.INFO, 'test', 1, 'test', (), {})
-    record2 = picologging.LogRecord('goodbye', logging.INFO, 'test', 1, 'test', (), {})
+    record = picologging.LogRecord("hello", logging.INFO, "test", 1, "test", (), {})
+    record2 = picologging.LogRecord("goodbye", logging.INFO, "test", 1, "test", (), {})
     assert logger.filter(record) == True
     assert logger.filter(record2) == False
     logger.removeFilter(filter)
@@ -100,48 +103,53 @@ def test_filter_record():
 
 
 def test_filter_callable():
-    logger = picologging.Logger('test')
+    logger = picologging.Logger("test")
+
     def filter(record):
-        return record.name == 'hello'
+        return record.name == "hello"
+
     logger.addFilter(filter)
-    record = picologging.LogRecord('hello', logging.INFO, 'test', 1, 'test', (), {})
+    record = picologging.LogRecord("hello", logging.INFO, "test", 1, "test", (), {})
     assert logger.filter(record) == True
-    record = picologging.LogRecord('goodbye', logging.INFO, 'test', 1, 'test', (), {})
+    record = picologging.LogRecord("goodbye", logging.INFO, "test", 1, "test", (), {})
     assert logger.filter(record) == False
 
 
 def test_log_debug():
-    logger = picologging.Logger('test', logging.DEBUG)
+    logger = picologging.Logger("test", logging.DEBUG)
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
-    handler.setFormatter(picologging.Formatter('%(message)s'))
+    handler.setFormatter(picologging.Formatter("%(message)s"))
     logger.addHandler(handler)
     assert logger.debug("Hello World") == None
     result = stream.getvalue()
     assert result == "Hello World\n"
 
+
 def test_log_debug_info_level_logger():
-    logger = picologging.Logger('test', logging.INFO)
+    logger = picologging.Logger("test", logging.INFO)
     stream = io.StringIO()
     logger.handlers.append(picologging.StreamHandler(stream))
     assert logger.debug("Hello World") == None
     result = stream.getvalue()
     assert result == ""
 
+
 def test_log_debug_info_level_logger_logging_handler():
-    logger = picologging.Logger('test', logging.INFO)
+    logger = picologging.Logger("test", logging.INFO)
     stream = io.StringIO()
     logger.handlers.append(logging.StreamHandler(stream))
     assert logger.debug("Hello World") == None
     result = stream.getvalue()
     assert result == ""
 
+
 @pytest.mark.parametrize("level", levels)
 def test_log_log(level):
-    logger = picologging.Logger('test', level)
+    logger = picologging.Logger("test", level)
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
-    handler.setFormatter(picologging.Formatter('%(message)s'))
+    handler.setFormatter(picologging.Formatter("%(message)s"))
     logger.addHandler(handler)
     assert logger.log(level, "Hello World") == None
     result = stream.getvalue()
@@ -153,7 +161,7 @@ def test_logger_with_explicit_level(capsys):
     tmp = io.StringIO()
     handler = picologging.StreamHandler(tmp)
     handler.setLevel(logging.DEBUG)
-    formatter = picologging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    formatter = picologging.Formatter("%(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.handlers.append(handler)
     logger.debug("There has been a picologging issue")
@@ -163,18 +171,20 @@ def test_logger_with_explicit_level(capsys):
     assert cap.out == ""
     assert cap.err == ""
 
+
 def test_exception_capture():
     logger = picologging.Logger("test", logging.DEBUG)
     tmp = io.StringIO()
     handler = picologging.StreamHandler(tmp)
     logger.addHandler(handler)
     try:
-        1/0
+        1 / 0
     except ZeroDivisionError:
         logger.exception("bork")
     result = tmp.getvalue()
     assert "bork" in result
     assert "ZeroDivisionError: division by zero" in result
+
 
 def test_getlogger_no_args():
     logger = logging.getLogger()
@@ -187,31 +197,37 @@ def test_getlogger_no_args():
     assert picologger.level == logging.WARNING
     assert picologger.parent is None
 
+
 def test_logger_init_bad_args():
     with pytest.raises(TypeError):
         logger = picologging.Logger("goo", 10, dog=1)
-    
+
     with pytest.raises(TypeError):
         logger = picologging.Logger(name="test", level="potato")
+
 
 @pytest.mark.parametrize("level", levels)
 def test_logger_repr(level):
     logger = picologging.Logger("test", level)
     assert repr(logger) == f"<Logger 'test' ({level_names[levels.index(level)]})>"
 
+
 def test_logger_repr_effective_level():
     logger = picologging.Logger("test")
     logger.parent = picologging.Logger("parent", picologging.WARNING)
     assert repr(logger) == f"<Logger 'test' (WARNING)>"
 
+
 def test_logger_repr_invalid_level():
     logger = picologging.Logger("test", level=100)
     assert repr(logger) == f"<Logger 'test' ()>"
+
 
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)
     with pytest.raises(TypeError):
         logger.setLevel("potato")
+
 
 def test_add_remove_handlers():
     logger = picologging.Logger("goo", picologging.DEBUG)
@@ -268,9 +284,10 @@ def test_log_and_handle(level_config):
         assert "critical_message" not in tmp_value
     assert "log_message" in tmp_value
 
+
 def test_log_xx_bad_arguments():
     logger = picologging.Logger("test", level=picologging.DEBUG)
-    
+
     with pytest.raises(TypeError):
         logger.info()
     with pytest.raises(TypeError):
@@ -289,7 +306,7 @@ def test_log_bad_arguments():
     logger = picologging.Logger("test")
     with pytest.raises(TypeError):
         logger.log("potato", "message")
-    
+
     with pytest.raises(TypeError):
         logger.log()
 
@@ -312,6 +329,7 @@ def test_notset_parent_level_match():
     assert "child message" in parent_value
     assert "parent message" in parent_value
     assert "parent message" not in child_value
+
 
 def test_error_parent_level():
     logger_child = picologging.Logger("child", picologging.WARNING)
@@ -337,19 +355,24 @@ def test_error_parent_level():
     assert "error message" in child_value
     assert "error message" in parent_value
 
+
 def test_nested_frame_stack():
     logger = picologging.Logger("test", level=picologging.DEBUG)
     tmp = io.StringIO()
     logger.addHandler(picologging.StreamHandler(tmp))
+
     def f():
         def g():
             logger.info("message", stack_info=True)
+
         g()
+
     f()
     result = tmp.getvalue()
     assert "message" in result
     assert " in g\n" in result
     assert " in f\n" in result
+
 
 def test_exception_object_as_exc_info():
     e = Exception("arghhh!!")

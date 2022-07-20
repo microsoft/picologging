@@ -3,6 +3,7 @@ import picologging
 from picologging import Logger, StreamHandler
 import io
 
+
 def test_threaded_execution():
     logger = Logger("test", picologging.DEBUG)
     tmp = io.StringIO()
