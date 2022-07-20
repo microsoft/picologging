@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+* Added `MemoryHandler`
+
 ## 0.6.0
 
 * Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging by @tonybaloney in https://github.com/microsoft/picologging/pull/44
