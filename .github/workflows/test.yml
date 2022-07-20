@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-11", ubuntu-20.04, "windows-latest"]
+        os: ["macos-11", "ubuntu-20.04", "windows-latest"]
         python_version: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
     steps:
     - name: Setup python
@@ -41,7 +41,7 @@ jobs:
        python -m pytest --count=10 tests
 
     - name: Run benchmarks
-      if: matrix.python_version == '3.10'
+      if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-20.04'
       run: |
        python -m pip install richbench
        richbench benchmarks/

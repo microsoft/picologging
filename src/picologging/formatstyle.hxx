@@ -47,18 +47,20 @@ typedef struct {
     PyObject *fmt;
     PyObject *defaults;
     bool usesDefaultFmt;
+    int style;
+    PyObject* _const_format;
     FormatFragment fragments[1];
-} PercentStyle;
+} FormatStyle;
 
-int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds);
-PyObject* PercentStyle_usesTime(PercentStyle *self);
-PyObject* PercentStyle_validate(PercentStyle *self);
-PyObject* PercentStyle_format(PercentStyle *self, PyObject *record);
-PyObject* PercentStyle_dealloc(PercentStyle *self);
-PyObject* PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds);
+PyObject* FormatStyle_usesTime(FormatStyle *self);
+PyObject* FormatStyle_validate(FormatStyle *self);
+PyObject* FormatStyle_format(FormatStyle *self, PyObject *record);
+PyObject* FormatStyle_dealloc(FormatStyle *self);
+PyObject* FormatStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
-extern PyTypeObject PercentStyleType;
-#define PercentStyle_CheckExact(op) Py_IS_TYPE(op, &PercentStyleType)
+extern PyTypeObject FormatStyleType;
+#define FormatStyle_CheckExact(op) Py_IS_TYPE(op, &FormatStyleType)
 
 typedef std::unordered_map<std::string, FragmentType> FieldMap;
 #endif // PICOLOGGING_FORMATSTYLE_H

@@ -1,5 +1,6 @@
 import sys
 import picologging
+import logging
 import pytest
 
 levels = [
@@ -47,11 +48,11 @@ def test_root_logger_error(capsys):
 
 def test_root_logger_exception(capsys):
     picologging.root.handlers = []
-    picologging.exception("test")
+    picologging.exception("test", exc_info=Exception("bork bork bork"))
 
     cap = capsys.readouterr()
     assert cap.out == ""
-    assert cap.err == "ERROR:root:test\n"
+    assert cap.err == "ERROR:root:test\nException: bork bork bork\n"
 
 def test_root_logger_warning(capsys):
     picologging.root.handlers = []

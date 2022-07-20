@@ -4,7 +4,9 @@
 #include <regex>
 #include <cstdarg>
 
-std::regex const fragment_search("\\%\\(\\w+\\)[diouxefgcrsa%]");
+std::regex const fragment_search_percent("\\%\\(\\w+\\)[diouxefgcrsa%]");
+std::regex const fragment_search_string_format("\\{\\w+\\}");
+std::regex const fragment_search_string_template("\\$\\{\\w+\\}");
 
 FieldMap field_map = {
         {"name", Field_Name},
@@ -57,10 +59,11 @@ if (PyUnicode_Check(log_record->field )) { \
     Py_DECREF(field); }\
 
 
-int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
+int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *defaults = Py_None;
-    static const char *kwlist[] = {"fmt", "defaults", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
+    int style = '%';
+    static const char *kwlist[] = {"fmt", "defaults", "style", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OC", const_cast<char**>(kwlist), &fmt, &defaults, &style))
         return -1;
 
     if (fmt == Py_None) {
@@ -78,6 +81,20 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
         }
         self->usesDefaultFmt = false;
     }
+
+    std::regex fragment_search;
+    switch(self->style){
+        case '%':
+            fragment_search = fragment_search_percent;
+            break;
+        case '{':
+            fragment_search = fragment_search_string_format;
+            break;
+        default:
+            PyErr_SetString(PyExc_ValueError, "Unknown style");
+            return -1;
+    }
+
     self->fmt = fmt;
     Py_INCREF(fmt);
 
@@ -86,10 +103,19 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     auto fragments_end = std::sregex_iterator();
     int idx = 0;
     int cursor = 0;
+
     for (std::sregex_iterator i = fragments_begin; i != fragments_end; ++i) {
             std::smatch match = *i;
             std::string match_str = match.str();
-            std::string field_name = match_str.substr(2, match_str.size() - 4);
+            std::string field_name;
+            switch(self->style) {
+                case '%':
+                    field_name = match_str.substr(2, match_str.size() - 4);
+                    break;
+                case '{':
+                    field_name = match_str.substr(1, match_str.size() - 2);
+                    break;
+            } 
             if (match.position() != cursor){
                 // Add literal fragment
                 self->fragments[idx].field = LiteralFragment;
@@ -115,13 +141,27 @@ int PercentStyle_init(PercentStyle *self, PyObject *args, PyObject *kwds){
     }
     self->defaults = defaults;
     Py_INCREF(defaults);
+
+    self->_const_format = PyUnicode_FromString("format");
+
     return 0;
 }
 
-PyObject* PercentStyle_usesTime(PercentStyle *self){
+PyObject* FormatStyle_usesTime(FormatStyle *self){
     if (self->usesDefaultFmt)
         Py_RETURN_FALSE;
-    int ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+    int ret = 0;
+    switch (self->style){
+        case '%':
+            ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+            break;
+        case '{':
+            ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("{asctime}"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+            break;
+        default:
+            PyErr_SetString(PyExc_ValueError, "Invalid style value");
+            return nullptr;
+    }
     if (ret >= 0){
         Py_RETURN_TRUE;
     } else if (ret == -1){
@@ -132,13 +172,13 @@ PyObject* PercentStyle_usesTime(PercentStyle *self){
     }
 }
 
-PyObject* PercentStyle_validate(PercentStyle *self){
+PyObject* FormatStyle_validate(FormatStyle *self){
     /// TODO: #6 #5 Implement percentage style validation.
 
     return Py_None;
 }
 
-PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
+PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
     if (self->defaults == Py_None){
         if (LogRecord_CheckExact(record)){
             _PyUnicodeWriter writer;
@@ -265,7 +305,15 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
             PyObject* recordDict = PyObject_GetAttrString(record, "__dict__");
             if (recordDict == nullptr)
                 return nullptr;
-            PyObject* result = PyUnicode_Format(self->fmt, recordDict);
+            PyObject* result = nullptr;
+            switch (self->style){
+                case '%':
+                    result = PyUnicode_Format(self->fmt, recordDict);
+                    break;
+                case '{':
+                    result = PyObject_CallMethod_ONEARG(self->fmt, self->_const_format, recordDict);
+                    break;
+            }
             Py_DECREF(recordDict);
             return result;
         }
@@ -276,20 +324,46 @@ PyObject* PercentStyle_format(PercentStyle *self, PyObject *record){
         Py_DECREF(dict);
         return nullptr;
     }
-    PyObject* result = PyUnicode_Format(self->fmt, dict);
+    PyObject* result = nullptr;
+    switch (self->style){
+        case '%':
+            result = PyUnicode_Format(self->fmt, dict);
+            break;
+        case '{':
+            PyObject* formatMethod = PyObject_GetAttr(self->fmt, self->_const_format);
+            PyObject* args = PyTuple_New(0);
+            result = PyObject_Call(formatMethod, args, dict);
+            Py_DECREF(args);
+            Py_DECREF(formatMethod);
+            break;
+    }
     Py_DECREF(dict);
     return result;
 }
 
 PyObject *
-PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+FormatStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyObject *fmt = nullptr, *defaults = Py_None;
-    static const char *kwlist[] = {"fmt", "defaults", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", const_cast<char**>(kwlist), &fmt, &defaults))
+    static const char *kwlist[] = {"fmt", "defaults", "style", NULL};
+    int style = '%';
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OC", const_cast<char**>(kwlist), &fmt, &defaults, &style))
         return NULL;
 
     int fragmentLen = 0; 
+    std::regex fragment_search;
+    switch(style){
+        case '%':
+            fragment_search = fragment_search_percent;
+            break;
+        case '{':
+            fragment_search = fragment_search_string_format;
+            break;
+        default:
+            PyErr_SetString(PyExc_ValueError, "Unknown style");
+            return nullptr;
+    }
+
     if (fmt != nullptr && fmt != Py_None && PyUnicode_Check(fmt)){
         std::string const format_string(PyUnicode_AsUTF8(fmt));
         auto fragments_begin = std::sregex_iterator(format_string.begin(), format_string.end(), fragment_search);
@@ -313,9 +387,10 @@ PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         // Number of format fragments in DEFAULT_FMT
         fragmentLen = 1;
     }
-    PercentStyle* self;
-    self = (PercentStyle*)type->tp_alloc(type, fragmentLen);
+    FormatStyle* self;
+    self = (FormatStyle*)type->tp_alloc(type, fragmentLen);
     if (self){
+        self->style = style;
         Py_SET_SIZE(self, fragmentLen);
     } else {
         PyErr_NoMemory();
@@ -324,9 +399,10 @@ PercentStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject*)self;
 }
 
-PyObject* PercentStyle_dealloc(PercentStyle *self){
+PyObject* FormatStyle_dealloc(FormatStyle *self){
     Py_XDECREF(self->fmt);
     Py_XDECREF(self->defaults);
+    Py_XDECREF(self->_const_format);
     for (int i = 0 ; i < self->ob_base.ob_size; i++){
         Py_XDECREF(self->fragments[i].fragment);
     }
@@ -334,28 +410,28 @@ PyObject* PercentStyle_dealloc(PercentStyle *self){
     return NULL;
 }
 
-PyObject* PercentStyle_repr(PercentStyle *self){
-    return PyUnicode_FromFormat("<PercentStyle fmt='%U'>", self->fmt);
+PyObject* FormatStyle_repr(FormatStyle *self){
+    return PyUnicode_FromFormat("<FormatStyle fmt='%U' style='%c'>", self->fmt, self->style);
 }
 
-static PyMethodDef PercentStyle_methods[] = {
-    {"usesTime", (PyCFunction)PercentStyle_usesTime, METH_NOARGS, "Get message"},
-    {"validate", (PyCFunction)PercentStyle_validate, METH_NOARGS, "Get message"},
-    {"format", (PyCFunction)PercentStyle_format, METH_O, "Get message"},
+static PyMethodDef FormatStyle_methods[] = {
+    {"usesTime", (PyCFunction)FormatStyle_usesTime, METH_NOARGS, "Get message"},
+    {"validate", (PyCFunction)FormatStyle_validate, METH_NOARGS, "Get message"},
+    {"format", (PyCFunction)FormatStyle_format, METH_O, "Get message"},
     {NULL}
 };
 
-PyTypeObject PercentStyleType = {
+PyTypeObject FormatStyleType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "picologging.PercentStyle",                 /* tp_name */
-    offsetof(PercentStyle, fragments),          /* tp_basicsize */
+    "picologging.FormatStyle",                 /* tp_name */
+    offsetof(FormatStyle, fragments),          /* tp_basicsize */
     sizeof(FormatFragment),                     /* tp_itemsize */
-    (destructor)PercentStyle_dealloc,           /* tp_dealloc */
+    (destructor)FormatStyle_dealloc,           /* tp_dealloc */
     0,                                          /* tp_vectorcall_offset */
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    (reprfunc)PercentStyle_repr,                /* tp_repr */
+    (reprfunc)FormatStyle_repr,                /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
@@ -366,14 +442,14 @@ PyTypeObject PercentStyleType = {
     PyObject_GenericSetAttr,                    /* tp_setattro */
     0,                                          /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE ,  /* tp_flags */
-    PyDoc_STR("% formatter for log records."),  /* tp_doc */
+    PyDoc_STR("Formatter for log records."),    /* tp_doc */
     0,                                          /* tp_traverse */
     0,                                          /* tp_clear */
     0,                                          /* tp_richcompare */
     0,                                          /* tp_weaklistoffset */
     0,                                          /* tp_iter */
     0,                                          /* tp_iternext */
-    PercentStyle_methods,                       /* tp_methods */
+    FormatStyle_methods,                       /* tp_methods */
     0,                       /* tp_members */
     0,                                          /* tp_getset */
     0,                                          /* tp_base */
@@ -381,8 +457,8 @@ PyTypeObject PercentStyleType = {
     0,                                          /* tp_descr_get */
     0,                                          /* tp_descr_set */
     0,                                          /* tp_dictoffset */
-    (initproc)PercentStyle_init,                /* tp_init */
+    (initproc)FormatStyle_init,                /* tp_init */
     0,                                          /* tp_alloc */
-    PercentStyle_new,                           /* tp_new */
+    FormatStyle_new,                           /* tp_new */
     PyObject_Del,                               /* tp_free */
 };

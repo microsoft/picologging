@@ -16,10 +16,13 @@ INFO: int
 DEBUG: int
 NOTSET: int
 
-_SysExcInfoType: TypeAlias = Union[tuple[type[BaseException], BaseException, TracebackType | None], tuple[None, None, None]]
+_SysExcInfoType: TypeAlias = Union[
+    tuple[type[BaseException], BaseException, TracebackType | None],
+    tuple[None, None, None],
+]
 _ExcInfoType: TypeAlias = None | bool | _SysExcInfoType | BaseException
 _ArgsType: TypeAlias = tuple[object, ...] | Mapping[str, object]
-_Level: TypeAlias = int # Not | str like it is in logging
+_Level: TypeAlias = int  # Not | str like it is in logging
 _FormatStyle: TypeAlias = Literal["%", "{", "$"]
 
 class LogRecord:
@@ -57,7 +60,6 @@ class LogRecord:
     stack_info: Optional[Any]
     message: str
     asctime: str
-
     def __init__(
         self,
         name: str,
@@ -69,7 +71,7 @@ class LogRecord:
         exc_info: Any,
         func=None,
         sinfo=None,
-        **kwargs
+        **kwargs,
     ): ...
     def getMessage(self) -> str:
         """
@@ -82,7 +84,6 @@ class LogRecord:
 
 class Formatter:
     datefmt: str
-
     def __init__(
         self,
         fmt: str | None = ...,
@@ -92,7 +93,6 @@ class Formatter:
         *,
         defaults: Mapping[str, Any] | None = ...,
     ) -> None: ...
-
     def format(self, record: LogRecord) -> str: ...
     def formatMessage(self, record: LogRecord) -> str: ...  # undocumented
     def formatStack(self, stack_info: str) -> str: ...
@@ -111,7 +111,9 @@ class Handler(Filterer):
     level: int  # undocumented
     formatter: Formatter | None  # undocumented
     name: str | None  # undocumented
-    def __init__(self, name: Optional[str] = None, level: Optional[int] = NOTSET) -> None: ...
+    def __init__(
+        self, name: Optional[str] = None, level: Optional[int] = NOTSET
+    ) -> None: ...
     def acquire(self) -> None: ...
     def release(self) -> None: ...
     def setLevel(self, level: int) -> None: ...
@@ -211,7 +213,6 @@ class Logger(Filterer):
         stacklevel: int = ...,
         extra: Mapping[str, object] | None = ...,
     ) -> None: ...
-    
     fatal = critical
     def filter(self, record: LogRecord) -> bool: ...
     def addHandler(self, hdlr: Handler) -> None: ...
@@ -224,9 +225,7 @@ class Filter:
     def __init__(self, name: str = ...) -> None: ...
     def filter(self, record: LogRecord) -> bool: ...
 
-
 def getLogger(name: str | None = ...) -> Logger: ...
-
 def debug(
     msg: object,
     *args: object,
@@ -292,7 +291,6 @@ def log(
     stacklevel: int = ...,
     extra: Mapping[str, object] | None = ...,
 ) -> None: ...
-
 def basicConfig(
     *,
     filename: StrPath | None = ...,
@@ -327,7 +325,12 @@ class FileHandler(StreamHandler[TextIOWrapper]):
     delay: bool  # undocumented
     errors: str | None  # undocumented
     def __init__(
-        self, filename: StrPath, mode: str = ..., encoding: str | None = ..., delay: bool = ..., errors: str | None = ...
+        self,
+        filename: StrPath,
+        mode: str = ...,
+        encoding: str | None = ...,
+        delay: bool = ...,
+        errors: str | None = ...,
     ) -> None: ...
 
 class NullHandler(Handler): ...
@@ -335,7 +338,9 @@ class NullHandler(Handler): ...
 root: Logger
 
 class PercentStyle:
-    def __init__(self, fmt: str, *, defaults: Mapping[str, Any] | None = ...) -> None: ...
+    def __init__(
+        self, fmt: str, *, defaults: Mapping[str, Any] | None = ...
+    ) -> None: ...
     def usesTime(self) -> bool: ...
     def validate(self) -> None: ...
     def format(self, record: Any) -> str: ...

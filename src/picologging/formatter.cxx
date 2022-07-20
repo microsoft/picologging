@@ -20,7 +20,7 @@ PyObject* Formatter_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     PyObject *fmt = nullptr, *dateFmt = nullptr;
     int style = '%';
-    bool validate = true;
+    int validate = 1;
     static const char *kwlist[] = {"fmt", "datefmt", "style", "validate", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOCp", const_cast<char**>(kwlist), &fmt, &dateFmt, &style, &validate))
         return -1;
@@ -30,9 +30,13 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 
     switch (style){
         case '%':
+        case '{':
             /* Call the class object. */
-            styleType = (PyObject*)&PercentStyleType;
+            styleType = (PyObject*)&FormatStyleType;
             break;
+        case '$':
+            PyErr_Format(PyExc_NotImplementedError, "String Templates are not supported in picologging.");
+            return -1;
         default:
             PyErr_Format(PyExc_ValueError, "Unknown style '%c'", style);
             return -1;
@@ -41,19 +45,19 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         fmt = Py_None;
     if (dateFmt == nullptr)
         dateFmt = Py_None;
-    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, NULL);
+    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, PyUnicode_FromFormat("%c", style), NULL);
     if (styleCls == nullptr){
-        PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
+        //PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return -1;
     }
 
     self->style = styleCls;
     Py_INCREF(self->style);
 
-    self->fmt = ((PercentStyle*)(self->style))->fmt;
+    self->fmt = ((FormatStyle*)(self->style))->fmt;
     Py_INCREF(self->fmt);
 
-    self->usesTime = (PercentStyle_usesTime((PercentStyle*)self->style) == Py_True);
+    self->usesTime = (FormatStyle_usesTime((FormatStyle*)self->style) == Py_True);
 
     self->dateFmt = dateFmt;
     Py_INCREF(self->dateFmt);
@@ -102,8 +106,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.
         }
 
-        if (PercentStyle_CheckExact(self->style)){
-            result = PercentStyle_format((PercentStyle*)self->style, record);
+        if (FormatStyle_CheckExact(self->style)){
+            result = FormatStyle_format((FormatStyle*)self->style, record);
         } else {
             result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
         }
@@ -111,6 +115,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             return nullptr;
 
         if (logRecord->excInfo != Py_None && logRecord->excText == Py_None){
+            if (!PyTuple_Check(logRecord->excInfo)) {
+                PyErr_Format(PyExc_TypeError, "LogRecord.excInfo must be a tuple.");
+                return nullptr;
+            }
             PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
             PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
             PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference
@@ -148,8 +156,10 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             Py_DECREF(sio);
             Py_DECREF(sio_cls);
             Py_DECREF(print_exception);
-            if (!PYUNICODE_ENDSWITH(s, self->_const_line_break)){
-                PyUnicode_Append(&s, self->_const_line_break);
+            if (PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+                PyObject* s2 = PyUnicode_Substring(s, 0, PyUnicode_GetLength(s) - 1);
+                Py_DECREF(s);
+                s = s2;
             }
             Py_XDECREF(logRecord->excText);
             logRecord->excText = s; // Use borrowed ref
@@ -183,8 +193,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
 }
 
 PyObject* Formatter_usesTime(Formatter *self) {
-    if (PercentStyle_CheckExact(self->style)){
-        return PercentStyle_usesTime((PercentStyle*)self->style);
+    if (FormatStyle_CheckExact(self->style)){
+        return FormatStyle_usesTime((FormatStyle*)self->style);
     } else {
         return PyObject_CallMethod_NOARGS(self->style, PyUnicode_FromString("usesTime"));
     }

@@ -64,7 +64,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
 {
   if (PyType_Ready(&LogRecordType) < 0)
     return NULL;
-  if (PyType_Ready(&PercentStyleType) < 0)
+  if (PyType_Ready(&FormatStyleType) < 0)
     return NULL;
   if (PyType_Ready(&FormatterType) < 0)
     return NULL;
@@ -92,7 +92,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
     return NULL;
 
   Py_INCREF(&LogRecordType);
-  Py_INCREF(&PercentStyleType);
+  Py_INCREF(&FormatStyleType);
   Py_INCREF(&FormatterType);
   Py_INCREF(&FiltererType);
   Py_INCREF(&LoggerType);
@@ -105,8 +105,8 @@ PyMODINIT_FUNC PyInit__picologging(void)
     Py_DECREF(m);
     return NULL;
   }
-  if (PyModule_AddObject(m, "PercentStyle", (PyObject *)&PercentStyleType) < 0){
-    Py_DECREF(&PercentStyleType);
+  if (PyModule_AddObject(m, "FormatStyle", (PyObject *)&FormatStyleType) < 0){
+    Py_DECREF(&FormatStyleType);
     Py_DECREF(m);
     return NULL;
   }
@@ -159,9 +159,17 @@ PyMODINIT_FUNC PyInit__picologging(void)
   PyObject* print_exception = PyObject_GetAttrString(traceback, "print_exception");
   if (print_exception == NULL)
     return NULL;
+  PyObject* print_stack = PyObject_GetAttrString(traceback, "print_stack");
+  if (print_stack == NULL)
+    return NULL;
   Py_DECREF(traceback);
   if (PyModule_AddObject(m, "print_exception", print_exception) < 0){
     Py_DECREF(print_exception);
+    Py_DECREF(m);
+    return NULL;
+  }
+  if (PyModule_AddObject(m, "print_stack", print_stack) < 0){
+    Py_DECREF(print_stack);
     Py_DECREF(m);
     return NULL;
   }

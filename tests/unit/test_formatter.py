@@ -161,4 +161,9 @@ def test_exc_info_invalid_value_types():
     with pytest.raises(TypeError):
         f.format(record)
 
-# TODO : test defaults
+# TODO #41 : test defaults are propagating to string formatters
+
+def test_formatter_templates():
+    # Not supported, so check it doesn't just crash
+    with pytest.raises(NotImplementedError):
+        Formatter("%(message)s", style='$')

@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.0
+
+* Added `MemoryHandler`
+
+## 0.6.0
+
+* Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging by @tonybaloney in https://github.com/microsoft/picologging/pull/44
+* Fix a crash on ubuntu by @tonybaloney in https://github.com/microsoft/picologging/pull/42
+* Add BufferingHandler by @aminalaee in https://github.com/microsoft/picologging/pull/45
+* Fixes a crash on string literal within a loop in certain cases
+
+## 0.5.1
+
+* Fixes a crash in 32-bit Linux wheels crashing when `validate=True` flag is used for the Formatter type
+
+## 0.5.0
+
+* String format `{field}` is now supported using `Formatter(style='{')`
+* Logger now supports `sinfo=True` to add stack info to log messages
+* Fixed a bug where formatters using the `created` field were not correctly formatted
+* Fixed a bug where formatters using the thread id, `thread` field were formatted as signed int instead of unsigned long
+* Fixed a bug in the `__repr__` method of PercentStyle
+* Fixed a bug that the Logger.exception() method wasn't checking the log level for ERROR
+* Fixed a bug in the formatting of exception messages
+* Setting the parent of a logger which has a NOTSET level will now update it's logging level to adopt the next set parent's level
+
 ## 0.4.0
 
 * Add Fuzzing and coverage configuration for Clang/GCC by @tonybaloney in https://github.com/microsoft/picologging/pull/26

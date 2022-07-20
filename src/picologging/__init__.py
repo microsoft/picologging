@@ -14,7 +14,7 @@ import sys
 import os
 from ._picologging import (
     LogRecord,
-    PercentStyle,
+    FormatStyle,
     Formatter,
     Logger,
     Filterer,
@@ -25,23 +25,49 @@ from ._picologging import (
 )  # NOQA
 from logging import (
     _checkLevel,
-    _STYLES,
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    FATAL,
-    INFO,
-    NOTSET,
-    WARN,
-    WARNING,
-    BufferingFormatter,
-    StrFormatStyle,
     StringTemplateStyle,
+    BufferingFormatter,
 )
 import io
 import warnings
 
-__version__ = "0.4.0"
+__version__ = "0.7.0"
+
+CRITICAL = 50
+FATAL = CRITICAL
+ERROR = 40
+WARNING = 30
+WARN = WARNING
+INFO = 20
+DEBUG = 10
+NOTSET = 0
+
+BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
+
+
+class PercentStyle(FormatStyle):
+    def __new__(cls, *args, **kwargs):
+        kwargs["style"] = "%"
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, fmt, defaults=None):
+        super().__init__(fmt, defaults, style="%")
+
+
+class StrFormatStyle(FormatStyle):
+    def __new__(cls, *args, **kwargs):
+        kwargs["style"] = "{"
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, fmt, defaults=None):
+        super().__init__(fmt, defaults, style="{")
+
+
+_STYLES = {
+    "%": (PercentStyle, BASIC_FORMAT),
+    "{": (StrFormatStyle, "{levelname}:{name}:{message}"),
+    "$": (StringTemplateStyle, "${levelname}:${name}:${message}"),
+}
 
 
 class Manager:
@@ -50,7 +76,7 @@ class Manager:
     holds the hierarchy of loggers.
     """
 
-    def __init__(self, rootnode):
+    def __init__(self, rootnode, cls=None):
         """
         Initialize the manager with the root node of the logger hierarchy.
         """
@@ -58,6 +84,10 @@ class Manager:
         self.disable = 0
         self.emittedNoHandlerWarning = False
         self.loggerDict = {}
+        if not cls:
+            self.cls = Logger
+        else:
+            self.cls = cls
 
     @property
     def disable(self):
@@ -81,13 +111,13 @@ class Manager:
         if name in self.loggerDict:
             rv = self.loggerDict[name]
         else:
-            rv = Logger(name)
+            rv = self.cls(name)
             rv.manager = self
             self.loggerDict[name] = rv
         return rv
 
     def setLoggerClass(self, klass):
-        raise NotImplementedError("setLoggerClass is not supported in picologging.")
+        self.cls = klass
 
     def setLogRecordFactory(self, factory):
         raise NotImplementedError("setLoggerClass is not supported in picologging.")
@@ -95,6 +125,7 @@ class Manager:
 
 root = Logger(name="root", level=WARNING)
 manager = Manager(root)
+
 
 def basicConfig(**kwargs):
     """
@@ -326,6 +357,7 @@ def disable(level=CRITICAL):
     root.manager.disable = level
     root.manager._clear_cache()
 
+
 class NullHandler(Handler):
     """
     This handler does nothing. It's intended to be used to avoid the
@@ -336,6 +368,7 @@ class NullHandler(Handler):
     a NullHandler and add it to the top-level logger of the library module or
     package.
     """
+
     def handle(self, record):
         """Stub."""
 
