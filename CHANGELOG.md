@@ -3,6 +3,7 @@
 ## 0.7.0
 
 * Added `MemoryHandler`
+* Added `SocketHandler`
 
 ## 0.6.0
 

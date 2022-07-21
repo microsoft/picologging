@@ -874,7 +874,7 @@ class SocketHandler(picologging.Handler):
         ei = record.exc_info
         if ei:
             # just to get traceback text into record.exc_text ...
-            _ = self.format(record)
+            self.format(record)
         # See issue #14436: If msg or args are objects, they may not be
         # available on the receiving end. So we convert the msg % args
         # to a string, save it as msg and zap the args.
