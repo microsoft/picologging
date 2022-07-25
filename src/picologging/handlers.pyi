@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Callable, Pattern
 from _typeshed import StrPath
 from queue import Queue, SimpleQueue
+from socket import socket
 
 from picologging import Handler, FileHandler, LogRecord
 
@@ -115,3 +116,19 @@ class MemoryHandler(BufferingHandler):
         flushOnClose: bool = ...,
     ) -> None: ...
     def setTarget(self, target: Handler | None) -> None: ...
+
+class SocketHandler(Handler):
+    host: str  # undocumented
+    port: int | None  # undocumented
+    address: tuple[str, int] | str  # undocumented
+    sock: socket | None  # undocumented
+    closeOnError: bool  # undocumented
+    retryTime: float | None  # undocumented
+    retryStart: float  # undocumented
+    retryFactor: float  # undocumented
+    retryMax: float  # undocumented
+    def __init__(self, host: str, port: int | None) -> None: ...
+    def makeSocket(self, timeout: float = ...) -> socket: ...  # timeout is undocumented
+    def makePickle(self, record: LogRecord) -> bytes: ...
+    def send(self, s: bytes) -> None: ...
+    def createSocket(self) -> None: ...

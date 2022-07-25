@@ -26,6 +26,7 @@ from logging import (
     _checkLevel,
     StringTemplateStyle,
     BufferingFormatter,
+    makeLogRecord,
 )
 import io
 import warnings
