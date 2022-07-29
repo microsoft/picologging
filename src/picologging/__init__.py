@@ -443,3 +443,37 @@ class FileHandler(StreamHandler):
     def __repr__(self):
         level = getLevelName(self.level)
         return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
+
+
+_logRecordFactory = LogRecord
+
+
+def setLogRecordFactory(factory):
+    """
+    Set the factory to be used when instantiating a log record.
+    """
+
+    global _logRecordFactory
+    _logRecordFactory = factory
+
+
+def getLogRecordFactory():
+    """
+    Return the factory to be used when instantiating a log record.
+    """
+
+    return _logRecordFactory
+
+
+def makeLogRecord(dict):
+    """
+    Make a LogRecord whose attributes are defined by the specified dictionary,
+    This function is useful for converting a logging event received over
+    a socket connection (which is sent as a dictionary) into a LogRecord
+    instance.
+    """
+
+    rv = _logRecordFactory("", NOTSET, "", 0, "", None, None)
+    for k, v in dict.items():
+        setattr(rv, k, v)
+    return rv
