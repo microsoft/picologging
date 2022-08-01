@@ -16,13 +16,14 @@ levels = [
 @pytest.mark.parametrize("level, level_name", levels)
 def test_getlevelname(level, level_name):
     assert picologging.getLevelName(level) == level_name
+    assert picologging.getLevelName(level_name) == level
+    assert picologging.getLevelName(100) == "Level 100"
+    assert picologging.getLevelName("EXample") == "Level EXample"
 
 
 def test_getlevelname_invalid_level():
-    assert picologging.getLevelName(100) == ""
-
     with pytest.raises(TypeError):
-        picologging.getLevelName("100")
+        picologging.getLevelName(None)
 
 
 def test_root_logger_critical(capsys):
