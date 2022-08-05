@@ -13,7 +13,7 @@
 #include "handler.hxx"
 #include "streamhandler.hxx"
 
-const std::unordered_map<unsigned short, std::string> LEVELS_TO_NAMES = {
+const std::unordered_map<short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
   {LOG_LEVEL_INFO, "INFO"},
   {LOG_LEVEL_WARNING, "WARNING"},
@@ -22,8 +22,17 @@ const std::unordered_map<unsigned short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_NOTSET, "NOTSET"},
 };
 
-std::string _getLevelName(unsigned short level) {
-  std::unordered_map<unsigned short, std::string>::const_iterator it;
+const std::unordered_map<std::string, short> NAMES_TO_LEVELS = {
+  {"DEBUG", LOG_LEVEL_DEBUG},
+  {"INFO", LOG_LEVEL_INFO},
+  {"WARNING", LOG_LEVEL_WARNING},
+  {"ERROR", LOG_LEVEL_ERROR},
+  {"CRITICAL", LOG_LEVEL_CRITICAL},
+  {"NOTSET", LOG_LEVEL_NOTSET},
+};
+
+std::string _getLevelName(short level) {
+  std::unordered_map<short, std::string>::const_iterator it;
   it = LEVELS_TO_NAMES.find(level);
 
   if (it == LEVELS_TO_NAMES.end()){
@@ -33,14 +42,39 @@ std::string _getLevelName(unsigned short level) {
   return it->second;
 }
 
-static PyObject *getLevelName(PyObject *self, PyObject *level) {
-    if (!PyLong_Check(level)) {
-        PyErr_SetString(PyExc_TypeError, "level must be an integer");
-        return NULL;
-    }
+short _getLevelByName(std::string levelName) {
+  std::unordered_map<std::string, short>::const_iterator it;
+  it = NAMES_TO_LEVELS.find(levelName);
 
-    std::string levelName = _getLevelName((unsigned short)PyLong_AsUnsignedLongMask(level));
-    return PyUnicode_FromString(levelName.c_str());
+  if (it == NAMES_TO_LEVELS.end()){
+    return -1;
+  }
+
+  return it->second;
+}
+
+static PyObject *getLevelName(PyObject *self, PyObject *level) {
+  if (PyLong_Check(level)) {
+    short levelValue = (short)PyLong_AsLong(level);
+    std::string levelName = _getLevelName(levelValue);
+    if (levelName.length() > 0) {
+      return PyUnicode_FromString(levelName.c_str());
+    }
+    PyErr_Format(PyExc_ValueError, "Invalid level value: %d", levelValue);
+    return nullptr;
+  }
+
+  if (PyUnicode_Check(level)) {
+    short levelValue = _getLevelByName(PyUnicode_AsUTF8(level));
+    if (levelValue >= 0) {
+      return PyLong_FromLong(levelValue);
+    }
+    PyErr_Format(PyExc_ValueError, "Invalid level value: %U", level);
+    return nullptr;
+  }
+
+  PyErr_SetString(PyExc_TypeError, "level must be an integer or a string.");
+  return NULL;
 }
 
 //-----------------------------------------------------------------------------
