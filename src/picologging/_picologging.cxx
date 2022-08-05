@@ -60,7 +60,8 @@ static PyObject *getLevelName(PyObject *self, PyObject *level) {
     if (levelName.length() > 0) {
       return PyUnicode_FromString(levelName.c_str());
     }
-    return PyUnicode_FromFormat("Level %d", levelValue);
+    PyErr_Format(PyExc_ValueError, "Invalid level value: %d", levelValue);
+    return nullptr;
   }
 
   if (PyUnicode_Check(level)) {
@@ -68,7 +69,8 @@ static PyObject *getLevelName(PyObject *self, PyObject *level) {
     if (levelValue >= 0) {
       return PyLong_FromLong(levelValue);
     }
-    return PyUnicode_FromFormat("Level %U", level);
+    PyErr_Format(PyExc_ValueError, "Invalid level value: %U", level);
+    return nullptr;
   }
 
   PyErr_SetString(PyExc_TypeError, "level must be an integer or a string.");
