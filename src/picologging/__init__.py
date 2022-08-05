@@ -445,26 +445,6 @@ class FileHandler(StreamHandler):
         return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
 
 
-_logRecordFactory = LogRecord
-
-
-def setLogRecordFactory(factory):
-    """
-    Set the factory to be used when instantiating a log record.
-    """
-
-    global _logRecordFactory
-    _logRecordFactory = factory
-
-
-def getLogRecordFactory():
-    """
-    Return the factory to be used when instantiating a log record.
-    """
-
-    return _logRecordFactory
-
-
 def makeLogRecord(dict):
     """
     Make a LogRecord whose attributes are defined by the specified dictionary,
@@ -473,7 +453,7 @@ def makeLogRecord(dict):
     instance.
     """
 
-    rv = _logRecordFactory("", NOTSET, "", 0, "", None, None)
+    rv = LogRecord("", NOTSET, "", 0, "", None, None)
     for k, v in dict.items():
         setattr(rv, k, v)
     return rv

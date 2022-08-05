@@ -132,19 +132,6 @@ def test_basic_config_invalid_arguments():
         picologging.basicConfig(invalid_argument="value")
 
 
-def test_log_record_factory():
-    factory = picologging.getLogRecordFactory()
-
-    assert factory == picologging.LogRecord
-
-    picologging.setLogRecordFactory(logging.LogRecord)
-    factory = picologging.getLogRecordFactory()
-
-    assert factory == logging.LogRecord
-
-    picologging.setLogRecordFactory(picologging.LogRecord)
-
-
 def test_make_log_record():
     log_record = picologging.makeLogRecord({"levelno": picologging.WARNING})
 
