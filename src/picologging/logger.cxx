@@ -80,15 +80,30 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->name);
     self->level = level;
 
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
+            self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_INFO:
             self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_WARNING:
             self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_ERROR:
             self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
@@ -124,18 +139,35 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         return NULL;
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
+            self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_INFO:
             self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_WARNING:
             self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_ERROR:
             self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
+
     Py_RETURN_NONE;
     // TODO: Should reset parent/child loggers
 }
@@ -497,18 +529,34 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     Py_XDECREF(self->parent);
     self->parent = value;
     // Rescan parent levels.
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
+            self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_INFO:
             self->enabledForInfo = true;
+            self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_WARNING:
             self->enabledForWarning = true;
+            self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_ERROR:
             self->enabledForError = true;
+            self->enabledForCritical = true;
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
+
     return 0;
 }
 
