@@ -2,8 +2,10 @@
 
 ## 0.7.0
 
-* Added `MemoryHandler`
-* Added `SocketHandler`
+* Add `MemoryHandler` by @aminalaee in https://github.com/microsoft/picologging/pull/46
+* Make `getLevelName()` work level name arguments by @aminalaee in https://github.com/microsoft/picologging/pull/52
+* Add `makeLogRecord()` by @aminalaee in https://github.com/microsoft/picologging/pull/50
+* Add `SocketHandler` by @aminalaee in https://github.com/microsoft/picologging/pull/48
 
 ## 0.6.0
 
