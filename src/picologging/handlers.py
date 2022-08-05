@@ -141,6 +141,7 @@ class BaseRotatingHandler(picologging.FileHandler):
         handler, if it's callable, passing the source and dest arguments to
         it. If the attribute isn't callable (the default is None), the source
         is simply renamed to the destination.
+
         :param source: The source filename. This is normally the base
                        filename, e.g. 'test.log'
         :param dest:   The destination filename. This is normally
