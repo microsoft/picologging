@@ -443,3 +443,17 @@ class FileHandler(StreamHandler):
     def __repr__(self):
         level = getLevelName(self.level)
         return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
+
+
+def makeLogRecord(dict):
+    """
+    Make a LogRecord whose attributes are defined by the specified dictionary,
+    This function is useful for converting a logging event received over
+    a socket connection (which is sent as a dictionary) into a LogRecord
+    instance.
+    """
+
+    rv = LogRecord("", NOTSET, "", 0, "", None, None)
+    for k, v in dict.items():
+        setattr(rv, k, v)
+    return rv

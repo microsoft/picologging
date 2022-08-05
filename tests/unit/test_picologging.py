@@ -138,3 +138,9 @@ def test_basic_config_invalid_arguments():
     picologging.root.handlers = []
     with pytest.raises(ValueError):
         picologging.basicConfig(invalid_argument="value")
+
+
+def test_make_log_record():
+    log_record = picologging.makeLogRecord({"levelno": picologging.WARNING})
+
+    assert log_record.levelno == picologging.WARNING
