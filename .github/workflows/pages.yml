@@ -30,7 +30,7 @@ jobs:
         uses: actions/configure-pages@v1
       - uses: ammaraskar/sphinx-action@master
         with:
-          pre-build-command: "python -m pip install -r docs/requirements.txt"
+          pre-build-command: "python -m pip install -r docs/requirements.txt && python -m pip install ."
           docs-folder: "docs/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
