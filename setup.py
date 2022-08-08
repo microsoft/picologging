@@ -41,4 +41,8 @@ setup(
             "black",
         ]
     },
+    project_urls={
+        "Source": "https://github.com/microsoft/picologging",
+        "Documentation": "https://microsoft.github.io/picologging/",
+    },
 )

@@ -1,15 +1,3 @@
-"""
-Picologging - an optimized logging library for Python.
-
--------------------------------------------------------------------------------
-
-Some components of this Python package are from Python 3.11 logging library
- for compatibility reasons.
-
-The logging module is Copyright (C) 2001-2019 Vinay Sajip. All Rights Reserved.
-
-CPython 3.11 is licensed under the PSF license.
-"""
 import sys
 import os
 from ._picologging import (
