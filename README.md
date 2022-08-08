@@ -10,7 +10,7 @@ Picologging is a high-performance logging library for Python. picologging is 4-1
 
 Picologging is designed to be used as a *drop-in* replacement for applications which already use logging, and supports the same API as the `logging` module.
 
-Check out the [Documentation](https://picologging.readthedocs.io/en/latest/) for more.
+Check out the [Documentation](https://microsoft.github.io/picologging/) for more.
 
 ## Installation
 
@@ -57,7 +57,7 @@ Run `richbench benchmarks/ --markdown` with the richbench CLI to see the benchma
 
 ## Limitations
 
-See [Limitations](https://picologging.readthedocs.io/en/latest/limitations.html)
+See [Limitations](https://microsoft.github.io/picologging/limitations.html)
 
 ## Contributing
 
