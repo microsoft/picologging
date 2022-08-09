@@ -80,6 +80,11 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->name);
     self->level = level;
 
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -124,6 +129,12 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         return NULL;
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -497,6 +508,11 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     Py_XDECREF(self->parent);
     self->parent = value;
     // Rescan parent levels.
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;

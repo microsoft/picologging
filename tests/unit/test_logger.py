@@ -383,3 +383,24 @@ def test_exception_object_as_exc_info():
     result = tmp.getvalue()
     assert "message" in result
     assert "arghhh!!" in result
+
+
+def test_logger_setlevel_resets_other_levels():
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+    logger = picologging.getLogger("test")
+    logger.addHandler(handler)
+    logger.setLevel(picologging.WARNING)
+
+    logger.debug("test")
+    assert stream.getvalue() == ""
+
+    logger.warning("test")
+    assert stream.getvalue() == "test\n"
+
+    logger.setLevel(picologging.ERROR)
+    logger.warning("test")
+    assert stream.getvalue() == "test\n"
+
+    logger.error("test")
+    assert stream.getvalue() == "test\ntest\n"
