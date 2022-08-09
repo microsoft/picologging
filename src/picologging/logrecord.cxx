@@ -245,10 +245,7 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     return nullptr;
 }
 
-/**
- * Update the message attribute of the object and return the field
- */
-PyObject* LogRecord_getMessage(LogRecord *self)
+PyObject* LogRecord_writeMessage(LogRecord *self)
 {
     PyObject *msg = nullptr;
     PyObject *args = self->args;
@@ -264,12 +261,19 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     if (!self->hasArgs) {
         Py_XDECREF(self->message);
         self->message = msg;
-        Py_XINCREF(self->message);
     } else {
         Py_XDECREF(self->message);
         self->message = PyUnicode_Format(msg, args);
-        Py_XINCREF(self->message);
     }
+}
+
+/**
+ * Update the message attribute of the object and return the field
+ */
+PyObject* LogRecord_getMessage(LogRecord *self)
+{
+    LogRecord_writeMessage(self);
+    Py_XINCREF(self->message);
     return self->message;
 }
 
