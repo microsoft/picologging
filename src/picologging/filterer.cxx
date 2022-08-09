@@ -10,6 +10,8 @@ PyObject* Filterer_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         if (self->filters == NULL)
             return nullptr;
         Py_INCREF(self->filters);
+        self->_const_filter = PyUnicode_FromString("filter");
+        self->_const_remove = PyUnicode_FromString("remove");
     }
     return (PyObject*)self;
 }
@@ -29,24 +31,19 @@ PyObject* Filterer_addFilter(Filterer* self, PyObject *filter) {
 
 PyObject* Filterer_removeFilter(Filterer* self, PyObject *filter) {
     if (PySequence_Contains(self->filters, filter) == 1){
-        PyObject* remove = PyUnicode_FromString("remove");
-        PyObject* result = PyObject_CallMethod_ONEARG(self->filters, remove, filter);
-        Py_DECREF(remove);
-        return result;
+        return PyObject_CallMethod_ONEARG(self->filters, self->_const_remove, filter);
     }
     Py_RETURN_NONE;
 }
 
 PyObject* Filterer_filter(Filterer* self, PyObject *record) {
     bool ret = true;
-    PyObject *filterName = PyUnicode_FromString("filter");
     for (int i = 0; i < PyList_GET_SIZE(self->filters); i++) {
         PyObject *result = Py_None;
         PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
-        if (PyObject_HasAttr(filter, filterName)) {
-            result = PyObject_CallMethod_ONEARG(filter, filterName, record);
+        if (PyObject_HasAttr(filter, self->_const_filter)) {
+            result = PyObject_CallMethod_ONEARG(filter, self->_const_filter, record);
             if (result == NULL) {
-                Py_DECREF(filterName);
                 return NULL;
             }
         } else {
@@ -57,7 +54,6 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
             break;
         }
     }
-    Py_DECREF(filterName);
     if (ret)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -65,6 +61,8 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
 
 PyObject* Filterer_dealloc(Filterer *self) {
     Py_XDECREF(self->filters);
+    Py_XDECREF(self->_const_filter);
+    Py_XDECREF(self->_const_remove);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }
