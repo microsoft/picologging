@@ -264,11 +264,11 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     if (!self->hasArgs) {
         Py_XDECREF(self->message);
         self->message = msg;
-        //Py_XINCREF(self->message);
+        Py_XINCREF(self->message);
     } else {
         Py_XDECREF(self->message);
         self->message = PyUnicode_Format(msg, args);
-        //Py_XINCREF(self->message);
+        Py_XINCREF(self->message);
     }
     return self->message;
 }
