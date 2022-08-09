@@ -185,9 +185,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 
     self->created = _PyTime_AsSecondsDouble(ctime);
     self->msecs = _PyTime_AsMilliseconds(ctime, _PyTime_ROUND_CEILING);
-    self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);
-    Py_INCREF(self->relativeCreated);
-    
+    self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);    
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     // TODO #2 : See if there is a performant way to get the thread name.
     self->threadName = Py_None;

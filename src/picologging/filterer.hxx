@@ -7,6 +7,8 @@
 typedef struct {
     PyObject_HEAD
     PyObject *filters;
+    PyObject *_const_filter;
+    PyObject *_const_remove;
 } Filterer;
 
 int Filterer_init(Filterer *self, PyObject *args, PyObject *kwds);
