@@ -245,7 +245,7 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     return nullptr;
 }
 
-PyObject* LogRecord_writeMessage(LogRecord *self)
+void LogRecord_writeMessage(LogRecord *self)
 {
     PyObject *msg = nullptr;
     PyObject *args = self->args;
