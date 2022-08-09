@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1
+
+* Add  a basic documentation site by @tonybaloney in https://github.com/microsoft/picologging/pull/55
+* Fix Logger setLevel not resetting other levels by @aminalaee in https://github.com/microsoft/picologging/pull/57
+* Fixes reference leaks in filterer 'filter' string and relative time by @tonybaloney in https://github.com/microsoft/picologging/pull/58
+
 ## 0.7.0
 
 * Add `MemoryHandler` by @aminalaee in https://github.com/microsoft/picologging/pull/46
