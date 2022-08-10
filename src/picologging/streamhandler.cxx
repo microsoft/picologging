@@ -48,12 +48,14 @@ PyObject* flush (StreamHandler* self){
     if (!self->stream_has_flush)
         Py_RETURN_NONE;
     Handler_acquire(&self->handler);
-    PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
+    PyObject* result = PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
+    Py_XDECREF(result);
     Handler_release(&self->handler);
     Py_RETURN_NONE;
 }
 
 PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs){
+    PyObject* writeResult = nullptr;
     if (nargs < 1){
         PyErr_SetString(PyExc_ValueError, "emit() takes at least 1 argument");
         return nullptr;
@@ -66,13 +68,15 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
-    if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
+    writeResult = PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg);
+    if (writeResult == nullptr){
         if (!PyErr_Occurred())
             PyErr_SetString(PyExc_RuntimeError, "Cannot write to stream");
         goto error;
     }
     flush(self);
     Py_DECREF(msg);
+    Py_DECREF(writeResult);
     Py_RETURN_NONE;
 error:
     // TODO: #4 handle error path (see handleError(record))
