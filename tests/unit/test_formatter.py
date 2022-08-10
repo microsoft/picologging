@@ -6,7 +6,7 @@ import datetime
 
 def test_formatter_default_fmt():
     f = Formatter()
-    assert f.datefmt == None
+    assert f.datefmt is None
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
     )
@@ -16,7 +16,7 @@ def test_formatter_default_fmt():
 
 def test_formatter_custom_fmt():
     f = Formatter("%(name)s %(levelname)s %(message)s")
-    assert f.datefmt == None
+    assert f.datefmt is None
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
     )
@@ -55,7 +55,7 @@ def test_formatter_custom_datefmt():
 
 def test_formatter_explicit_none_datefmt_style():
     f = Formatter("%(name)s %(levelname)s %(message)s", None, "%")
-    assert f.datefmt == None
+    assert f.datefmt is None
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
     )

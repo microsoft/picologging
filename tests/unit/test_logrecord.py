@@ -27,14 +27,14 @@ def test_logrecord_args():
     assert record.name == "hello"
     assert record.msg == "bork %s"
     assert record.args == ("boom")
-    assert record.message == None
+    assert record.message is None
 
 
 def test_logrecord_getmessage_with_args():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork %s", ("boom"), None
     )
-    assert record.message == None
+    assert record.message is None
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
     assert record.message == "bork boom"
@@ -42,7 +42,7 @@ def test_logrecord_getmessage_with_args():
 
 def test_logrecord_getmessage_no_args():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
-    assert record.message == None
+    assert record.message is None
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
     assert record.message == "bork boom"
@@ -52,7 +52,7 @@ def test_args_format_mismatch():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork boom %s %s", (0,), None
     )
-    assert record.message == None
+    assert record.message is None
     with pytest.raises(TypeError):
         record.getMessage()
 
@@ -61,21 +61,21 @@ def test_args_len_mismatch():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork boom %s", (0, 1, 2), None
     )
-    assert record.message == None
+    assert record.message is None
     with pytest.raises(TypeError):
         record.getMessage()
 
 
 def test_no_args():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", None, None)
-    assert record.message == None
+    assert record.message is None
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
 
 
 def test_no_args_and_format():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork %s", None, None)
-    assert record.message == None
+    assert record.message is None
     assert record.getMessage() == "bork %s"
     assert record.message == "bork %s"
 
@@ -98,10 +98,10 @@ def test_mapping_dict():
 def test_threading_info():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
     assert record.thread == threading.get_ident()
-    assert record.threadName == None  # Not supported
+    assert record.threadName is None  # Not supported
 
 
 def test_process_info():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
     assert record.process == os.getpid()
-    assert record.processName == None  # Not supported
+    assert record.processName is None  # Not supported
