@@ -85,7 +85,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 PyObject* Formatter_format(Formatter *self, PyObject *record){
     if (LogRecord_CheckExact(record)){
         LogRecord* logRecord = (LogRecord*)record;
-        LogRecord_getMessage(logRecord);
+        LogRecord_writeMessage(logRecord);
         PyObject* result = nullptr;
         if (self->usesTime){
             PyObject * asctime = Py_None;

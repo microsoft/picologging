@@ -8,7 +8,7 @@ def test_logger_attributes():
     logger = picologging.Logger("test")
     assert logger.name == "test"
     assert logger.level == logging.NOTSET
-    assert logger.parent == None
+    assert logger.parent is None
     assert logger.propagate == True
     assert logger.handlers == []
     assert logger.disabled == False
@@ -121,7 +121,7 @@ def test_log_debug():
     handler = picologging.StreamHandler(stream)
     handler.setFormatter(picologging.Formatter("%(message)s"))
     logger.addHandler(handler)
-    assert logger.debug("Hello World") == None
+    assert logger.debug("Hello World") is None
     result = stream.getvalue()
     assert result == "Hello World\n"
 
@@ -130,7 +130,7 @@ def test_log_debug_info_level_logger():
     logger = picologging.Logger("test", logging.INFO)
     stream = io.StringIO()
     logger.handlers.append(picologging.StreamHandler(stream))
-    assert logger.debug("Hello World") == None
+    assert logger.debug("Hello World") is None
     result = stream.getvalue()
     assert result == ""
 
@@ -139,7 +139,7 @@ def test_log_debug_info_level_logger_logging_handler():
     logger = picologging.Logger("test", logging.INFO)
     stream = io.StringIO()
     logger.handlers.append(logging.StreamHandler(stream))
-    assert logger.debug("Hello World") == None
+    assert logger.debug("Hello World") is None
     result = stream.getvalue()
     assert result == ""
 
@@ -151,7 +151,7 @@ def test_log_log(level):
     handler = picologging.StreamHandler(stream)
     handler.setFormatter(picologging.Formatter("%(message)s"))
     logger.addHandler(handler)
-    assert logger.log(level, "Hello World") == None
+    assert logger.log(level, "Hello World") is None
     result = stream.getvalue()
     assert result == "Hello World\n"
 

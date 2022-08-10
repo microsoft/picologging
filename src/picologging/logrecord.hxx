@@ -37,6 +37,7 @@ typedef struct {
 
 int LogRecord_init(LogRecord *self, PyObject *args, PyObject *kwds);
 PyObject* LogRecord_dealloc(LogRecord *self);
+void LogRecord_writeMessage(LogRecord *self);
 PyObject* LogRecord_getMessage(LogRecord *self);
 PyObject* LogRecord_repr(LogRecord *self);
 PyObject* LogRecord_getDict(PyObject *, void *);
