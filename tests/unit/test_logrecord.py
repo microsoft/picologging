@@ -37,12 +37,14 @@ def test_logrecord_getmessage_with_args():
     assert record.message == None
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
+    assert record.message == "bork boom"
 
 
 def test_logrecord_getmessage_no_args():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
     assert record.message == None
     assert record.getMessage() == "bork boom"
+    assert record.message == "bork boom"
     assert record.message == "bork boom"
 
 
