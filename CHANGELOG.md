@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+
+* Fix leak on levelname and formatted message https://github.com/microsoft/picologging/pull/59
+* Fixes a leak in the `asctime` field of log record https://github.com/microsoft/picologging/pull/60
+* Fixes a leak in stream writer write() and flush() calls https://github.com/microsoft/picologging/pull/60
+* Fixes a leak in stream close() https://github.com/microsoft/picologging/pull/60
+
 ## 0.7.1
 
 * Add  a basic documentation site by @tonybaloney in https://github.com/microsoft/picologging/pull/55
