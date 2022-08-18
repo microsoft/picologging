@@ -111,7 +111,7 @@ class Manager:
 
 
 root = Logger(name="root", level=WARNING)
-manager = Manager(root)
+root.manager = Manager(root)
 
 
 def basicConfig(**kwargs):
@@ -243,7 +243,7 @@ def getLogger(name=None):
     """
     if not name or isinstance(name, str) and name == root.name:
         return root
-    return manager.getLogger(name)
+    return root.manager.getLogger(name)
 
 
 def critical(msg, *args, **kwargs):
