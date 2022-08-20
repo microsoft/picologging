@@ -103,7 +103,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
 
             Py_XDECREF(logRecord->asctime);
             logRecord->asctime = asctime;
-            Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.
+            if (asctime == Py_None)
+                Py_INCREF(Py_None);
         }
 
         if (FormatStyle_CheckExact(self->style)){

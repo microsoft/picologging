@@ -194,17 +194,19 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             Py_XDECREF(print_stack);
             return nullptr; // Got exception in StringIO.__init__()
         }
-        if (PyObject_CallFunctionObjArgs(
+        PyObject* printStackResult = PyObject_CallFunctionObjArgs(
             print_stack,
             Py_None,
             Py_None,
             sio,
-            NULL) == nullptr)
+            NULL);
+        if (printStackResult == nullptr)
         {
             Py_XDECREF(sio_cls);
             Py_XDECREF(print_stack);
             return nullptr; // Got exception in print_stack()
         }
+        Py_DECREF(printStackResult);
         PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
         if (s == nullptr){
             Py_XDECREF(sio);
@@ -213,7 +215,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             return nullptr; // Got exception in StringIO.getvalue()
         }
         
-        PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+        Py_XDECREF(PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close")));
         Py_DECREF(sio);
         Py_DECREF(sio_cls);
         Py_DECREF(print_stack);
