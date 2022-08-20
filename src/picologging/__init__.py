@@ -12,6 +12,7 @@ from ._picologging import (
 )  # NOQA
 from logging import (
     _checkLevel,
+    Filter,
     StringTemplateStyle,
     BufferingFormatter,
 )
