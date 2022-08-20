@@ -72,6 +72,7 @@ class DictConfigurator(BaseConfigurator):
             raise ValueError("Unsupported version: %s" % config["version"])
         incremental = config.pop("incremental", False)
         EMPTY_DICT = {}
+        picologging._acquireLock()
         try:
             if incremental:
                 handlers = config.get("handlers", EMPTY_DICT)
@@ -211,8 +212,7 @@ class DictConfigurator(BaseConfigurator):
                     except Exception as e:
                         raise ValueError("Unable to configure root " "logger") from e
         finally:
-            pass
-            # picologging._releaseLock()
+            picologging._releaseLock()
 
     def configure_formatter(self, config):
         """Configure a formatter from a dictionary."""
