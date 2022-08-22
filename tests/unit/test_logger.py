@@ -66,17 +66,17 @@ def test_dodgy_parents():
 
 def test_add_filter():
     logger = picologging.Logger("test")
-    filter = logging.Filter("filter1")
+    filter = picologging.Filter("filter1")
     logger.addFilter(filter)
     assert logger.filters == [filter]
-    filter2 = logging.Filter("filter2")
+    filter2 = picologging.Filter("filter2")
     logger.addFilter(filter2)
     assert logger.filters == [filter, filter2]
 
 
 def test_remove_filter():
     logger = picologging.Logger("test")
-    filter = logging.Filter("filter1")
+    filter = picologging.Filter("filter1")
     logger.addFilter(filter)
     assert logger.filters == [filter]
     logger.removeFilter(filter)
@@ -91,7 +91,7 @@ def test_no_filter():
 
 def test_filter_record():
     logger = picologging.Logger("test")
-    filter = logging.Filter("hello")
+    filter = picologging.Filter("hello")
     logger.addFilter(filter)
     record = picologging.LogRecord("hello", logging.INFO, "test", 1, "test", (), {})
     record2 = picologging.LogRecord("goodbye", logging.INFO, "test", 1, "test", (), {})
