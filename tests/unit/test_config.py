@@ -1,5 +1,5 @@
-import picologging
 import pytest
+import picologging
 from picologging.config import dictConfig
 
 
@@ -98,7 +98,7 @@ def test_dictconfig_clear_existing_loggers(tmp_path):
     assert isinstance(logger.handlers[0], picologging.StreamHandler)
 
 
-def test_dictconfig_confg_exceptions():
+def test_dictconfig_config_exceptions():
     with pytest.raises(ValueError):
         dictConfig({})
 
@@ -128,13 +128,14 @@ def test_dictconfig_confg_exceptions():
         dictConfig(config)
 
 
-def test_dictconfig_incremental_confg_exceptions():
+def test_config_exception_invalid_filter_for_handler():
     config = {
         "version": 1,
-        "incremental": True,
         "handlers": {
             "console": {
-                "class": "picologging.ExampleHandler",
+                "class": "picologging.StreamHandler",
+                "filters": ["test_filter"],
+                "level": picologging.DEBUG,
             },
         },
     }
@@ -142,23 +143,31 @@ def test_dictconfig_incremental_confg_exceptions():
     with pytest.raises(ValueError):
         dictConfig(config)
 
+
+def test_dictconfig_incremental_not_supported():
+    config = {"version": 1, "incremental": True}
+
+    with pytest.raises(ValueError):
+        dictConfig(config)
+
+
+def test_dictconfig_formatters_exception():
     config = {
         "version": 1,
-        "incremental": True,
-        "loggers": {
-            "test_config": {"handlers": ["example"]},
+        "formatters": {
+            "example_formatter": {"class": "picologging.NoFormatter"},
         },
     }
 
-    dictConfig(config)
+    with pytest.raises(ValueError):
+        dictConfig(config)
 
+
+def test_dictconfig_filters_exception():
     config = {
         "version": 1,
-        "incremental": True,
-        "handlers": {
-            "console": {
-                "class": "picologging.ExampleHandler",
-            },
+        "filters": {
+            "example_filters": {"()": "picologging.NoFilter"},
         },
     }
 

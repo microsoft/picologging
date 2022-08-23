@@ -1,7 +1,5 @@
 import sys
 import os
-import threading
-import weakref
 from ._picologging import (
     LogRecord,
     FormatStyle,
@@ -60,32 +58,6 @@ _STYLES = {
     "{": (StrFormatStyle, "{levelname}:{name}:{message}"),
     "$": (StringTemplateStyle, "${levelname}:${name}:${message}"),
 }
-
-
-_lock = threading.RLock()
-
-
-def _acquireLock():
-    """
-    Acquire the module-level lock for serializing access to shared data.
-    This should be released with _releaseLock().
-    """
-    if _lock:
-        _lock.acquire()
-
-
-def _releaseLock():
-    """
-    Release the module-level lock acquired by calling _acquireLock().
-    """
-    if _lock:
-        _lock.release()
-
-
-_handlers = weakref.WeakValueDictionary()  # map of handler names to handlers
-_handlerList = (
-    []
-)  # added to allow handlers to be removed in reverse of order initialized
 
 
 class Manager:
@@ -476,33 +448,3 @@ def makeLogRecord(dict):
     for k, v in dict.items():
         setattr(rv, k, v)
     return rv
-
-
-def shutdown(handlerList=_handlerList):
-    """
-    Perform any cleanup actions in the logging system (e.g. flushing
-    buffers).
-    Should be called at application exit.
-    """
-    for wr in reversed(handlerList[:]):
-        # errors might occur, for example, if files are locked
-        # we just ignore them if raiseExceptions is not set
-        try:
-            h = wr()
-            if h:
-                try:
-                    h.acquire()
-                    h.flush()
-                    h.close()
-                except (OSError, ValueError):
-                    # Ignore errors which might be caused
-                    # because handlers have been closed but
-                    # references to them are still around at
-                    # application exit.
-                    pass
-                finally:
-                    h.release()
-        except:  # ignore everything, as we're shutting down
-            if raiseExceptions:
-                raise
-            # else, swallow
