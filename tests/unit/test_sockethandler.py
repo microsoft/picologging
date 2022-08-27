@@ -4,12 +4,17 @@ import socket
 import struct
 import tempfile
 import threading
-from socketserver import ThreadingTCPServer, StreamRequestHandler
+from socketserver import (
+    DatagramRequestHandler,
+    ThreadingTCPServer,
+    StreamRequestHandler,
+    ThreadingUDPServer,
+)
 
 import pytest
 
 import picologging
-from picologging.handlers import SocketHandler
+from picologging.handlers import DatagramHandler, SocketHandler
 
 
 class ControlMixin:
@@ -74,9 +79,52 @@ class TCPServer(ControlMixin, ThreadingTCPServer):
             self.handled.release()
 
 
+class UDPServer(ControlMixin, ThreadingUDPServer):
+    def __init__(self, addr, poll_interval=0.5, bind_and_activate=True):
+        class DelegatingUDPRequestHandler(DatagramRequestHandler):
+            def handle(self):
+                self.server._handler(self)
+
+            def finish(self):
+                data = self.wfile.getvalue()
+                if data:
+                    try:
+                        super(DelegatingUDPRequestHandler, self).finish()
+                    except OSError:
+                        if not self.server._closed:
+                            raise
+
+        ThreadingUDPServer.__init__(
+            self, addr, DelegatingUDPRequestHandler, bind_and_activate
+        )
+        ControlMixin.__init__(self, self.handle_socket, poll_interval)
+        self._closed = False
+        self.log_output = ""
+        self.handled = threading.Semaphore(0)
+
+    def handle_socket(self, request):
+        slen = struct.pack(">L", 0)  # length of prefix
+        packet = request.packet[len(slen) :]
+        obj = pickle.loads(packet)
+        record = picologging.makeLogRecord(obj)
+        self.log_output += record.msg + "\n"
+        self.handled.release()
+
+    def server_bind(self):
+        super().server_bind()
+        self.port = self.socket.getsockname()[1]
+
+    def server_close(self):
+        super().server_close()
+        self._closed = True
+
+
 if hasattr(socket, "AF_UNIX"):
 
     class UnixStreamServer(TCPServer):
+        address_family = socket.AF_UNIX
+
+    class UnixDatagramServer(UDPServer):
         address_family = socket.AF_UNIX
 
 
@@ -177,6 +225,51 @@ def test_unix_sockethandler_emit_exception(monkeypatch):
     handler.closeOnError = True
     logger.debug("test")
     assert handler.sock is None
+
+    handler.close()
+    server.stop()
+    os.remove(address)
+
+
+def test_datagramhandler():
+    server = UDPServer(("localhost", 0), 0.01)
+    server.start()
+    server.ready.wait()
+
+    handler = DatagramHandler("localhost", server.port)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+
+    logger.error("test")
+    server.handled.acquire()
+    logger.debug("test")
+    server.handled.acquire()
+
+    assert server.log_output == "test\ntest\n"
+
+    handler.close()
+    server.stop()
+
+
+@pytest.mark.skipif(not hasattr(socket, "AF_UNIX"), reason="Unix sockets required")
+def test_unix_datagramhandler():
+    address = tempfile.NamedTemporaryFile(prefix="picologging_", suffix=".sock").name
+    server = UnixDatagramServer(address, 0.01)
+    server.start()
+    server.ready.wait()
+
+    handler = DatagramHandler(address, None)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+
+    logger.error("test")
+    server.handled.acquire()
+    logger.debug("test")
+    server.handled.acquire()
+
+    assert server.log_output == "test\ntest\n"
 
     handler.close()
     server.stop()
