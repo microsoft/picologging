@@ -12,6 +12,7 @@ from ._picologging import (
 )  # NOQA
 from logging import (
     _checkLevel,
+    Filter,
     StringTemplateStyle,
     BufferingFormatter,
 )
@@ -30,6 +31,8 @@ DEBUG = 10
 NOTSET = 0
 
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
+
+raiseExceptions = True  # used to see if exceptions during handling should be propagated
 
 
 class PercentStyle(FormatStyle):
