@@ -32,8 +32,6 @@ NOTSET = 0
 
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
-raiseExceptions = True  # used to see if exceptions during handling should be propagated
-
 
 class PercentStyle(FormatStyle):
     def __new__(cls, *args, **kwargs):
