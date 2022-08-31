@@ -3,6 +3,7 @@
 ## 0.8.0
 
 * Add `dictConfig` method https://github.com/microsoft/picologging/pull/61
+* Add `DatagramHandler` https://github.com/microsoft/picologging/pull/64
 
 ## 0.7.2
 
