@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+* Add `formatException` in `Formatter` https://github.com/microsoft/picologging/pull/68
+
 ## 0.8.0
 
 * Add `dictConfig` method https://github.com/microsoft/picologging/pull/61
