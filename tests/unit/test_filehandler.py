@@ -173,7 +173,7 @@ def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     logger.addHandler(handler)
 
     logger.warning("test")
-    handler.rollover_at = time.time() - 1
+    handler.rollover_at = int(time.time()) - 2
 
     logger.warning("test")
     for file_name in os.listdir(tmp_path):
