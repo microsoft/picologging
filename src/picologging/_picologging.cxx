@@ -93,6 +93,7 @@ struct PyModuleDef _picologging_module = {
   picologging_methods
 };
 
+/* LCOV_EXCL_START */
 PyMODINIT_FUNC PyInit__picologging(void)
 {
   if (PyType_Ready(&LogRecordType) < 0)
@@ -212,3 +213,4 @@ PyMODINIT_FUNC PyInit__picologging(void)
 
   return m;
 }
+/* LCOV_EXCL_STOP */
