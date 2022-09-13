@@ -1,11 +1,13 @@
 # picologging
 
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/picologging)](https://pypi.org/project/picologging/) 
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/picologging)](https://pypi.org/project/picologging/)
 [![PyPI](https://img.shields.io/pypi/v/picologging)](https://pypi.org/project/picologging/)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/picologging/badges/version.svg)](https://anaconda.org/conda-forge/picologging)
 [![codecov](https://codecov.io/gh/microsoft/picologging/branch/main/graph/badge.svg?token=KHs6FpQlVW)](https://codecov.io/gh/microsoft/picologging)
 
 > **Warning**
-> This project is in *beta*. There are some incomplete features (see Issues).
+> This project is in *beta*.
+> There are some incomplete features (see [Limitations](https://microsoft.github.io/picologging/limitations.html)).
 
 Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
 
@@ -15,8 +17,16 @@ Check out the [Documentation](https://microsoft.github.io/picologging/) for more
 
 ## Installation
 
+Picologging can be installed from PyPi using pip:
+
 ```console
-$ pip install picologging
+pip install picologging
+```
+
+Or from conda forge using conda:
+
+```console
+conda install -c conda-forge picologging
 ```
 
 ## Usage
@@ -64,7 +74,7 @@ See [Limitations](https://microsoft.github.io/picologging/limitations.html)
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit [cla.opensource.microsoft.com](https://cla.opensource.microsoft.com).
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
