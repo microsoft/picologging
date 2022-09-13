@@ -19,7 +19,7 @@ from logging import (
 import io
 import warnings
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 CRITICAL = 50
 FATAL = CRITICAL
@@ -90,11 +90,6 @@ class Manager:
         Get a logger with the specified name (channel name), creating it
         if it doesn't yet exist. This name is a dot-separated hierarchical
         name, such as "a", "a.b", "a.b.c" or similar.
-
-        If a PlaceHolder existed for the specified name [i.e. the logger
-        didn't exist but a child of it did], replace it with the created
-        logger and fix up the parent/child references which pointed to the
-        placeholder to now point to the logger.
         """
         if name in self.loggerDict:
             rv = self.loggerDict[name]

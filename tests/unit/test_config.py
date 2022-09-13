@@ -173,3 +173,42 @@ def test_dictconfig_filters_exception():
 
     with pytest.raises(ValueError):
         dictConfig(config)
+
+
+def test_reconfigure_dictconfig_with_child_loggers():
+    logger = picologging.getLogger("test_config")
+    logger.addHandler(picologging.StreamHandler())
+
+    config = {
+        "version": 1,
+        "loggers": {
+            "test_config.module": {
+                "handlers": ["console"],
+                "level": "INFO",
+            },
+        },
+        "handlers": {
+            "console": {
+                "class": "picologging.StreamHandler",
+            },
+        },
+    }
+
+    dictConfig(config)
+
+    config = {
+        "version": 1,
+        "loggers": {
+            "test_config": {
+                "handlers": ["console"],
+                "level": "INFO",
+            },
+        },
+        "handlers": {
+            "console": {
+                "class": "picologging.StreamHandler",
+            },
+        },
+    }
+
+    dictConfig(config)

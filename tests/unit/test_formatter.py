@@ -1,5 +1,6 @@
 from picologging import Formatter, LogRecord
 import logging
+import sys
 import pytest
 import datetime
 
@@ -234,3 +235,18 @@ def test_formatter_templates():
     # Not supported, so check it doesn't just crash
     with pytest.raises(NotImplementedError):
         Formatter("%(message)s", style="$")
+
+
+def test_format_exception():
+    pico_f = Formatter("%(message)s")
+
+    try:
+        raise Exception("error")
+    except Exception:
+        ei = sys.exc_info()
+
+    result = pico_f.formatException(ei)
+    assert result.startswith("Traceback (most recent call last):")
+    assert result.endswith(
+        'test_format_exception\n    raise Exception("error")\nException: error'
+    )

@@ -167,16 +167,21 @@ def test_filehandler_repr(tmp_path):
 @pytest.mark.parametrize("utc", [False, True])
 def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     log_file = tmp_path / "log.txt"
-    handler = TimedRotatingFileHandler(log_file, when="S", backupCount=2, utc=utc)
+    handler = TimedRotatingFileHandler(log_file, when="S", backupCount=1, utc=utc)
     logger = picologging.getLogger("test")
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
 
     logger.warning("test")
-    handler.rollover_at = int(time.time()) - 2
+    handler.rollover_at = time.time() - 1
 
     logger.warning("test")
-    for file_name in os.listdir(tmp_path):
+    handler.close()
+
+    files = os.listdir(tmp_path)
+    assert len(files) == 2
+
+    for file_name in files:
         with open(tmp_path / file_name, "r") as file:
             assert file.read() == "test\n"
 

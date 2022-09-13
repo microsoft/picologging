@@ -10,7 +10,7 @@ setup(
     name="picologging",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    version="0.8.0",
+    version="0.8.1",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
     long_description=long_description,

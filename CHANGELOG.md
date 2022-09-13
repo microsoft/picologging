@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1
+
+* Fix `dictconfig` resetting child loggers by @aminalaee in https://github.com/microsoft/picologging/pull/70
+* Add `formatException` method in `Formatter` by @aminalaee in https://github.com/microsoft/picologging/pull/68
+
 ## 0.8.0
 
 * Add `dictConfig` method https://github.com/microsoft/picologging/pull/61

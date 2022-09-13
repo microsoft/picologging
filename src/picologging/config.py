@@ -43,10 +43,9 @@ def _handle_existing_loggers(existing, child_loggers, disable_existing):
     for log in existing:
         logger = root.manager.loggerDict[log]
         if log in child_loggers:
-            if not isinstance(logger, picologging.PlaceHolder):
-                logger.setLevel(picologging.NOTSET)
-                logger.handlers = []
-                logger.propagate = True
+            logger.setLevel(picologging.NOTSET)
+            logger.handlers = []
+            logger.propagate = True
         else:
             logger.disabled = disable_existing
 
