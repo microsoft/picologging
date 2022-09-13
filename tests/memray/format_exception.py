@@ -16,6 +16,7 @@ def test_format_exception():
         'test_format_exception\n    raise Exception("error")\nException: error'
     )
 
+
 if __name__ == "__main__":
     for _ in range(100_000):
         test_format_exception()
