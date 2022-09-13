@@ -81,6 +81,13 @@ def test_remove_filter():
     assert logger.filters == [filter]
     logger.removeFilter(filter)
     assert logger.filters == []
+    logger.removeFilter(filter)
+    assert logger.filters == []
+
+
+def test_delete_filter():
+    filter = picologging.Filter("filter1")
+    del filter
 
 
 def test_no_filter():
