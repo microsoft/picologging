@@ -1,11 +1,13 @@
 # picologging
 
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/picologging)](https://pypi.org/project/picologging/) 
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/picologging)](https://pypi.org/project/picologging/)
 [![PyPI](https://img.shields.io/pypi/v/picologging)](https://pypi.org/project/picologging/)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/picologging/badges/version.svg)](https://anaconda.org/conda-forge/picologging)
 [![codecov](https://codecov.io/gh/microsoft/picologging/branch/main/graph/badge.svg?token=KHs6FpQlVW)](https://codecov.io/gh/microsoft/picologging)
 
 > **Warning**
-> This project is in *beta*. There are some incomplete features (see Issues).
+> This project is in *beta*.
+> There are some incomplete features (see [Limitations](https://microsoft.github.io/picologging/limitations.html)).
 
 Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
 
