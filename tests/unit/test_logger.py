@@ -90,6 +90,22 @@ def test_delete_filter():
     del filter
 
 
+def test_filterer_direct_type():
+    filterable = picologging.Filterer()
+    assert filterable.filters == []
+    filter = picologging.Filter("filter1")
+    filterable.addFilter(filter)
+    assert filterable.filters == [filter]
+    filter2 = picologging.Filter("filter2")
+    filterable.addFilter(filter2)
+    assert filterable.filters == [filter, filter2]
+    filterable.removeFilter(filter)
+    assert filterable.filters == [filter2]
+    filterable.removeFilter(filter2)
+    assert filterable.filters == []
+    del filterable
+
+
 def test_no_filter():
     logger = picologging.Logger("test")
     record = picologging.LogRecord("test", logging.INFO, "test", 1, "test", (), {})
