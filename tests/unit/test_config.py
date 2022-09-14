@@ -248,6 +248,7 @@ def test_configure_with_filters():
         "formatters": {
             "standard": {
                 "format": "%(asctime)s %(levelname)s %(name)s::%(message)s",
+                "validate": True,
             },
         },
         "handlers": {
@@ -279,3 +280,17 @@ def test_configure_with_filters():
         logger.handlers[0].formatter._fmt
         == "%(asctime)s %(levelname)s %(name)s::%(message)s"
     )
+
+
+def test_configure_with_non_defined_handlers():
+    config = {
+        "version": 1,
+        "loggers": {
+            "test_config": {
+                "handlers": ["potato"],
+                "level": "INFO",
+            },
+        }
+    }
+    with pytest.raises(ValueError):
+        dictConfig(config)
