@@ -12,7 +12,7 @@ Formatter Interface
 LogRecord
 ---------
 
-* Process name is not captured, `processName` will always be None (Process ID is captured).
+* Process name is not captured when using `multiprocessing` on Windows and macOS, it will be None.
 * Thread name is not captured, `threadName` will always be None. (Thread ID is captured).
 * LogRecord does not observe the `logging.logThreads`, `logging.logMultiprocessing`, or `logging.logProcesses` globals. It will *always* capture process and thread ID because the check is slower than the capture.
 

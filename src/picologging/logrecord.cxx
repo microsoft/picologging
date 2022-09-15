@@ -1,5 +1,6 @@
 #include <thread>
 #include <filesystem>
+#include <fstream>
 #include "logrecord.hxx"
 #include "compat.hxx"
 #include "picologging.hxx"
@@ -137,6 +138,10 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->levelname = levelname;
     self->pathname = pathname;
     Py_INCREF(pathname);
+    self->process = getpid();
+
+    PyObject* sysModules = PySys_GetObject("modules"); // borrowed
+    PyObject* multiprocessing = PyDict_GetItemString(sysModules, "multiprocessing"); // borrowed
 
 #ifdef CACHE_FILEPATH
     auto filepath = filepathCache.lookup(pathname);
@@ -155,6 +160,31 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->filename = PyUnicode_FromString(fs_path.filename().c_str());
     self->module = PyUnicode_FromString(fs_path.stem().c_str());
 #endif
+#endif
+
+#ifdef __linux__
+    if (multiprocessing == NULL) {
+        self->processName = PyUnicode_FromString("MainProcess");
+        Py_INCREF(self->processName);
+    } else {
+        std::string processName;
+        std::ostringstream procFilePath;
+        procFilePath << "/proc/" << self->process << "/comm";
+        std::ifstream procFile(procFilePath.str());
+        if (procFile) {
+            getline(procFile, processName);
+            self->processName = PyUnicode_FromString(processName.c_str());
+            Py_INCREF(self->processName);   
+        }
+    }
+#else
+    if (multiprocessing == NULL) {
+        self->processName = PyUnicode_FromString("MainProcess");
+        Py_INCREF(self->processName);
+    } else {
+        self->processName = Py_None; // TODO #1 : Implement Windows and macOS
+        Py_INCREF(Py_None);
+    }
 #endif
 
     self->excInfo = exc_info;
@@ -189,10 +219,6 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     // TODO #2 : See if there is a performant way to get the thread name.
     self->threadName = Py_None;
     Py_INCREF(Py_None);
-    // TODO #1 : See if there is a performant way to get the process name.
-    self->processName = Py_None;
-    Py_INCREF(Py_None);
-    self->process = getpid();
     self->message = Py_None;
     Py_INCREF(Py_None);
     self->asctime = Py_None;

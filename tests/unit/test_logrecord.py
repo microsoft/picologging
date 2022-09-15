@@ -1,8 +1,17 @@
 import threading
-from picologging import LogRecord
 import logging
 import pytest
 import os
+import platform
+import sys
+
+from picologging import LogRecord
+
+PROCESS_PLATFORM_MAP = {
+    "Linux": "python",
+    "Darwin": None,
+    "Windows": None,
+}
 
 
 def test_logrecord_standard():
@@ -101,7 +110,12 @@ def test_threading_info():
     assert record.threadName is None  # Not supported
 
 
-def test_process_info():
+def test_process_info(monkeypatch):
+    monkeypatch.setitem(sys.modules, "multiprocessing", True)
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
     assert record.process == os.getpid()
-    assert record.processName is None  # Not supported
+    assert record.processName == PROCESS_PLATFORM_MAP[platform.system()]
+
+    monkeypatch.delitem(sys.modules, "multiprocessing")
+    record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
+    assert record.processName == "MainProcess"
