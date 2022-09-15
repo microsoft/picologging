@@ -290,7 +290,7 @@ def test_configure_with_non_defined_handlers():
                 "handlers": ["potato"],
                 "level": "INFO",
             },
-        }
+        },
     }
     with pytest.raises(ValueError):
         dictConfig(config)
