@@ -40,10 +40,45 @@ def test_logging_custom_level(level):
     assert logger.level == level
 
 
+def test_custom_logger_has_no_parent():
+    logger = picologging.Logger("test")
+    assert logger.parent is None
+
+
+def test_remove_non_existent_handler():
+    logger = picologging.Logger("test")
+    assert logger.removeHandler("handler") is None
+
+
 def test_set_level():
     logger = picologging.Logger("test")
     logger.setLevel(logging.DEBUG)
     assert logger.level == logging.DEBUG
+
+
+def test_disabled_logger():
+    logger = picologging.Logger("test", logging.DEBUG)
+    logger.disabled = True
+    stream = io.StringIO()
+    logger.handlers.append(picologging.StreamHandler(stream))
+    assert logger.debug("Hello World") is None
+    result = stream.getvalue()
+    assert result == ""
+    ex = Exception("arghhh!!")
+    logger.exception("Hello World", ex)
+    result = stream.getvalue()
+    assert result == ""
+
+
+def test_logger_with_logging_handler():
+    logger = picologging.Logger("test", logging.DEBUG)
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(handler)
+    assert logger.debug("Hello World") is None
+    result = stream.getvalue()
+    assert result == "Hello World\n"
 
 
 def test_get_effective_level():
@@ -81,6 +116,29 @@ def test_remove_filter():
     assert logger.filters == [filter]
     logger.removeFilter(filter)
     assert logger.filters == []
+    logger.removeFilter(filter)
+    assert logger.filters == []
+
+
+def test_delete_filter():
+    filter = picologging.Filter("filter1")
+    del filter
+
+
+def test_filterer_direct_type():
+    filterable = picologging.Filterer()
+    assert filterable.filters == []
+    filter = picologging.Filter("filter1")
+    filterable.addFilter(filter)
+    assert filterable.filters == [filter]
+    filter2 = picologging.Filter("filter2")
+    filterable.addFilter(filter2)
+    assert filterable.filters == [filter, filter2]
+    filterable.removeFilter(filter)
+    assert filterable.filters == [filter2]
+    filterable.removeFilter(filter2)
+    assert filterable.filters == []
+    del filterable
 
 
 def test_no_filter():

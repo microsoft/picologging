@@ -10,13 +10,8 @@ int getEffectiveLevel(Logger*self){
     PyObject* logger = (PyObject*)self;
     while (logger != Py_None) {
         if (!Logger_CheckExact(logger)) {
-            PyObject* level = PyObject_GetAttrString(logger, "level");
-            if (level == nullptr){
-                return -1;
-            }
-            int result = PyLong_AsLong(level);
-            Py_DECREF(level);
-            return result;
+            PyErr_SetString(PyExc_TypeError, "logger is not a picologging.Logger");
+            return -1;
         }
         if (((Logger*)logger)->level > 0){
             return ((Logger*)logger)->level;
