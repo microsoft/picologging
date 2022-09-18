@@ -32,3 +32,13 @@ def test_queue_listener():
 
     listener.stop()
     assert stream.getvalue() == "test\n"
+
+
+def test_queue_handler_handle_exception():
+    logger = picologging.Logger("test", picologging.DEBUG)
+    q = queue.Queue(maxsize=1)
+    handler = QueueHandler(q)
+    logger.addHandler(handler)
+
+    handler.queue = None
+    logger.debug("test")

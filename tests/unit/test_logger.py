@@ -96,7 +96,13 @@ def test_dodgy_parents():
     parent = "potato"
     with pytest.raises(TypeError):
         logger.parent = parent
+
+    with pytest.raises(TypeError):
+        logger.parent = logging.getLogger("test")
         logger.getEffectiveLevel()
+
+    with pytest.raises(TypeError):
+        del logger.parent
 
 
 def test_add_filter():
