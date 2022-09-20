@@ -24,12 +24,12 @@ def test_value_error_invalid_string_names():
         assert picologging.getLevelName("EXample") == "Level EXample"
 
 
-junk_level_names = [None, 3.2, (), [], {}]
+junk_level_names = [None, 3.2, (), [], {}, 100]
 
 
 @pytest.mark.parametrize("level", junk_level_names)
 def test_getlevelname_invalid_level(level):
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         picologging.getLevelName(level)
 
 
