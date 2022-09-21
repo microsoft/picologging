@@ -106,7 +106,9 @@ def test_process_info():
     assert record.process == os.getpid()
     assert record.processName is None  # Not supported
 
+
 def test_logrecord_subclass():
     class DerivedLogRecord(LogRecord):
         pass
+
     assert DerivedLogRecord.__base__ is LogRecord
