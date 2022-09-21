@@ -110,7 +110,10 @@ def test_process_info():
 def test_logrecord_subclass():
     class DerivedLogRecord(LogRecord):
         pass
-    record = DerivedLogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
+
+    record = DerivedLogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork boom", (), None
+    )
 
     assert DerivedLogRecord.__base__ is LogRecord
     assert record.message is None
