@@ -92,6 +92,7 @@ PyObject* StreamHandler_setStream(StreamHandler* self, PyObject* stream){
     // Otherwise flush current stream
     PyObject* result = self->stream;
     flush(self);
+    Py_XDECREF(self->stream);
     // And set new stream
     self->stream = stream;
     Py_INCREF(self->stream);
