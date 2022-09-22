@@ -88,6 +88,7 @@ def test_set_stream():
     handler.setStream(b)
     assert handler.stream is b
 
+
 def test_set_stream_return_value():
     h = picologging.StreamHandler()
     stream = io.StringIO()
