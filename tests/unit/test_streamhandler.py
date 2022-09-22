@@ -87,3 +87,15 @@ def test_set_stream():
     b = TestStream()
     handler.setStream(b)
     assert handler.stream is b
+
+
+def test_set_stream_return_value():
+    h = picologging.StreamHandler()
+    stream = io.StringIO()
+    old = h.setStream(stream)
+    assert old is sys.stderr
+    actual = h.setStream(old)
+    assert actual is stream
+    # test that setting to existing value returns None
+    actual = h.setStream(old)
+    assert actual is None

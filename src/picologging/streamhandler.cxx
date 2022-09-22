@@ -85,11 +85,20 @@ error:
 }
 
 PyObject* StreamHandler_setStream(StreamHandler* self, PyObject* stream){
+    // If stream would be unchanged, do nothing and return None
+    if (self->stream == stream) {
+        Py_RETURN_NONE;
+    }
+    // Otherwise flush current stream
+    PyObject* result = self->stream;
+    flush(self);
     Py_XDECREF(self->stream);
+    // And set new stream
     self->stream = stream;
     Py_INCREF(self->stream);
     self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
-    Py_RETURN_NONE;
+    // Return previous stream (now flushed)
+    return result;
 }
 
 PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs) {
