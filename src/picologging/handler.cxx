@@ -46,7 +46,9 @@ PyObject* Handler_dealloc(Handler *self) {
 }
 
 PyObject* Handler_emit(Handler *self, PyObject *record){
-    Py_RETURN_NOTIMPLEMENTED;
+    PyErr_SetString(PyExc_NotImplementedError,
+                        "emit must be implemented by Handler subclasses");
+    return NULL;
 }
 
 PyObject* Handler_handle(Handler *self, PyObject *record) {

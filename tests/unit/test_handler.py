@@ -7,7 +7,10 @@ def test_basic_handler():
     record = picologging.LogRecord(
         "test", picologging.INFO, "test", 1, "test", (), None, None, None
     )
-    handler.handle(record)
+    with pytest.raises(NotImplementedError):
+        handler.handle(record)
+    with pytest.raises(NotImplementedError):
+        handler.emit(None)
 
 
 def test_custom_handler():
