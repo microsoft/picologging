@@ -31,7 +31,7 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         Py_INCREF(self->name);
         self->parent = Py_None;
         Py_INCREF(self->parent);
-        self->propagate = true;
+        self->propagate = Py_True;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
             Py_DECREF(self->parent);
@@ -545,7 +545,7 @@ static PyMethodDef Logger_methods[] = {
 static PyMemberDef Logger_members[] = {
     {"name", T_OBJECT_EX, offsetof(Logger, name), 0, "Logger name"},
     {"level", T_USHORT, offsetof(Logger, level), 0, "Logger level"},
-    {"propagate", T_BOOL, offsetof(Logger, propagate), 0, "Logger propagate"},
+    {"propagate", T_OBJECT_EX, offsetof(Logger, propagate), 0, "Logger propagate"},
     {"handlers", T_OBJECT_EX, offsetof(Logger, handlers), 0, "Logger handlers"},
     {"disabled", T_BOOL, offsetof(Logger, disabled), 0, "Logger disabled"},
     {"manager", T_OBJECT_EX, offsetof(Logger, manager), 0, "Logger manager"},

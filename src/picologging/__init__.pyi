@@ -131,7 +131,7 @@ class Handler(Filterer):
     def createLock(self) -> None: ...
 
 class Logger(Filterer):
-    propagate: bool
+    propagate: object
     name: str
     level: int
     parent: Logger
