@@ -469,17 +469,18 @@ def test_logger_setlevel_resets_other_levels():
     logger.error("test")
     assert stream.getvalue() == "test\ntest\n"
 
+
 def test_logger_propagate_int():
     stream1 = io.StringIO()
     handler1 = picologging.StreamHandler(stream1)
-    logger1 = picologging.getLogger('A')
+    logger1 = picologging.getLogger("A")
     logger1.propagate = 0
     logger1.addHandler(handler1)
     logger1.setLevel(picologging.WARNING)
 
     stream2 = io.StringIO()
     handler2 = picologging.StreamHandler(stream2)
-    logger2 = picologging.getLogger('A.B')
+    logger2 = picologging.getLogger("A.B")
     logger2.propagate = 0
     logger2.addHandler(handler2)
     logger2.setLevel(picologging.WARNING)
@@ -489,4 +490,3 @@ def test_logger_propagate_int():
     logger2.error("test2")
     assert stream1.getvalue() == "test1\n"
     assert stream2.getvalue() == "test2\n"
-
