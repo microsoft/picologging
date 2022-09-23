@@ -115,3 +115,21 @@ def test_streamhandler_repr():
 
     handler = picologging.StreamHandler(StreamWithIntName())
     assert repr(handler) == "<StreamHandler 2 (NOTSET)>"
+
+
+def test_streamhandler_handle_return_value():
+    handler = picologging.StreamHandler()
+    record = picologging.LogRecord(
+        "test", picologging.WARNING, __file__, 1, "test", (), None, None, None
+    )
+
+    assert handler.handle(record) is True
+    assert handler.emit(record) is None
+
+    class TestFilter(picologging.Filter):
+        def filter(self, record):
+            return False
+
+    handler.addFilter(TestFilter())
+    assert handler.handle(record) is None
+    assert handler.emit(record) is None
