@@ -112,7 +112,7 @@ PyObject* StreamHandler_repr(StreamHandler *self)
     std::string level = _getLevelName(self->handler.level);
     return PyUnicode_FromFormat("<%s %U (%s)>",
         _PyType_Name(Py_TYPE(self)),
-        PyObject_Repr(PyObject_GetAttrString(self->stream, "name")),
+        PyObject_Str(PyObject_GetAttrString(self->stream, "name")),
         level.c_str());
 }
 
