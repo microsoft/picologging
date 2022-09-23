@@ -100,17 +100,18 @@ def test_set_stream_return_value():
     actual = h.setStream(old)
     assert actual is None
 
+
 def test_streamhandler_repr():
     class StreamWithName(object):
         level = picologging.NOTSET
-        name = 'beyonce'
+        name = "beyonce"
 
     handler = picologging.StreamHandler(StreamWithName())
-    assert repr(handler) == '<StreamHandler beyonce (NOTSET)>'
+    assert repr(handler) == "<StreamHandler beyonce (NOTSET)>"
 
     class StreamWithIntName(object):
         level = picologging.NOTSET
         name = 2
 
     handler = picologging.StreamHandler(StreamWithIntName())
-    assert repr(handler) == '<StreamHandler 2 (NOTSET)>'
+    assert repr(handler) == "<StreamHandler 2 (NOTSET)>"
