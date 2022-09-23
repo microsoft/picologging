@@ -3,6 +3,7 @@
 #include "streamhandler.hxx"
 #include "handler.hxx"
 #include "compat.hxx"
+#include "picologging.hxx"
 
 PyObject* StreamHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
@@ -106,6 +107,15 @@ PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssi
     Py_RETURN_NONE;
 }
 
+PyObject* StreamHandler_repr(StreamHandler *self)
+{
+    std::string level = _getLevelName(self->handler.level);
+    return PyUnicode_FromFormat("<%s %U (%s)>",
+        _PyType_Name(Py_TYPE(self)),
+        PyObject_Str(PyObject_GetAttrString(self->stream, "name")),
+        level.c_str());
+}
+
 static PyMethodDef StreamHandler_methods[] = {
      {"emit", (PyCFunction)StreamHandler_emit, METH_FASTCALL, "Emit a record."},
      {"flush", (PyCFunction)StreamHandler_flush, METH_FASTCALL, "Flush the stream."},
@@ -128,7 +138,7 @@ PyTypeObject StreamHandlerType = {
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    0,                      /* tp_repr */
+   (reprfunc)StreamHandler_repr,                /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
