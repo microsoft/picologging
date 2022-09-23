@@ -1,5 +1,6 @@
 import threading
 from picologging import LogRecord
+import picologging
 import logging
 import pytest
 import os
@@ -120,3 +121,6 @@ def test_logrecord_subclass():
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
     assert record.message == "bork boom"
+
+    handler = picologging.StreamHandler()
+    handler.emit(record)
