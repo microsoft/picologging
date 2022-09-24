@@ -18,3 +18,4 @@ coverage/
 cov_report
 crash-*
 oom-*
+.idea/
