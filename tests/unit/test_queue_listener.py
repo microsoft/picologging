@@ -2,6 +2,8 @@ import io
 import queue
 from typing import Any
 
+import pytest
+
 from picologging import INFO, Logger, StreamHandler, handlers
 
 logger = Logger("test", INFO)
@@ -14,6 +16,7 @@ handler = handlers.QueueHandler(q)
 logger.addHandler(handler)
 
 
+@pytest.mark.xfail(reason="https://github.com/microsoft/picologging/issues/90")
 def test_queue_listener_handler(caplog: Any) -> None:
     with caplog.at_level("INFO"):
         logger.info("Testing now!")
