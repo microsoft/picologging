@@ -295,32 +295,28 @@ def test_configure_with_non_defined_handlers():
     with pytest.raises(ValueError):
         dictConfig(config)
 
+
 def test_config_existing_disabled_logger_90195():
     # See gh-90195
     config = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
             },
         },
-        'loggers': {
-            'a': {
-                'level': 'DEBUG',
-                'handlers': ['console']
-            }
-        }
+        "loggers": {"a": {"level": "DEBUG", "handlers": ["console"]}},
     }
-    logger = picologging.getLogger('a')
+    logger = picologging.getLogger("a")
     assert logger.disabled == False
     dictConfig(config)
     assert logger.disabled == False
     # Should disable all loggers ...
-    dictConfig({'version': 1})
+    dictConfig({"version": 1})
     assert logger.disabled == True
-    del config['disable_existing_loggers']
+    del config["disable_existing_loggers"]
     dictConfig(config)
     # Logger should be enabled, since explicitly mentioned
     assert logger.disabled == False
