@@ -313,6 +313,7 @@ class DictConfigurator(BaseConfigurator):
         """Configure a non-root logger from a dictionary."""
         logger = picologging.getLogger(name)
         self.common_logger_config(logger, config)
+        logger.disabled = False
         propagate = config.get("propagate", None)
         if propagate is not None:
             logger.propagate = propagate
