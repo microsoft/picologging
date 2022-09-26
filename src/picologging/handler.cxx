@@ -153,6 +153,11 @@ PyObject* Handler_createLock(Handler *self){
     Py_RETURN_NONE;
 }
 
+PyObject* Handler_repr(Handler *self) {
+    std::string level = _getLevelName(self->level);
+    return PyUnicode_FromFormat("<%s (%s)>", _PyType_Name(Py_TYPE(self)), level.c_str());
+}
+
 static PyMethodDef Handler_methods[] = {
     {"setLevel", (PyCFunction)Handler_setLevel, METH_O, "Set the level of the handler."},
     {"setFormatter", (PyCFunction)Handler_setFormatter, METH_O, "Set the formatter of the handler."},
@@ -187,7 +192,7 @@ PyTypeObject HandlerType = {
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    0,                      /* tp_repr */
+    (reprfunc)Handler_repr,                     /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */

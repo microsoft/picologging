@@ -122,3 +122,11 @@ def test_handle_error():
         "test", picologging.INFO, __file__, 1, "test", (), None, None, None
     )
     assert not handler.handleError(record)
+
+
+def test_handler_repr():
+    handler = picologging.Handler()
+    assert repr(handler) == "<Handler (NOTSET)>"
+
+    handler = picologging.Handler(level=picologging.WARNING)
+    assert repr(handler) == "<Handler (WARNING)>"
