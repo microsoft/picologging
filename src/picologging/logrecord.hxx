@@ -46,6 +46,7 @@ _PyTime_t current_time();
 
 extern PyTypeObject LogRecordType;
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
+#define LogRecord_Check(op) PyObject_TypeCheck(op, &LogRecordType)
 
 typedef struct {
     PyObject* filename;
