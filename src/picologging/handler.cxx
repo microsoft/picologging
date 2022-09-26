@@ -70,7 +70,7 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
     }
     
     self->lock->unlock();
-    return result;
+    return result == nullptr ? nullptr : Py_True;
 }
 
 PyObject* Handler_setLevel(Handler *self, PyObject *level){
