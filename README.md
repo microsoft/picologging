@@ -84,6 +84,19 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
+## local development
+
+This project comes bundled with a dev container which sets up an appropriate environment. If you install the Dev Containers extension for VS Code, then opening this project in VS Code should prompt it to open it in the dev container.
+
+Once opened in the dev container, run:
+
+```
+python setup.py clean
+python setup.py build_ext --inplace --build-type Debug
+```
+
+Run the build command whenever you make changes to the files.
+
 ## Trademarks
 
 Some components of this Python package are from CPython 3.11 logging library for compatibility reasons.
