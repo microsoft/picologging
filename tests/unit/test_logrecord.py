@@ -129,5 +129,5 @@ def test_logrecord_subclass():
 def test_logrecord_single_string_arg():
     msg = " %s"
     extra_arg = "\U000b6fb2"
-    lg = LogRecord("", src.picologging.WARNING, "", 12, msg, (extra_arg), None)
-    assert lg.getMessage() == " \U000b6fb2"
+    record = LogRecord("", picologging.WARNING, "", 12, msg, (extra_arg), None)
+    assert record.getMessage() == " \U000b6fb2"
