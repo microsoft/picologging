@@ -38,7 +38,7 @@ def test_logrecord_constructor(name, level, lineno, msg, extra_arg, func, sinfo)
     assert pico_record.module == stdl_record.module
     assert pico_record.filename == stdl_record.filename
     assert pico_record.args == stdl_record.args
-    assert abs(pico_record.created - stdl_record.created) < 0.0005
+    assert abs(pico_record.created - stdl_record.created) < 0.5
     assert pico_record.getMessage() == stdl_record.getMessage()
 
 
