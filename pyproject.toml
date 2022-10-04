@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 [tool.cibuildwheel]
 # skip musl and pypy
 skip = ["*-musllinux*", "pp*"] 
-test-requires = "pytest"
+test-requires = "pytest hypothesis"
 test-command = "python -X dev -m pytest {project}/tests"
 
 [tool.cibuildwheel.macos]
