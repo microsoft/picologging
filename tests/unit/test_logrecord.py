@@ -124,3 +124,10 @@ def test_logrecord_subclass():
 
     handler = picologging.StreamHandler()
     handler.emit(record)
+
+
+def test_logrecord_single_string_arg():
+    msg = " %s"
+    extra_arg = "\U000b6fb2"
+    lg = LogRecord("", src.picologging.WARNING, "", 12, msg, (extra_arg), None)
+    assert lg.getMessage() == " \U000b6fb2"
