@@ -38,6 +38,7 @@ setup(
             "rich",
             "pytest",
             "pytest-cov",
+            "hypothesis",
             "black",
         ]
     },
