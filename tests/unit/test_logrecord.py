@@ -127,7 +127,10 @@ def test_logrecord_subclass():
 
 
 def test_logrecord_single_string_arg():
-    msg = " %s"
-    extra_arg = "\U000b6fb2"
-    record = LogRecord("", picologging.WARNING, "", 12, msg, (extra_arg), None)
+    record = LogRecord("", picologging.WARNING, "", 12, " %s", ("\U000b6fb2"), None)
     assert record.getMessage() == " \U000b6fb2"
+
+
+def test_logrecord_single_empty_string_tuple_arg():
+    record = LogRecord("", 0, "", 0, "" + " %s", ("",), None)
+    assert record.args == ("",)

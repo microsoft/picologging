@@ -96,7 +96,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 
     if (argsLen == 1 && PySequence_Check(args) && !PyUnicode_Check(args)){
         PyObject* firstValue = PySequence_GetItem(args, 0);
-        if (PyMapping_Check(firstValue) && !PyUnicode_Check(args)) {
+        if (PyMapping_Check(firstValue) && !PyUnicode_Check(firstValue)) {
             args = firstValue;
         }
         Py_DECREF(firstValue);
