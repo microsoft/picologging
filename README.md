@@ -133,6 +133,24 @@ It's also helpful to create a `.vscode/launch.json` file like this one:
 Now you can press the "Run and debug" button to run `pytest` from the `gdb` debugger
 and use breakpoint debugging in the C code.
 
+If you would like to be able to dive into the CPython code while debugging, then:
+
+1. Do a git checkout of the tagged branch for the devcontainer's Python version
+into the devcontainer's `/workspaces/` directory. You may need to `sudo`.
+2. Follow the instructions in the CPython README to compile the code.
+3. Add the following key to the the configuration in `launch.json`:
+    ```
+    "sourceFileMap": { "/usr/src/python": "/workspaces/cpython" },
+    ```
+4. Add the following command to the `setupCommands` in `launch.json`:
+    
+    ```
+    {
+        "description": "Find CPython source code",
+        "text": "-gdb-set auto-load safe-path /workspaces/cpython"
+    },
+    ```
+
 ## Trademarks
 
 Some components of this Python package are from CPython 3.11 logging library for compatibility reasons.
