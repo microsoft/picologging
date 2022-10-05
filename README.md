@@ -91,7 +91,7 @@ This project comes bundled with a dev container which sets up an appropriate env
 Once opened in the dev container, run:
 
 ```
-python setup.py clean
+pip install -e ".[dev]"
 python setup.py build_ext --inplace --build-type Debug
 ```
 
