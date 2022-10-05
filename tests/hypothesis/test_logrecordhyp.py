@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from hypothesis import given, strategies as st
+from hypothesis import given, reproduce_failure, strategies as st
 
 import picologging
 
