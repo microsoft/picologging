@@ -29,6 +29,7 @@ include setup.py
 graft src/picologging
 recursive-include tests *.py
 exclude MANIFEST.in
-exclude _skbuild/
+exclude _skbuild
 global-exclude *.py[cod]
 global-exclude *.so
+recursive-include tests *.md
