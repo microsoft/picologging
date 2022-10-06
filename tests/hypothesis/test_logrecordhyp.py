@@ -17,7 +17,7 @@ c_integers = st.integers().filter(lambda x: x < 2147483648 and x > -2147483649)
     func=st.text(),
     sinfo=st.text(),
 )
-def test_logrecord_constructor(name, level, lineno, msg, extra_arg, func, sinfo):
+def test_hypothesis_logrecord_constructor(name, level, lineno, msg, extra_arg, func, sinfo):
     args = (extra_arg,)
     # Create an exception tuple
     exc_info = None
@@ -43,7 +43,7 @@ def test_logrecord_constructor(name, level, lineno, msg, extra_arg, func, sinfo)
 
 
 @given(args=st.lists(st.text(), min_size=0, max_size=10).map(tuple))
-def test_logrecord_args(args):
+def test_hypothesis_logrecord_args(args):
     msg = " %s " * len(args)
     pico_record = picologging.LogRecord("", 10, __file__, 10, msg, args, None)
     stdl_record = logging.LogRecord("", 10, __file__, 10, msg, args, None)
