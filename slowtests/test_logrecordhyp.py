@@ -17,7 +17,9 @@ c_integers = st.integers().filter(lambda x: x < 2147483648 and x > -2147483649)
     func=st.text(),
     sinfo=st.text(),
 )
-def test_hypothesis_logrecord_constructor(name, level, lineno, msg, extra_arg, func, sinfo):
+def test_hypothesis_logrecord_constructor(
+    name, level, lineno, msg, extra_arg, func, sinfo
+):
     args = (extra_arg,)
     # Create an exception tuple
     exc_info = None
