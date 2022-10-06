@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4...3.22)
 
 option(COVERAGE "Enable coverage reporting" OFF)
-option(CACHE_FILEPATH "Enable cache filepath" OFF)
+option(CACHE_FILEPATH "Enable cache filepath" ON)
 project(picologging)
 
 find_package(PythonExtensions REQUIRED)
