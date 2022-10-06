@@ -93,9 +93,9 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         argsLen = PyObject_Length(args);
     }
 
-    if (argsLen == 1 && PySequence_Check(args) && !PyUnicode_Check(args)) {
+    if (argsLen == 1 && PySequence_Check(args)) {
         PyObject* firstValue = PySequence_GetItem(args, 0);
-        if (PyDict_Check(firstValue) || PyTuple_Check(firstValue)) {
+        if (PyDict_Check(firstValue)) {
             args = firstValue;
         }
         Py_DECREF(firstValue);
