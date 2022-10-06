@@ -5,7 +5,7 @@
 #define PICOLOGGING_H
 
 extern struct PyModuleDef _picologging_module;
-std::string _getLevelName(unsigned short);
+std::string _getLevelName(short);
 
 #define PICOLOGGING_MODULE() PyState_FindModule(&_picologging_module)
 

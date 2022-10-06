@@ -1,10 +1,15 @@
+import queue
 import os
+import pickle
 import re
+import socket
+import struct
 import time
-
+import threading
 import picologging
 
 _MIDNIGHT = 24 * 60 * 60  # number of seconds in a day
+
 
 class WatchedFileHandler(picologging.FileHandler):
     """
@@ -23,9 +28,11 @@ class WatchedFileHandler(picologging.FileHandler):
     for such a handler. Furthermore, ST_INO is not supported under
     Windows; stat always returns zero for this value.
     """
+
     def __init__(self, filename, mode="a", encoding=None, delay=False):
-        picologging.FileHandler.__init__(self, filename, mode=mode,
-                                        encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(
+            self, filename, mode=mode, encoding=encoding, delay=delay
+        )
         self.dev, self.ino = -1, -1
         self._statstream()
 
@@ -72,6 +79,7 @@ class BaseRotatingHandler(picologging.FileHandler):
     Not meant to be instantiated directly.  Instead, use RotatingFileHandler
     or TimedRotatingFileHandler.
     """
+
     namer = None
     rotator = None
 
@@ -79,8 +87,9 @@ class BaseRotatingHandler(picologging.FileHandler):
         """
         Use the specified filename for streamed logging
         """
-        picologging.FileHandler.__init__(self, filename, mode=mode,
-                                        encoding=encoding, delay=delay)
+        picologging.FileHandler.__init__(
+            self, filename, mode=mode, encoding=encoding, delay=delay
+        )
         self.mode = mode
         self.encoding = encoding
 
@@ -132,6 +141,7 @@ class BaseRotatingHandler(picologging.FileHandler):
         handler, if it's callable, passing the source and dest arguments to
         it. If the attribute isn't callable (the default is None), the source
         is simply renamed to the destination.
+
         :param source: The source filename. This is normally the base
                        filename, e.g. 'test.log'
         :param dest:   The destination filename. This is normally
@@ -151,8 +161,10 @@ class RotatingFileHandler(BaseRotatingHandler):
     Handler for logging to a set of files, which switches from one file
     to the next when the current file reaches a certain size.
     """
-    def __init__(self, filename, mode="a", maxBytes=0, backupCount=0,
-                 encoding=None, delay=False):
+
+    def __init__(
+        self, filename, mode="a", maxBytes=0, backupCount=0, encoding=None, delay=False
+    ):
         """
         Open the specified file and use it as the stream for logging.
         By default, the file grows indefinitely. You can specify particular
@@ -177,7 +189,9 @@ class RotatingFileHandler(BaseRotatingHandler):
         # on each run.
         if maxBytes > 0:
             mode = "a"
-        BaseRotatingHandler.__init__(self, filename, mode, encoding=encoding, delay=delay)
+        BaseRotatingHandler.__init__(
+            self, filename, mode, encoding=encoding, delay=delay
+        )
         self.maxBytes = maxBytes
         self.backupCount = backupCount
 
@@ -229,9 +243,21 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
     If backupCount is > 0, when rollover is done, no more than backupCount
     files are kept - the oldest ones are deleted.
     """
-    def __init__(self, filename, when='h', interval=1, backupCount=0,
-                 encoding=None, delay=False, utc=False, atTime=None):
-        BaseRotatingHandler.__init__(self, filename, "a", encoding=encoding, delay=delay)
+
+    def __init__(
+        self,
+        filename,
+        when="h",
+        interval=1,
+        backupCount=0,
+        encoding=None,
+        delay=False,
+        utc=False,
+        atTime=None,
+    ):
+        BaseRotatingHandler.__init__(
+            self, filename, "a", encoding=encoding, delay=delay
+        )
         self.when = when.upper()
         self.backupCount = backupCount
         self.utc = utc
@@ -249,27 +275,32 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         # Case of the 'when' specifier is not important; lower or upper case
         # will work.
         if self.when == "S":
-            self.interval = 1 # one second
+            self.interval = 1  # one second
             self.suffix = "%Y-%m-%d_%H-%M-%S"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(\.\w+)?$"
         elif self.when == "M":
-            self.interval = 60 # one minute
+            self.interval = 60  # one minute
             self.suffix = "%Y-%m-%d_%H-%M"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}(\.\w+)?$"
         elif self.when == "H":
-            self.interval = 60 * 60 # one hour
+            self.interval = 60 * 60  # one hour
             self.suffix = "%Y-%m-%d_%H"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}(\.\w+)?$"
         elif self.when == "D" or self.when == "MIDNIGHT":
-            self.interval = 60 * 60 * 24 # one day
+            self.interval = 60 * 60 * 24  # one day
             self.suffix = "%Y-%m-%d"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
         elif self.when.startswith("W"):
-            self.interval = 60 * 60 * 24 * 7 # one week
+            self.interval = 60 * 60 * 24 * 7  # one week
             if len(self.when) != 2:
-                raise ValueError("You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s" % self.when)
+                raise ValueError(
+                    "You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s"
+                    % self.when
+                )
             if self.when[1] < "0" or self.when[1] > "6":
-                raise ValueError("Invalid day specified for weekly rollover: %s" % self.when)
+                raise ValueError(
+                    "Invalid day specified for weekly rollover: %s" % self.when
+                )
             self.dayOfWeek = int(self.when[1])
             self.suffix = "%Y-%m-%d"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}(\.\w+)?$"
@@ -277,7 +308,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             raise ValueError("Invalid rollover interval specified: %s" % self.when)
 
         self.extMatch = re.compile(self.extMatch, re.ASCII)
-        self.interval = self.interval * interval # multiply by units requested
+        self.interval = self.interval * interval  # multiply by units requested
         # The following line added because the filename passed in could be a
         # path object (see Issue #27493), but self.baseFilename will be a string
         filename = self.baseFilename
@@ -313,11 +344,11 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             if self.atTime is None:
                 rotate_ts = _MIDNIGHT
             else:
-                rotate_ts = ((self.atTime.hour * 60 + self.atTime.minute)*60 +
-                    self.atTime.second)
+                rotate_ts = (
+                    self.atTime.hour * 60 + self.atTime.minute
+                ) * 60 + self.atTime.second
 
-            r = rotate_ts - ((current_hour * 60 + current_minute) * 60 +
-                current_second)
+            r = rotate_ts - ((current_hour * 60 + current_minute) * 60 + current_second)
             if r < 0:
                 # Rotate time is before the current time (for example when
                 # self.rotateAt is 13:45 and it now 14:15), rotation is
@@ -341,7 +372,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             # This is because the above time calculation takes us to midnight on this
             # day, i.e. the start of the next day.
             if self.when.startswith("W"):
-                day = current_day # 0 is Monday
+                day = current_day  # 0 is Monday
                 if day != self.dayOfWeek:
                     if day < self.dayOfWeek:
                         daysToWait = self.dayOfWeek - day
@@ -352,9 +383,11 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                         dst_now = t[-1]
                         dstAtRollover = time.localtime(now_rollover_at)[-1]
                         if dst_now != dstAtRollover:
-                            if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
+                            if (
+                                not dst_now
+                            ):  # DST kicks in before next rollover, so we need to deduct an hour
                                 addend = -3600
-                            else:           # DST bows out before next rollover, so we need to add an hour
+                            else:  # DST bows out before next rollover, so we need to add an hour
                                 addend = 3600
                             now_rollover_at += addend
                     result = now_rollover_at
@@ -395,8 +428,12 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 # Our files could be just about anything after custom naming, but
                 # likely candidates are of the form
                 # foo.log.DATETIME_SUFFIX or foo.DATETIME_SUFFIX.log
-                if (not file_name.startswith(base_name) and file_name.endswith(e) and
-                    len(file_name) > (plen + 1) and not file_name[plen+1].isdigit()):
+                if (
+                    not file_name.startswith(base_name)
+                    and file_name.endswith(e)
+                    and len(file_name) > (plen + 1)
+                    and not file_name[plen + 1].isdigit()
+                ):
                     continue
 
             if file_name[:plen] == prefix:
@@ -412,7 +449,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
             result = []
         else:
             result.sort()
-            result = result[:len(result) - self.backupCount]
+            result = result[: len(result) - self.backupCount]
         return result
 
     def doRollover(self):
@@ -441,8 +478,9 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
                 else:
                     addend = -3600
                 time_tuple = time.localtime(t + addend)
-        dfn = self.rotation_filename(self.baseFilename + "." +
-                                     time.strftime(self.suffix, time_tuple))
+        dfn = self.rotation_filename(
+            self.baseFilename + "." + time.strftime(self.suffix, time_tuple)
+        )
         if os.path.exists(dfn):
             os.remove(dfn)
         self.rotate(self.baseFilename, dfn)
@@ -454,13 +492,481 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         now_rollover_at = self.computeRollover(current_time)
         while now_rollover_at <= current_time:
             now_rollover_at = now_rollover_at + self.interval
-        #If DST changes and midnight or weekly rollover, adjust for this.
+        # If DST changes and midnight or weekly rollover, adjust for this.
         if (self.when == "MIDNIGHT" or self.when.startswith("W")) and not self.utc:
             dstAtRollover = time.localtime(now_rollover_at)[-1]
             if dst_now != dstAtRollover:
-                if not dst_now:  # DST kicks in before next rollover, so we need to deduct an hour
+                if (
+                    not dst_now
+                ):  # DST kicks in before next rollover, so we need to deduct an hour
                     addend = -3600
-                else:           # DST bows out before next rollover, so we need to add an hour
+                else:  # DST bows out before next rollover, so we need to add an hour
                     addend = 3600
                 now_rollover_at += addend
         self.rollover_at = now_rollover_at
+
+
+class QueueHandler(picologging.Handler):
+    """
+    This handler sends events to a queue. Typically, it would be used together
+    with a multiprocessing Queue to centralise logging to file in one process
+    (in a multi-process application), so as to avoid file write contention
+    between processes.
+
+    This code is new in Python 3.2, but this class can be copy pasted into
+    user code for use with earlier Python versions.
+    """
+
+    def __init__(self, queue):
+        """
+        Initialise an instance, using the passed queue.
+        """
+        super().__init__()
+        self.queue = queue
+
+    def emit(self, record: picologging.LogRecord):
+        """
+        Emit a record.
+
+        Writes the LogRecord to the queue, copying it first.
+        """
+        try:
+            self.queue.put_nowait(record)
+        except Exception:
+            self.handleError(record)
+
+
+class QueueListener:
+    """
+    This class implements an internal threaded listener which watches for
+    LogRecords being added to a queue, removes them and passes them to a
+    list of handlers for processing.
+    """
+
+    _sentinel = None
+
+    def __init__(self, queue, *handlers, respect_handler_level=False):
+        """
+        Initialise an instance with the specified queue and
+        handlers.
+        """
+        self.queue = queue
+        self.handlers = handlers
+        self._thread = None
+        self.respect_handler_level = respect_handler_level
+
+    def dequeue(self, block):
+        """
+        Dequeue a record and return it, optionally blocking.
+
+        The base implementation uses get. You may want to override this method
+        if you want to use timeouts or work with custom queue implementations.
+        """
+        return self.queue.get(block)
+
+    def start(self):
+        """
+        Start the listener.
+
+        This starts up a background thread to monitor the queue for
+        LogRecords to process.
+        """
+        self._thread = t = threading.Thread(target=self._monitor)
+        t.daemon = True
+        t.start()
+
+    def prepare(self, record):
+        """
+        Prepare a record for handling.
+
+        This method just returns the passed-in record. You may want to
+        override this method if you need to do any custom marshalling or
+        manipulation of the record before passing it to the handlers.
+        """
+        return record
+
+    def handle(self, record):
+        """
+        Handle a record.
+
+        This just loops through the handlers offering them the record
+        to handle.
+        """
+        record = self.prepare(record)
+        for handler in self.handlers:
+            if not self.respect_handler_level:
+                process = True
+            else:
+                process = record.levelno >= handler.level
+            if process:
+                handler.handle(record)
+
+    def _monitor(self):
+        """
+        Monitor the queue for records, and ask the handler
+        to deal with them.
+
+        This method runs on a separate, internal thread.
+        The thread will terminate if it sees a sentinel object in the queue.
+        """
+        q = self.queue
+        has_task_done = hasattr(q, "task_done")
+        while True:
+            try:
+                record = self.dequeue(True)
+                if record is self._sentinel:
+                    if has_task_done:
+                        q.task_done()
+                    break
+                self.handle(record)
+                if has_task_done:
+                    q.task_done()
+            except queue.Empty:
+                break
+
+    def enqueue_sentinel(self):
+        """
+        This is used to enqueue the sentinel record.
+
+        The base implementation uses put_nowait. You may want to override this
+        method if you want to use timeouts or work with custom queue
+        implementations.
+        """
+        self.queue.put_nowait(self._sentinel)
+
+    def stop(self):
+        """
+        Stop the listener.
+
+        This asks the thread to terminate, and then waits for it to do so.
+        Note that if you don't call this before your application exits, there
+        may be some records still left on the queue, which won't be processed.
+        """
+        self.enqueue_sentinel()
+        self._thread.join()
+        self._thread = None
+
+
+class BufferingHandler(picologging.Handler):
+    """
+    A handler class which buffers logging records in memory. Whenever each
+    record is added to the buffer, a check is made to see if the buffer should
+    be flushed. If it should, then flush() is expected to do what's needed.
+    """
+
+    def __init__(self, capacity):
+        """
+        Initialize the handler with the buffer size.
+        """
+        picologging.Handler.__init__(self)
+        self.capacity = capacity
+        self.buffer = []
+
+    def emit(self, record):
+        """
+        Emit a record.
+        Append the record and call flush() if criteria is met.
+        """
+        self.buffer.append(record)
+        if len(self.buffer) >= self.capacity:
+            self.flush()
+
+    def flush(self):
+        """
+        Override to implement custom flushing behaviour.
+        This version just zaps the buffer to empty.
+        """
+        self.acquire()
+        try:
+            self.buffer.clear()
+        finally:
+            self.release()
+
+    def close(self):
+        """
+        Close the handler.
+        This version just flushes and chains to the parent class' close().
+        """
+        try:
+            self.flush()
+        finally:
+            picologging.Handler.close(self)
+
+
+class MemoryHandler(BufferingHandler):
+    """
+    A handler class which buffers logging records in memory, periodically
+    flushing them to a target handler. Flushing occurs whenever the buffer
+    is full, or when an event of a certain severity or greater is seen.
+    """
+
+    def __init__(
+        self, capacity, flushLevel=picologging.ERROR, target=None, flushOnClose=True
+    ):
+        """
+        Initialize the handler with the buffer size, the level at which
+        flushing should occur and an optional target.
+        Note that without a target being set either here or via setTarget(),
+        a MemoryHandler is no use to anyone!
+        The ``flushOnClose`` argument is ``True`` for backward compatibility
+        reasons - the old behaviour is that when the handler is closed, the
+        buffer is flushed, even if the flush level hasn't been exceeded nor the
+        capacity exceeded. To prevent this, set ``flushOnClose`` to ``False``.
+        """
+        BufferingHandler.__init__(self, capacity)
+        self.flushLevel = flushLevel
+        self.target = target
+        # See Issue #26559 for why this has been added
+        self.flushOnClose = flushOnClose
+
+    def setTarget(self, target):
+        """
+        Set the target handler for this handler.
+        """
+        self.acquire()
+        try:
+            self.target = target
+        finally:
+            self.release()
+
+    def flush(self):
+        """
+        For a MemoryHandler, flushing means just sending the buffered
+        records to the target, if there is one. Override if you want
+        different behaviour.
+        The record buffer is also cleared by this operation.
+        """
+        self.acquire()
+        try:
+            if self.target:
+                for record in self.buffer:
+                    self.target.handle(record)
+                self.buffer.clear()
+        finally:
+            self.release()
+
+    def close(self):
+        """
+        Flush, if appropriately configured, set the target to None and lose the
+        buffer.
+        """
+        try:
+            if self.flushOnClose:
+                self.flush()
+        finally:
+            self.acquire()
+            try:
+                self.target = None
+                BufferingHandler.close(self)
+            finally:
+                self.release()
+
+    def emit(self, record):
+        """
+        Emit a record.
+        Append the record and call flush() if criteria is met.
+        """
+        self.buffer.append(record)
+        if (len(self.buffer) >= self.capacity) or (record.levelno >= self.flushLevel):
+            self.flush()
+
+
+class SocketHandler(picologging.Handler):
+    """
+    A handler class which writes logging records, in pickle format, to
+    a streaming socket. The socket is kept open across logging calls.
+    If the peer resets it, an attempt is made to reconnect on the next call.
+    The pickle which is sent is that of the LogRecord's attribute dictionary
+    (__dict__), so that the receiver does not need to have the logging module
+    installed in order to process the logging event.
+    To unpickle the record at the receiving end into a LogRecord, use the
+    makeLogRecord function.
+    """
+
+    def __init__(self, host, port):
+        """
+        Initializes the handler with a specific host address and port.
+        When the attribute *closeOnError* is set to True - if a socket error
+        occurs, the socket is silently closed and then reopened on the next
+        logging call.
+        """
+        picologging.Handler.__init__(self)
+        self.host = host
+        self.port = port
+        if port is None:
+            self.address = host
+        else:
+            self.address = (host, port)
+        self.sock = None
+        self.closeOnError = False
+        self.retryTime = None
+        # Exponential backoff parameters.
+        self.retryStart = 1.0
+        self.retryMax = 30.0
+        self.retryFactor = 2.0
+
+    def makeSocket(self, timeout=1):
+        """
+        A factory method which allows subclasses to define the precise
+        type of socket they want.
+        """
+        if self.port is not None:
+            result = socket.create_connection(self.address, timeout=timeout)
+        else:
+            result = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            result.settimeout(timeout)
+            try:
+                result.connect(self.address)
+            except OSError:
+                result.close()  # Issue 19182
+                raise
+        return result
+
+    def createSocket(self):
+        """
+        Try to create a socket, using an exponential backoff with
+        a max retry time.
+        """
+        now = time.time()
+        # Either retryTime is None, in which case this
+        # is the first time back after a disconnect, or
+        # we've waited long enough.
+        if self.retryTime is None:
+            attempt = True
+        else:
+            attempt = now >= self.retryTime
+        if attempt:
+            try:
+                self.sock = self.makeSocket()
+                self.retryTime = None  # next time, no delay before trying
+            except OSError:
+                # Creation failed, so set the retry time and return.
+                if self.retryTime is None:
+                    self.retryPeriod = self.retryStart
+                else:
+                    self.retryPeriod = self.retryPeriod * self.retryFactor
+                    if self.retryPeriod > self.retryMax:
+                        self.retryPeriod = self.retryMax
+                self.retryTime = now + self.retryPeriod
+
+    def send(self, s):
+        """
+        Send a pickled string to the socket.
+        This function allows for partial sends which can happen when the
+        network is busy.
+        """
+        if self.sock is None:
+            self.createSocket()
+        # self.sock can be None either because we haven't reached the retry
+        # time yet, or because we have reached the retry time and retried,
+        # but are still unable to connect.
+        if self.sock:
+            try:
+                self.sock.sendall(s)
+            except OSError:  # pragma: no cover
+                self.sock.close()
+                self.sock = None  # so we can call createSocket next time
+
+    def makePickle(self, record):
+        """
+        Pickles the record in binary format with a length prefix, and
+        returns it ready for transmission across the socket.
+        """
+        ei = record.exc_info
+        if ei:
+            # just to get traceback text into record.exc_text ...
+            self.format(record)
+        # See issue #14436: If msg or args are objects, they may not be
+        # available on the receiving end. So we convert the msg % args
+        # to a string, save it as msg and zap the args.
+        d = dict(record.__dict__)
+        d["msg"] = record.getMessage()
+        d["args"] = None
+        d["exc_info"] = None
+        # Issue #25685: delete 'message' if present: redundant with 'msg'
+        d.pop("message", None)
+        s = pickle.dumps(d, 1)
+        slen = struct.pack(">L", len(s))
+        return slen + s
+
+    def handleError(self, record):
+        """
+        Handle an error during logging.
+        An error has occurred during logging. Most likely cause -
+        connection lost. Close the socket so that we can retry on the
+        next event.
+        """
+        if self.closeOnError and self.sock:
+            self.sock.close()
+            self.sock = None  # try to reconnect next time
+        else:
+            picologging.Handler.handleError(self, record)
+
+    def emit(self, record):
+        """
+        Emit a record.
+        Pickles the record and writes it to the socket in binary format.
+        If there is an error with the socket, silently drop the packet.
+        If there was a problem with the socket, re-establishes the
+        socket.
+        """
+        try:
+            s = self.makePickle(record)
+            self.send(s)
+        except Exception:
+            self.handleError(record)
+
+    def close(self):
+        """
+        Closes the socket.
+        """
+        self.acquire()
+        try:
+            sock = self.sock
+            if sock:
+                self.sock = None
+                sock.close()
+            picologging.Handler.close(self)
+        finally:
+            self.release()
+
+
+class DatagramHandler(SocketHandler):
+    """
+    A handler class which writes logging records, in pickle format, to
+    a datagram socket. The pickle which is sent is that of the LogRecord's
+    attribute dictionary (__dict__), so that the receiver does not need to
+    have the logging module installed in order to process the logging event.
+    To unpickle the record at the receiving end into a LogRecord, use the
+    makeLogRecord function.
+    """
+
+    def __init__(self, host, port):
+        """
+        Initializes the handler with a specific host address and port.
+        """
+        SocketHandler.__init__(self, host, port)
+        self.closeOnError = False
+
+    def makeSocket(self):
+        """
+        The factory method of SocketHandler is here overridden to create
+        a UDP socket (SOCK_DGRAM).
+        """
+        if self.port is None:
+            family = socket.AF_UNIX
+        else:
+            family = socket.AF_INET
+        s = socket.socket(family, socket.SOCK_DGRAM)
+        return s
+
+    def send(self, s):
+        """
+        Send a pickled string to a socket.
+        This function no longer allows for partial sends which can happen
+        when the network is busy - UDP does not guarantee delivery and
+        can deliver packets out of sequence.
+        """
+        if self.sock is None:
+            self.createSocket()
+        self.sock.sendto(s, self.address)

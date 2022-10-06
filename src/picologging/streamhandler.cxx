@@ -3,6 +3,7 @@
 #include "streamhandler.hxx"
 #include "handler.hxx"
 #include "compat.hxx"
+#include "picologging.hxx"
 
 PyObject* StreamHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
@@ -48,12 +49,14 @@ PyObject* flush (StreamHandler* self){
     if (!self->stream_has_flush)
         Py_RETURN_NONE;
     Handler_acquire(&self->handler);
-    PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
+    PyObject* result = PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
+    Py_XDECREF(result);
     Handler_release(&self->handler);
     Py_RETURN_NONE;
 }
 
 PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs){
+    PyObject* writeResult = nullptr;
     if (nargs < 1){
         PyErr_SetString(PyExc_ValueError, "emit() takes at least 1 argument");
         return nullptr;
@@ -66,13 +69,15 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
-    if (PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg) == nullptr){
+    writeResult = PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg);
+    if (writeResult == nullptr){
         if (!PyErr_Occurred())
             PyErr_SetString(PyExc_RuntimeError, "Cannot write to stream");
         goto error;
     }
     flush(self);
     Py_DECREF(msg);
+    Py_DECREF(writeResult);
     Py_RETURN_NONE;
 error:
     // TODO: #4 handle error path (see handleError(record))
@@ -81,16 +86,34 @@ error:
 }
 
 PyObject* StreamHandler_setStream(StreamHandler* self, PyObject* stream){
+    // If stream would be unchanged, do nothing and return None
+    if (self->stream == stream) {
+        Py_RETURN_NONE;
+    }
+    // Otherwise flush current stream
+    PyObject* result = self->stream;
+    flush(self);
     Py_XDECREF(self->stream);
+    // And set new stream
     self->stream = stream;
     Py_INCREF(self->stream);
     self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
-    Py_RETURN_NONE;
+    // Return previous stream (now flushed)
+    return result;
 }
 
 PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssize_t nargs) {
     flush(self);
     Py_RETURN_NONE;
+}
+
+PyObject* StreamHandler_repr(StreamHandler *self)
+{
+    std::string level = _getLevelName(self->handler.level);
+    return PyUnicode_FromFormat("<%s %U (%s)>",
+        _PyType_Name(Py_TYPE(self)),
+        PyObject_Str(PyObject_GetAttrString(self->stream, "name")),
+        level.c_str());
 }
 
 static PyMethodDef StreamHandler_methods[] = {
@@ -115,7 +138,7 @@ PyTypeObject StreamHandlerType = {
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
-    0,                      /* tp_repr */
+   (reprfunc)StreamHandler_repr,                /* tp_repr */
     0,                                          /* tp_as_number */
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */

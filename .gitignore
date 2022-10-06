@@ -19,3 +19,4 @@ cov_report
 crash-*
 oom-*
 .vs/
+.idea/

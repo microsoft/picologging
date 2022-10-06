@@ -135,7 +135,6 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     }
 
     self->levelname = levelname;
-    Py_INCREF(levelname);
     self->pathname = pathname;
     Py_INCREF(pathname);
 
@@ -143,6 +142,8 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     auto filepath = filepathCache.lookup(pathname);
     self->filename = filepath.filename;
     self->module = filepath.module;
+    Py_INCREF(self->filename);
+    Py_INCREF(self->module);
 #else
     fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
 #ifdef WIN32
@@ -156,8 +157,6 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 #endif
 #endif
 
-    Py_INCREF(self->filename);
-    Py_INCREF(self->module);
     self->excInfo = exc_info;
     Py_INCREF(self->excInfo);
     self->excText = Py_None;
@@ -185,9 +184,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
 
     self->created = _PyTime_AsSecondsDouble(ctime);
     self->msecs = _PyTime_AsMilliseconds(ctime, _PyTime_ROUND_CEILING);
-    self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);
-    Py_INCREF(self->relativeCreated);
-    
+    self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);    
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     // TODO #2 : See if there is a performant way to get the thread name.
     self->threadName = Py_None;
@@ -248,10 +245,7 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     return nullptr;
 }
 
-/**
- * Update the message attribute of the object and return the field
- */
-PyObject* LogRecord_getMessage(LogRecord *self)
+void LogRecord_writeMessage(LogRecord *self)
 {
     PyObject *msg = nullptr;
     PyObject *args = self->args;
@@ -267,12 +261,19 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     if (!self->hasArgs) {
         Py_XDECREF(self->message);
         self->message = msg;
-        Py_XINCREF(self->message);
     } else {
         Py_XDECREF(self->message);
         self->message = PyUnicode_Format(msg, args);
-        Py_XINCREF(self->message);
     }
+}
+
+/**
+ * Update the message attribute of the object and return the field
+ */
+PyObject* LogRecord_getMessage(LogRecord *self)
+{
+    LogRecord_writeMessage(self);
+    Py_XINCREF(self->message);
     return self->message;
 }
 
@@ -371,7 +372,7 @@ PyTypeObject LogRecordType = {
     PyObject_GenericGetAttr,                    /* tp_getattro */
     PyObject_GenericSetAttr,                    /* tp_setattro */
     0,                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT  ,  /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  /* tp_flags */
     PyDoc_STR("LogRecord objects are used to hold information about log events."),  /* tp_doc */
     0,                                          /* tp_traverse */
     0,                                          /* tp_clear */

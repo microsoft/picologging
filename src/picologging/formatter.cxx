@@ -83,9 +83,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 }
 
 PyObject* Formatter_format(Formatter *self, PyObject *record){
-    if (LogRecord_CheckExact(record)){
+    if (LogRecord_Check(record)){
         LogRecord* logRecord = (LogRecord*)record;
-        LogRecord_getMessage(logRecord);
+        LogRecord_writeMessage(logRecord);
         PyObject* result = nullptr;
         if (self->usesTime){
             PyObject * asctime = Py_None;
@@ -103,7 +103,8 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
 
             Py_XDECREF(logRecord->asctime);
             logRecord->asctime = asctime;
-            Py_INCREF(logRecord->asctime); // Log Record handles the ref from here.
+            if (asctime == Py_None)
+                Py_INCREF(Py_None);
         }
 
         if (FormatStyle_CheckExact(self->style)){
@@ -210,6 +211,54 @@ PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
     return stackInfo;
 }
 
+PyObject* Formatter_formatException(Formatter *self, PyObject *excInfo) {
+    PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
+    PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
+    PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference
+    Py_XINCREF(print_exception);
+    PyObject* sio_cls = PyDict_GetItemString(modDict, "StringIO");
+    Py_XINCREF(sio_cls);
+    PyObject* sio = PyObject_CallFunctionObjArgs(sio_cls, NULL);
+
+    if (sio == nullptr){
+        Py_XDECREF(sio_cls);
+        Py_XDECREF(print_exception);
+        return nullptr; // Got exception in StringIO.__init__()
+    }
+    if (PyObject_CallFunctionObjArgs(
+        print_exception,
+        PyTuple_GetItem(excInfo, 0), 
+        PyTuple_GetItem(excInfo, 1), 
+        PyTuple_GetItem(excInfo, 2), 
+        Py_None,
+        sio,
+        NULL) == nullptr)
+    {
+        Py_XDECREF(sio_cls);
+        Py_XDECREF(print_exception);
+        return nullptr; // Got exception in print_exception()
+    }
+    PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+
+    if (s == nullptr){
+        Py_XDECREF(sio);
+        Py_XDECREF(sio_cls);
+        Py_XDECREF(print_exception);
+        return nullptr; // Got exception in StringIO.getvalue()
+    }
+    
+    PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+    Py_DECREF(sio);
+    Py_DECREF(sio_cls);
+    Py_DECREF(print_exception);
+    if (PYUNICODE_ENDSWITH(s, self->_const_line_break)){
+        PyObject* s2 = PyUnicode_Substring(s, 0, PyUnicode_GetLength(s) - 1);
+        Py_DECREF(s);
+        s = s2;
+    }
+    return s;
+}
+
 PyObject* Formatter_repr(Formatter *self)
 {
     return PyUnicode_FromFormat("<Formatter: fmt='%U'>",
@@ -229,6 +278,7 @@ static PyMethodDef Formatter_methods[] = {
     {"usesTime", (PyCFunction)Formatter_usesTime, METH_NOARGS, "Return True if the format uses the creation time of the record."},
     {"formatMessage", (PyCFunction)Formatter_formatMessage, METH_O, "Format the message for a record."},
     {"formatStack", (PyCFunction)Formatter_formatStack, METH_O, "Format the stack for a record."},
+    {"formatException", (PyCFunction)Formatter_formatException, METH_O, "Format and return the specified exception information as a string."},
     {NULL}
 };
 

@@ -9,18 +9,19 @@ with open("./README.md", "r") as fh:
 setup(
     name="picologging",
     packages=find_packages(where="src"),
-    package_dir={'': 'src'},
-    version="0.5.1",
+    package_dir={"": "src"},
+    version="0.8.1",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/microsoft/picologging",
+    license="MIT License",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: System :: Logging",
         "Programming Language :: Python :: Implementation :: CPython",
@@ -31,12 +32,17 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     install_requires=[],
-    python_requires='>=3.7',
-    extras_require = {
+    python_requires=">=3.7",
+    extras_require={
         "dev": [
             "rich",
             "pytest",
             "pytest-cov",
+            "black",
         ]
-    }
+    },
+    project_urls={
+        "Source": "https://github.com/microsoft/picologging",
+        "Documentation": "https://microsoft.github.io/picologging/",
+    },
 )

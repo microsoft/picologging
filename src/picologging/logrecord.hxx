@@ -37,6 +37,7 @@ typedef struct {
 
 int LogRecord_init(LogRecord *self, PyObject *args, PyObject *kwds);
 PyObject* LogRecord_dealloc(LogRecord *self);
+void LogRecord_writeMessage(LogRecord *self);
 PyObject* LogRecord_getMessage(LogRecord *self);
 PyObject* LogRecord_repr(LogRecord *self);
 PyObject* LogRecord_getDict(PyObject *, void *);
@@ -45,6 +46,7 @@ _PyTime_t current_time();
 
 extern PyTypeObject LogRecordType;
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
+#define LogRecord_Check(op) PyObject_TypeCheck(op, &LogRecordType)
 
 typedef struct {
     PyObject* filename;

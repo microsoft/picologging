@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.8.1
+
+* Fix `dictconfig` resetting child loggers by @aminalaee in https://github.com/microsoft/picologging/pull/70
+* Add `formatException` method in `Formatter` by @aminalaee in https://github.com/microsoft/picologging/pull/68
+
+## 0.8.0
+
+* Add `dictConfig` method https://github.com/microsoft/picologging/pull/61
+* Add `DatagramHandler` https://github.com/microsoft/picologging/pull/64
+
+## 0.7.2
+
+* Fix leak on levelname and formatted message https://github.com/microsoft/picologging/pull/59
+* Fixes a leak in the `asctime` field of log record https://github.com/microsoft/picologging/pull/60
+* Fixes a leak in stream writer write() and flush() calls https://github.com/microsoft/picologging/pull/60
+* Fixes a leak in stream close() https://github.com/microsoft/picologging/pull/60
+
+## 0.7.1
+
+* Add  a basic documentation site by @tonybaloney in https://github.com/microsoft/picologging/pull/55
+* Fix Logger setLevel not resetting other levels by @aminalaee in https://github.com/microsoft/picologging/pull/57
+* Fixes reference leaks in filterer 'filter' string and relative time by @tonybaloney in https://github.com/microsoft/picologging/pull/58
+
+## 0.7.0
+
+* Add `MemoryHandler` by @aminalaee in https://github.com/microsoft/picologging/pull/46
+* Make `getLevelName()` work level name arguments by @aminalaee in https://github.com/microsoft/picologging/pull/52
+* Add `makeLogRecord()` by @aminalaee in https://github.com/microsoft/picologging/pull/50
+* Add `SocketHandler` by @aminalaee in https://github.com/microsoft/picologging/pull/48
+
+## 0.6.0
+
+* Implements QueueListener and QueueHandler in `picologging.handlers` module for non-blocking logging by @tonybaloney in https://github.com/microsoft/picologging/pull/44
+* Fix a crash on ubuntu by @tonybaloney in https://github.com/microsoft/picologging/pull/42
+* Add BufferingHandler by @aminalaee in https://github.com/microsoft/picologging/pull/45
+* Fixes a crash on string literal within a loop in certain cases
+
 ## 0.5.1
 
 * Fixes a crash in 32-bit Linux wheels crashing when `validate=True` flag is used for the Formatter type

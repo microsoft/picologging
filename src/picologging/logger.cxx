@@ -10,13 +10,8 @@ int getEffectiveLevel(Logger*self){
     PyObject* logger = (PyObject*)self;
     while (logger != Py_None) {
         if (!Logger_CheckExact(logger)) {
-            PyObject* level = PyObject_GetAttrString(logger, "level");
-            if (level == nullptr){
-                return -1;
-            }
-            int result = PyLong_AsLong(level);
-            Py_DECREF(level);
-            return result;
+            PyErr_SetString(PyExc_TypeError, "logger is not a picologging.Logger");
+            return -1;
         }
         if (((Logger*)logger)->level > 0){
             return ((Logger*)logger)->level;
@@ -80,6 +75,11 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->name);
     self->level = level;
 
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -124,6 +124,12 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         return NULL;
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
@@ -183,17 +189,19 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             Py_XDECREF(print_stack);
             return nullptr; // Got exception in StringIO.__init__()
         }
-        if (PyObject_CallFunctionObjArgs(
+        PyObject* printStackResult = PyObject_CallFunctionObjArgs(
             print_stack,
             Py_None,
             Py_None,
             sio,
-            NULL) == nullptr)
+            NULL);
+        if (printStackResult == nullptr)
         {
             Py_XDECREF(sio_cls);
             Py_XDECREF(print_stack);
             return nullptr; // Got exception in print_stack()
         }
+        Py_DECREF(printStackResult);
         PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
         if (s == nullptr){
             Py_XDECREF(sio);
@@ -202,7 +210,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             return nullptr; // Got exception in StringIO.getvalue()
         }
         
-        PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+        Py_XDECREF(PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close")));
         Py_DECREF(sio);
         Py_DECREF(sio_cls);
         Py_DECREF(print_stack);
@@ -280,7 +288,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, level, msg, args_, exc_info, extra, stack_info, 1);
-    Py_DECREF(msg);
+
     Py_DECREF(args_);
     Py_DECREF(exc_info);
     Py_DECREF(extra);
@@ -299,7 +307,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     while (has_parent){
         for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
             found ++;
-            PyObject* handler = PyList_GET_ITEM(cur->handlers, i);
+            PyObject* handler = PyList_GET_ITEM(cur->handlers, i); // borrowed
             if (Handler_Check(handler)){
                 if (record->levelno >= ((Handler*)handler)->level){
                     if (Handler_handle((Handler*)handler, (PyObject*)record) == nullptr){
@@ -497,6 +505,11 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     Py_XDECREF(self->parent);
     self->parent = value;
     // Rescan parent levels.
+    self->enabledForDebug = false;
+    self->enabledForInfo = false;
+    self->enabledForWarning = false;
+    self->enabledForError = false;
+    self->enabledForCritical = false;
     switch (getEffectiveLevel(self)){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
