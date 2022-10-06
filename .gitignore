@@ -1,7 +1,7 @@
 *.egg-info/
 *.pyc
 __pycache__/
-[.][v]env/
+[.][v]env*/
 build
 dist
 .cache
@@ -18,3 +18,4 @@ coverage/
 cov_report
 crash-*
 oom-*
+.vs/
