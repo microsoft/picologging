@@ -6,7 +6,7 @@
 #include "filterer.hxx"
 #include "handler.hxx"
 
-int getEffectiveLevel(Logger*self){
+int findEffectiveLevelFromParents(Logger* self) {
     PyObject* logger = (PyObject*)self;
     while (logger != Py_None) {
         if (!Logger_CheckExact(logger)) {
@@ -22,6 +22,16 @@ int getEffectiveLevel(Logger*self){
     return LOG_LEVEL_NOTSET;
 }
 
+void setEffectiveLevelOfChildren(Logger* logger, unsigned short level) {
+    for (int i = 0; i < PyList_GET_SIZE(logger->children) ; i++) {
+        PyObject *child_logger = PyList_GET_ITEM(logger->children, i); // borrowed ref
+        if (((Logger*)child_logger)->level == LOG_LEVEL_NOTSET) {
+            ((Logger*)child_logger)->effective_level = level;
+            setEffectiveLevelOfChildren((Logger*)child_logger, level);
+        }
+    }
+}
+
 PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
     Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);
@@ -31,6 +41,10 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         Py_INCREF(self->name);
         self->parent = Py_None;
         Py_INCREF(self->parent);
+        self->children = PyList_New(0);
+        if (self->children == NULL)
+            return nullptr;
+        Py_INCREF(self->children);
         self->propagate = true;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
@@ -80,7 +94,8 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     self->enabledForWarning = false;
     self->enabledForError = false;
     self->enabledForCritical = false;
-    switch (getEffectiveLevel(self)){
+    self->effective_level = findEffectiveLevelFromParents(self);
+    switch (self->effective_level){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
         case LOG_LEVEL_INFO:
@@ -99,6 +114,7 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->name);
     Py_XDECREF(self->parent);
+    Py_XDECREF(self->children);
     Py_XDECREF(self->handlers);
     Py_XDECREF(self->manager);
     Py_XDECREF(self->_const_handle);
@@ -114,7 +130,7 @@ PyObject* Logger_dealloc(Logger *self) {
 }
 
 PyObject* Logger_repr(Logger *self) {
-    std::string level = _getLevelName(getEffectiveLevel(self));
+    std::string level = _getLevelName(self->effective_level);
     return PyUnicode_FromFormat("<Logger '%U' (%s)>", self->name, level.c_str());
 }
 
@@ -124,13 +140,13 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         return NULL;
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
-
+    self->effective_level = self->level;
     self->enabledForDebug = false;
     self->enabledForInfo = false;
     self->enabledForWarning = false;
     self->enabledForError = false;
     self->enabledForCritical = false;
-    switch (getEffectiveLevel(self)){
+    switch (self->effective_level){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
         case LOG_LEVEL_INFO:
@@ -142,12 +158,12 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
         case LOG_LEVEL_CRITICAL:
             self->enabledForCritical = true;
     }
+    setEffectiveLevelOfChildren(self, self->level);
     Py_RETURN_NONE;
-    // TODO: Should reset parent/child loggers
 }
 
 PyObject* Logger_getEffectiveLevel(Logger *self){
-    int level = getEffectiveLevel(self);
+    int level = self->effective_level;
     if (level == -1)
         return nullptr;
     return PyLong_FromLong(level);
@@ -504,13 +520,17 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     Py_XINCREF(value);
     Py_XDECREF(self->parent);
     self->parent = value;
-    // Rescan parent levels.
+    if (PySequence_Contains(((Logger*)self->parent)->children, (PyObject*)self) == 0){
+        PyList_Append(((Logger*)self->parent)->children, (PyObject*)self);
+    }
     self->enabledForDebug = false;
     self->enabledForInfo = false;
     self->enabledForWarning = false;
     self->enabledForError = false;
     self->enabledForCritical = false;
-    switch (getEffectiveLevel(self)){
+    // Rescan parent levels.
+    self->effective_level = findEffectiveLevelFromParents(self);
+    switch (self->effective_level){
         case LOG_LEVEL_DEBUG:
             self->enabledForDebug = true;
         case LOG_LEVEL_INFO:

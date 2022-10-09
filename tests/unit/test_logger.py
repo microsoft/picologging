@@ -468,3 +468,46 @@ def test_logger_setlevel_resets_other_levels():
 
     logger.error("test")
     assert stream.getvalue() == "test\ntest\n"
+
+def test_getlogger_root_level():
+    # Check that loggers get the parent level on construction
+    logger = picologging.getLogger()
+    assert logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_nonroot_levels():
+    # Check that loggers get the parent level on construction
+    logger = picologging.getLogger('A')
+    assert logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_parentchild_levels():
+    # Check interaction of setLevel with logger hierarchy
+    parent_logger = picologging.getLogger('parent')
+    assert parent_logger.getEffectiveLevel() == picologging.WARNING
+    parent_logger.setLevel(picologging.INFO)
+    assert parent_logger.getEffectiveLevel() == picologging.INFO
+    child_logger = picologging.getLogger('parent.child')
+    assert child_logger.getEffectiveLevel() == picologging.INFO
+    child_logger.setLevel(picologging.WARNING)
+    assert child_logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_setlevel_after():
+    # Now check for setting setLevel after construction
+    parent_logger = picologging.getLogger('breakfast')
+    parent_logger.setLevel(logging.WARNING)
+    spam_logger = picologging.getLogger('breakfast.spam')
+    parent_logger.setLevel(logging.DEBUG)
+    assert spam_logger.getEffectiveLevel() == logging.DEBUG
+
+
+def test_getlogger_setlevel_after_multiple_children():
+    # This requires more than one child
+    parent_logger = picologging.getLogger('breakfast')
+    parent_logger.setLevel(logging.WARNING)
+    spam_logger = picologging.getLogger('breakfast.spam')
+    eggs_logger = picologging.getLogger('breakfast.eggs')
+    parent_logger.setLevel(logging.DEBUG)
+    assert spam_logger.getEffectiveLevel() == logging.DEBUG
+    assert eggs_logger.getEffectiveLevel() == logging.DEBUG
