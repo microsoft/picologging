@@ -510,13 +510,13 @@ def test_getlogger_parentchild_levels():
     |--------------|-----------|-----------------|
     | root         | 30        | 30              |
     | parent       | 0         | 30              |
-    
+
     After parent.setLevel(INFO):
     | parent       | 20        | 20              |
-    
+
     After construction of child logger:
     | child        | 0         | 20              |
-    
+
     After child.setLevel(WARNING):
     | child        | 30        | 30              |
     """
@@ -544,13 +544,13 @@ def test_getlogger_setlevel_after():
     |--------------|-----------|-----------------|
     | root         | 30        | 30              |
     | parent       | 0         | 30              |
-    
+
     After parent.setLevel(INFO):
     | parent       | 20        | 20              |
-    
+
     After construction of child logger:
     | child        | 0         | 20              |
-    
+
     After parent.setLevel(DEBUG):
     | parent       | 10        | 10              |
     | child        | 0         | 10              |
@@ -575,10 +575,10 @@ def test_getlogger_setlevel_after_multiple_children():
     |--------------|-----------|-----------------|
     | root         | 30        | 30              |
     | parent       | 0         | 30              |
-    
+
     After parent.setLevel(WARNING):
     | parent       | 30        | 30              |
-    
+
     After construction of child loggers:
     | child1       | 0         | 30              |
     | child2       | 0         | 30              |
@@ -612,7 +612,7 @@ def test_getlogger_setlevel_message_handled():
     |--------------|-----------|-----------------|
     | root         | 30        | 30              |
     | child        | 0         | 30              |
-    
+
     After construction of parent logger:
     | parent       | 0         | 30              |
     | child        | 0         | 30              |
