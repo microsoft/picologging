@@ -469,6 +469,7 @@ def test_logger_setlevel_resets_other_levels():
     logger.error("test")
     assert stream.getvalue() == "test\ntest\n"
 
+
 def test_getlogger_root_level():
     # Check that loggers get the parent level on construction
     logger = picologging.getLogger()
@@ -477,17 +478,17 @@ def test_getlogger_root_level():
 
 def test_getlogger_nonroot_levels():
     # Check that loggers get the parent level on construction
-    logger = picologging.getLogger('A')
+    logger = picologging.getLogger("A")
     assert logger.getEffectiveLevel() == picologging.WARNING
 
 
 def test_getlogger_parentchild_levels():
     # Check interaction of setLevel with logger hierarchy
-    parent_logger = picologging.getLogger('parent')
+    parent_logger = picologging.getLogger("parent")
     assert parent_logger.getEffectiveLevel() == picologging.WARNING
     parent_logger.setLevel(picologging.INFO)
     assert parent_logger.getEffectiveLevel() == picologging.INFO
-    child_logger = picologging.getLogger('parent.child')
+    child_logger = picologging.getLogger("parent.child")
     assert child_logger.getEffectiveLevel() == picologging.INFO
     child_logger.setLevel(picologging.WARNING)
     assert child_logger.getEffectiveLevel() == picologging.WARNING
@@ -495,19 +496,19 @@ def test_getlogger_parentchild_levels():
 
 def test_getlogger_setlevel_after():
     # Now check for setting setLevel after construction
-    parent_logger = picologging.getLogger('breakfast')
+    parent_logger = picologging.getLogger("breakfast")
     parent_logger.setLevel(picologging.WARNING)
-    spam_logger = picologging.getLogger('breakfast.spam')
+    spam_logger = picologging.getLogger("breakfast.spam")
     parent_logger.setLevel(picologging.DEBUG)
     assert spam_logger.getEffectiveLevel() == picologging.DEBUG
 
 
 def test_getlogger_setlevel_after_multiple_children():
     # This requires more than one child
-    parent_logger = picologging.getLogger('breakfast')
+    parent_logger = picologging.getLogger("breakfast")
     parent_logger.setLevel(picologging.WARNING)
-    spam_logger = picologging.getLogger('breakfast.spam')
-    eggs_logger = picologging.getLogger('breakfast.eggs')
+    spam_logger = picologging.getLogger("breakfast.spam")
+    eggs_logger = picologging.getLogger("breakfast.eggs")
     parent_logger.setLevel(picologging.DEBUG)
     assert spam_logger.getEffectiveLevel() == picologging.DEBUG
     assert eggs_logger.getEffectiveLevel() == picologging.DEBUG
@@ -518,11 +519,11 @@ def test_getlogger_setlevel_message_handled():
     assert logger.level == logging.NOTSET
     assert logger.getEffectiveLevel() == logging.WARNING
     parent_logger = picologging.getLogger("parent")
-    
+
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
     logger.addHandler(handler)
-    
+
     logger.log(picologging.DEBUG, "Hello World")
     assert stream.getvalue() == ""
 

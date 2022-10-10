@@ -160,7 +160,7 @@ class Manager:
         name = alogger.name
         namelen = len(name)
         for c in ph.loggerMap.keys():
-            #The if means ... if not c.parent.name.startswith(nm)
+            # The if means ... if not c.parent.name.startswith(nm)
             if c.parent.name[:namelen] != name:
                 alogger.parent = c.parent
                 c.parent = alogger
