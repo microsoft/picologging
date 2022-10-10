@@ -515,10 +515,10 @@ def test_getlogger_setlevel_after_multiple_children():
 
 
 def test_getlogger_setlevel_message_handled():
-    logger = picologging.getLogger("parent.child")
+    logger = picologging.getLogger("aaa.bbb")
     assert logger.level == logging.NOTSET
     assert logger.getEffectiveLevel() == logging.WARNING
-    parent_logger = picologging.getLogger("parent")
+    parent_logger = picologging.getLogger("aaa")
 
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
