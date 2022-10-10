@@ -22,15 +22,38 @@ int findEffectiveLevelFromParents(Logger* self) {
     return LOG_LEVEL_NOTSET;
 }
 
+void setEnabledBasedOnEffectiveLevel(Logger* logger) {
+    logger->enabledForDebug = false;
+    logger->enabledForInfo = false;
+    logger->enabledForWarning = false;
+    logger->enabledForError = false;
+    logger->enabledForCritical = false;
+    switch (logger->effective_level){
+        case LOG_LEVEL_DEBUG:
+            logger->enabledForDebug = true;
+        case LOG_LEVEL_INFO:
+            logger->enabledForInfo = true;
+        case LOG_LEVEL_WARNING:
+            logger->enabledForWarning = true;
+        case LOG_LEVEL_ERROR:
+            logger->enabledForError = true;
+        case LOG_LEVEL_CRITICAL:
+            logger->enabledForCritical = true;
+    }
+}
+
 void setEffectiveLevelOfChildren(Logger* logger, unsigned short level) {
-    for (int i = 0; i < PyList_GET_SIZE(logger->children) ; i++) {
+    for (int i = 0; i < PyList_GET_SIZE(logger->children); i++) {
         PyObject *child_logger = PyList_GET_ITEM(logger->children, i); // borrowed ref
         if (((Logger*)child_logger)->level == LOG_LEVEL_NOTSET) {
             ((Logger*)child_logger)->effective_level = level;
+            setEnabledBasedOnEffectiveLevel((Logger*)child_logger);
             setEffectiveLevelOfChildren((Logger*)child_logger, level);
         }
     }
 }
+
+
 
 PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
@@ -89,24 +112,8 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     Py_INCREF(self->name);
     self->level = level;
 
-    self->enabledForDebug = false;
-    self->enabledForInfo = false;
-    self->enabledForWarning = false;
-    self->enabledForError = false;
-    self->enabledForCritical = false;
     self->effective_level = findEffectiveLevelFromParents(self);
-    switch (self->effective_level){
-        case LOG_LEVEL_DEBUG:
-            self->enabledForDebug = true;
-        case LOG_LEVEL_INFO:
-            self->enabledForInfo = true;
-        case LOG_LEVEL_WARNING:
-            self->enabledForWarning = true;
-        case LOG_LEVEL_ERROR:
-            self->enabledForError = true;
-        case LOG_LEVEL_CRITICAL:
-            self->enabledForCritical = true;
-    }
+    setEnabledBasedOnEffectiveLevel(self);
     
     return 0;
 }
@@ -141,23 +148,7 @@ PyObject* Logger_setLevel(Logger *self, PyObject *level) {
     }
     self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
     self->effective_level = self->level;
-    self->enabledForDebug = false;
-    self->enabledForInfo = false;
-    self->enabledForWarning = false;
-    self->enabledForError = false;
-    self->enabledForCritical = false;
-    switch (self->effective_level){
-        case LOG_LEVEL_DEBUG:
-            self->enabledForDebug = true;
-        case LOG_LEVEL_INFO:
-            self->enabledForInfo = true;
-        case LOG_LEVEL_WARNING:
-            self->enabledForWarning = true;
-        case LOG_LEVEL_ERROR:
-            self->enabledForError = true;
-        case LOG_LEVEL_CRITICAL:
-            self->enabledForCritical = true;
-    }
+    setEnabledBasedOnEffectiveLevel(self);
     setEffectiveLevelOfChildren(self, self->level);
     Py_RETURN_NONE;
 }
@@ -461,7 +452,7 @@ PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds){
     }
     unsigned short level = PyLong_AsUnsignedLongMask(PyTuple_GET_ITEM(args, 0));
 
-    if (self->disabled || (self->level > level)) {
+    if (self->disabled || (self->effective_level > level)) {
         Py_RETURN_NONE;
     }
 
@@ -523,25 +514,10 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     if (PySequence_Contains(((Logger*)self->parent)->children, (PyObject*)self) == 0){
         PyList_Append(((Logger*)self->parent)->children, (PyObject*)self);
     }
-    self->enabledForDebug = false;
-    self->enabledForInfo = false;
-    self->enabledForWarning = false;
-    self->enabledForError = false;
-    self->enabledForCritical = false;
+
     // Rescan parent levels.
     self->effective_level = findEffectiveLevelFromParents(self);
-    switch (self->effective_level){
-        case LOG_LEVEL_DEBUG:
-            self->enabledForDebug = true;
-        case LOG_LEVEL_INFO:
-            self->enabledForInfo = true;
-        case LOG_LEVEL_WARNING:
-            self->enabledForWarning = true;
-        case LOG_LEVEL_ERROR:
-            self->enabledForError = true;
-        case LOG_LEVEL_CRITICAL:
-            self->enabledForCritical = true;
-    }
+    setEnabledBasedOnEffectiveLevel(self);
     return 0;
 }
 

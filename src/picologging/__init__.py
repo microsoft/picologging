@@ -114,6 +114,13 @@ class Manager:
         """
         if name in self.loggerDict:
             rv = self.loggerDict[name]
+            if isinstance(rv, PlaceHolder):
+                ph = rv
+                rv = self.cls(name)
+                rv.manager = self
+                self.loggerDict[name] = rv
+                self._fixupChildren(ph, rv)
+                self._fixupParents(rv)
         else:
             rv = self.cls(name)
             rv.manager = self
@@ -144,6 +151,19 @@ class Manager:
         if not logger_parent:
             logger_parent = self.root
         alogger.parent = logger_parent
+
+    def _fixupChildren(self, ph, alogger):
+        """
+        Ensure that children of the placeholder ph are connected to the
+        specified logger.
+        """
+        name = alogger.name
+        namelen = len(name)
+        for c in ph.loggerMap.keys():
+            #The if means ... if not c.parent.name.startswith(nm)
+            if c.parent.name[:namelen] != name:
+                alogger.parent = c.parent
+                c.parent = alogger
 
     def setLoggerClass(self, klass):
         self.cls = klass
