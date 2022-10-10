@@ -67,7 +67,6 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->children = PyList_New(0);
         if (self->children == NULL)
             return nullptr;
-        Py_INCREF(self->children);
         self->propagate = true;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
