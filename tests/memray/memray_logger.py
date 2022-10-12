@@ -17,7 +17,7 @@ def log(level=picologging.INFO):
     )
     handler.setFormatter(formatter)
     logger.handlers.append(handler)
-    
+
     logger.debug("There has been a picologging issue")
 
 
