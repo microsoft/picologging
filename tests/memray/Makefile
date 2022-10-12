@@ -10,3 +10,6 @@ profiles:
 
 clean:
 	rm -rf .profiles
+
+snapshot:
+	cp -R .profiles .profiles-snapshot
