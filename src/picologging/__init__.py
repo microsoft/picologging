@@ -58,7 +58,7 @@ _STYLES = {
 }
 
 
-class _Placeholder(object):
+class _Placeholder:
     """
     _Placeholder instances are used in the Manager logger hierarchy to take
     the place of nodes for which no loggers have been defined. This class is
@@ -492,7 +492,7 @@ class FileHandler(StreamHandler):
 
     def __repr__(self):
         level = getLevelName(self.level)
-        return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
+        return "<{} {} ({})>".format(self.__class__.__name__, self.baseFilename, level)
 
 
 def makeLogRecord(dict):
