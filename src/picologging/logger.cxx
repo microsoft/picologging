@@ -39,7 +39,8 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->propagate = true;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
-            Py_DECREF(self->parent);
+            Py_XDECREF(self->name);
+            Py_XDECREF(self->parent);
             return nullptr;
         }
         self->disabled = false;
