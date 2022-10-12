@@ -1,6 +1,7 @@
 import logging
 import sys
 
+import pytest
 from hypothesis import given, reproduce_failure, strategies as st
 
 import picologging
@@ -43,6 +44,7 @@ def test_hypothesis_logrecord_constructor(
     assert pico_record.getMessage() == stdl_record.getMessage()
 
 
+@pytest.mark.flaky(reason="Filename sometimes reported without extension on Windows")
 @given(
     name=st.text(),
     level=c_integers,

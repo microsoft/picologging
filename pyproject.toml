@@ -15,3 +15,8 @@ test-command = "python -X dev -m pytest {project}/tests"
 
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
+
+[tool.pytest.ini_options]
+markers = [
+    "flaky: marks tests as flaky (deselect with '-m \"not flaky\"')",
+]
