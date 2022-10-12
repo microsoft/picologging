@@ -34,7 +34,8 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->propagate = true;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
-            Py_DECREF(self->parent);
+            Py_XDECREF(self->name);
+            Py_XDECREF(self->parent);
             return nullptr;
         }
         self->disabled = false;
@@ -43,12 +44,12 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         
         self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
         if (self->_fallback_handler == nullptr){
-            Py_DECREF(self->parent);
-            Py_DECREF(self->handlers);
-            Py_DECREF(self->manager);
+            Py_XDECREF(self->name);
+            Py_XDECREF(self->parent);
+            Py_XDECREF(self->handlers);
+            Py_XDECREF(self->manager);
             return nullptr;
         }
-        Py_INCREF(self->_fallback_handler);
         self->_const_handle = PyUnicode_FromString("handle");
         self->_const_level = PyUnicode_FromString("level");
         self->_const_unknown = PyUnicode_FromString("<unknown>");
