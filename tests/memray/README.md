@@ -3,6 +3,8 @@
 Install memray (only macOS and Linux supported):
 
 ```console
+$ sudo apt-get install libunwind-dev
+$ sudo apt-get install liblz4-dev
 $ pip install memray
 ```
 

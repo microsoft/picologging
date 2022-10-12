@@ -58,6 +58,27 @@ _STYLES = {
 }
 
 
+class _Placeholder:
+    """
+    _Placeholder instances are used in the Manager logger hierarchy to take
+    the place of nodes for which no loggers have been defined. This class is
+    intended for internal use only and not as part of the public API.
+    """
+
+    def __init__(self, alogger):
+        """
+        Initialize with the specified logger being a child of this placeholder.
+        """
+        self.loggerMap = {alogger: None}
+
+    def append(self, alogger):
+        """
+        Add the specified logger as a child of this placeholder.
+        """
+        if alogger not in self.loggerMap:
+            self.loggerMap[alogger] = None
+
+
 class Manager:
     """
     There is [under normal circumstances] just one Manager instance, which
@@ -93,11 +114,56 @@ class Manager:
         """
         if name in self.loggerDict:
             rv = self.loggerDict[name]
+            if isinstance(rv, _Placeholder):
+                ph = rv
+                rv = self.cls(name)
+                rv.manager = self
+                self.loggerDict[name] = rv
+                self._fixupChildren(ph, rv)
+                self._fixupParents(rv)
         else:
             rv = self.cls(name)
             rv.manager = self
             self.loggerDict[name] = rv
+            self._fixupParents(rv)
         return rv
+
+    def _fixupParents(self, alogger):
+        """
+        Ensure that there are either loggers or placeholders all the way
+        from the specified logger to the root of the logger hierarchy.
+        """
+        name = alogger.name
+        i = name.rfind(".")
+        logger_parent = None
+        while (i > 0) and not logger_parent:
+            substr = name[:i]
+            if substr not in self.loggerDict:
+                self.loggerDict[substr] = _Placeholder(alogger)
+            else:
+                obj = self.loggerDict[substr]
+                if isinstance(obj, Logger):
+                    logger_parent = obj
+                else:
+                    assert isinstance(obj, _Placeholder)
+                    obj.append(alogger)
+            i = name.rfind(".", 0, i - 1)
+        if not logger_parent:
+            logger_parent = self.root
+        alogger.parent = logger_parent
+
+    def _fixupChildren(self, ph, alogger):
+        """
+        Ensure that children of the placeholder ph are connected to the
+        specified logger.
+        """
+        name = alogger.name
+        namelen = len(name)
+        for c in ph.loggerMap.keys():
+            # The if means ... if not c.parent.name.startswith(nm)
+            if c.parent.name[:namelen] != name:
+                alogger.parent = c.parent
+                c.parent = alogger
 
     def setLoggerClass(self, klass):
         self.cls = klass

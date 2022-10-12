@@ -14,7 +14,9 @@ typedef struct LoggerT {
     Filterer filterer;
     PyObject *name;
     unsigned short level;
+    unsigned short effective_level;
     PyObject *parent;
+    PyObject *children;
     bool propagate;
     PyObject *handlers;
     PyObject *manager;

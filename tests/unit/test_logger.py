@@ -1,4 +1,5 @@
 import io
+import uuid
 import picologging
 import logging
 import pytest
@@ -468,3 +469,207 @@ def test_logger_setlevel_resets_other_levels():
 
     logger.error("test")
     assert stream.getvalue() == "test\ntest\n"
+
+
+def test_getlogger_root_level():
+    # Check that the root logger defaults to WARNING
+    logger = picologging.getLogger()
+    assert logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_nonroot_levels():
+    """
+    Check that descendant loggers get the root level on construction.
+
+    Before:
+    | Logger       | Level     | Effective Level |
+    |--------------|-----------|-----------------|
+    | root         | 30        | 30              |
+
+    After:
+    | child        | 0         | 30              |
+    | grandchild   | 0         | 30              |
+    """
+    child_name = str(uuid.uuid4())
+    child_logger = picologging.getLogger(str(uuid.uuid4()))
+    assert child_logger.level == picologging.NOTSET
+    assert child_logger.getEffectiveLevel() == picologging.WARNING
+
+    grandchild_name = f"{child_name}.str(uuid.uuid4())"
+    grandchild_logger = picologging.getLogger(grandchild_name)
+    assert grandchild_logger.level == picologging.NOTSET
+    assert grandchild_logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_parentchild_levels():
+    """
+    Check interaction of setLevel with logger hierarchy
+
+    Before:
+    | Logger       | Level     | Effective Level |
+    |--------------|-----------|-----------------|
+    | root         | 30        | 30              |
+    | parent       | 0         | 30              |
+
+    After parent.setLevel(INFO):
+    | parent       | 20        | 20              |
+
+    After construction of child logger:
+    | child        | 0         | 20              |
+
+    After child.setLevel(WARNING):
+    | child        | 30        | 30              |
+    """
+    parent_name = str(uuid.uuid4())
+    parent_logger = picologging.getLogger(parent_name)
+    assert parent_logger.getEffectiveLevel() == picologging.WARNING
+
+    parent_logger.setLevel(picologging.INFO)
+    assert parent_logger.getEffectiveLevel() == picologging.INFO
+
+    child_name = f"{parent_name}.{uuid.uuid4()}"
+    child_logger = picologging.getLogger(child_name)
+    assert child_logger.getEffectiveLevel() == picologging.INFO
+
+    child_logger.setLevel(picologging.WARNING)
+    assert child_logger.getEffectiveLevel() == picologging.WARNING
+
+
+def test_getlogger_setlevel_after():
+    """
+    Check for setting parent level after child construction
+
+    Before:
+    | Logger       | Level     | Effective Level |
+    |--------------|-----------|-----------------|
+    | root         | 30        | 30              |
+    | parent       | 0         | 30              |
+
+    After parent.setLevel(INFO):
+    | parent       | 20        | 20              |
+
+    After construction of child logger:
+    | child        | 0         | 20              |
+
+    After parent.setLevel(DEBUG):
+    | parent       | 10        | 10              |
+    | child        | 0         | 10              |
+    """
+    parent_name = str(uuid.uuid4())
+    parent_logger = picologging.getLogger(parent_name)
+    parent_logger.setLevel(picologging.WARNING)
+
+    child_name = f"{parent_name}.{uuid.uuid4()}"
+    child_logger = picologging.getLogger(child_name)
+
+    parent_logger.setLevel(picologging.DEBUG)
+    assert child_logger.getEffectiveLevel() == picologging.DEBUG
+
+
+def test_getlogger_setlevel_after_multiple_children():
+    """
+    Check for setting parent level after child construction
+
+    Before:
+    | Logger       | Level     | Effective Level |
+    |--------------|-----------|-----------------|
+    | root         | 30        | 30              |
+    | parent       | 0         | 30              |
+
+    After parent.setLevel(WARNING):
+    | parent       | 30        | 30              |
+
+    After construction of child loggers:
+    | child1       | 0         | 30              |
+    | child2       | 0         | 30              |
+
+    After parent.setLevel(DEBUG):
+    | parent       | 10        | 10              |
+    | child1       | 0         | 10              |
+    | child2       | 0         | 10              |
+    """
+    parent_name = str(uuid.uuid4())
+    parent_logger = picologging.getLogger(parent_name)
+    parent_logger.setLevel(picologging.WARNING)
+
+    child1_name = f"{parent_name}.{uuid.uuid4()}"
+    child2_name = f"{parent_name}.{uuid.uuid4()}"
+    child1_logger = picologging.getLogger(child1_name)
+    child2_logger = picologging.getLogger(child2_name)
+
+    parent_logger.setLevel(picologging.DEBUG)
+    assert child1_logger.getEffectiveLevel() == picologging.DEBUG
+    assert child2_logger.getEffectiveLevel() == picologging.DEBUG
+
+
+def test_getlogger_setlevel_message_handled():
+    """
+    Check for child creation before parent creation
+    and appropriate handling of messages.
+
+    Before:
+    | Logger       | Level     | Effective Level |
+    |--------------|-----------|-----------------|
+    | root         | 30        | 30              |
+    | child        | 0         | 30              |
+
+    After construction of parent logger:
+    | parent       | 0         | 30              |
+    | child        | 0         | 30              |
+
+    After parent.setLevel(DEBUG):
+    | parent       | 10        | 10              |
+    | child        | 0         | 10              |
+    """
+    parent_name = str(uuid.uuid4())
+    child_name = f"{parent_name}.{uuid.uuid4()}"
+    child_logger = picologging.getLogger(child_name)
+    assert child_logger.level == picologging.NOTSET
+    assert child_logger.getEffectiveLevel() == picologging.WARNING
+
+    parent_logger = picologging.getLogger(parent_name)
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+    child_logger.addHandler(handler)
+
+    child_logger.log(picologging.DEBUG, "Hello World")
+    assert stream.getvalue() == ""
+
+    parent_logger.setLevel(picologging.DEBUG)
+    assert child_logger.getEffectiveLevel() == picologging.DEBUG
+    child_logger.log(picologging.DEBUG, "Hello World")
+    assert stream.getvalue() == "Hello World\n"
+
+
+def test_getlogger_with_placeholder_parent():
+    # Logging levels when some parent does not exist yet.
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+
+    top_logger = picologging.getLogger("A")
+    top_logger.addHandler(handler)
+    bottom1_logger = picologging.getLogger("A.B.C")
+    bottom2_logger = picologging.getLogger("A.B.D")
+    top_logger.setLevel(picologging.INFO)
+
+    assert top_logger.getEffectiveLevel() == picologging.INFO
+    assert bottom1_logger.getEffectiveLevel() == picologging.INFO
+    assert bottom2_logger.getEffectiveLevel() == picologging.INFO
+
+    # These logs should be handled
+    top_logger.log(picologging.WARN, "TLW")
+    top_logger.info("TLI")
+    bottom1_logger.log(picologging.WARN, "BL1W")
+    bottom1_logger.info("BL1I")
+    bottom2_logger.log(picologging.WARN, "BL2W")
+    bottom2_logger.info("BL2I")
+
+    # These should not
+    top_logger.log(picologging.DEBUG, "TLD")
+    bottom1_logger.debug("BLD")
+
+    assert stream.getvalue() == "TLW\nTLI\nBL1W\nBL1I\nBL2W\nBL2I\n"
+
+    # Now breathe life into the placeholder
+    middle_logger = picologging.getLogger("A.B")
+    assert middle_logger.getEffectiveLevel() == picologging.INFO
