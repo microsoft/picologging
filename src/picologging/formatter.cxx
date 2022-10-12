@@ -52,7 +52,6 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     }
 
     self->style = styleCls;
-    Py_INCREF(self->style);
 
     self->fmt = ((FormatStyle*)(self->style))->fmt;
     Py_INCREF(self->fmt);
@@ -266,9 +265,10 @@ PyObject* Formatter_repr(Formatter *self)
 }
 
 PyObject* Formatter_dealloc(Formatter *self) {
-    Py_XDECREF(self->style);
     Py_XDECREF(self->fmt);
     Py_XDECREF(self->dateFmt);
+    Py_XDECREF(self->style);
+    Py_XDECREF(self->_const_line_break);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }
