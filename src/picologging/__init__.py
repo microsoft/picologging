@@ -426,7 +426,7 @@ class FileHandler(StreamHandler):
 
     def __repr__(self):
         level = getLevelName(self.level)
-        return "<%s %s (%s)>" % (self.__class__.__name__, self.baseFilename, level)
+        return f"<{self.__class__.__name__} {self.baseFilename} ({level})>"
 
 
 def makeLogRecord(dict):
