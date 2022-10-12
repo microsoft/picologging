@@ -84,6 +84,73 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
+## Local development
+
+This project comes bundled with a dev container which sets up an appropriate environment. If you install the Dev Containers extension for VS Code, then opening this project in VS Code should prompt it to open it in the dev container.
+
+Once opened in the dev container, run:
+
+```
+pip install -e ".[dev]"
+python setup.py build_ext --inplace --build-type Debug
+```
+
+Run the build command whenever you make changes to the files.
+
+It's also helpful to create a `.vscode/launch.json` file like this one:
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+    {
+        "name": "(gdb) Launch pytest",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/usr/local/bin/python",
+        "args": ["-m", "pytest", "tests"],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description":  "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            },
+        ]
+    }
+}
+```
+
+Now you can press the "Run and debug" button to run `pytest` from the `gdb` debugger
+and use breakpoint debugging in the C code.
+
+If you would like to be able to dive into the CPython code while debugging, then:
+
+1. Do a git checkout of the tagged branch for the devcontainer's Python version
+into the devcontainer's `/workspaces/` directory. You may need to `sudo`.
+2. Follow the instructions in the CPython README to compile the code.
+3. Add the following key to the the configuration in `launch.json`:
+    ```
+    "sourceFileMap": { "/usr/src/python": "/workspaces/cpython" },
+    ```
+4. Add the following command to the `setupCommands` in `launch.json`:
+    
+    ```
+    {
+        "description": "Find CPython source code",
+        "text": "-gdb-set auto-load safe-path /workspaces/cpython"
+    },
+    ```
+
 ## Trademarks
 
 Some components of this Python package are from CPython 3.11 logging library for compatibility reasons.
