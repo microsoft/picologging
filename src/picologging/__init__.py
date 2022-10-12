@@ -58,9 +58,9 @@ _STYLES = {
 }
 
 
-class PlaceHolder(object):
+class _Placeholder(object):
     """
-    PlaceHolder instances are used in the Manager logger hierarchy to take
+    _Placeholder instances are used in the Manager logger hierarchy to take
     the place of nodes for which no loggers have been defined. This class is
     intended for internal use only and not as part of the public API.
     """
@@ -114,7 +114,7 @@ class Manager:
         """
         if name in self.loggerDict:
             rv = self.loggerDict[name]
-            if isinstance(rv, PlaceHolder):
+            if isinstance(rv, _Placeholder):
                 ph = rv
                 rv = self.cls(name)
                 rv.manager = self
@@ -139,13 +139,13 @@ class Manager:
         while (i > 0) and not logger_parent:
             substr = name[:i]
             if substr not in self.loggerDict:
-                self.loggerDict[substr] = PlaceHolder(alogger)
+                self.loggerDict[substr] = _Placeholder(alogger)
             else:
                 obj = self.loggerDict[substr]
                 if isinstance(obj, Logger):
                     logger_parent = obj
                 else:
-                    assert isinstance(obj, PlaceHolder)
+                    assert isinstance(obj, _Placeholder)
                     obj.append(alogger)
             i = name.rfind(".", 0, i - 1)
         if not logger_parent:

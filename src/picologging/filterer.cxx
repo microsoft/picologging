@@ -9,6 +9,7 @@ PyObject* Filterer_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->filters = PyList_New(0);
         if (self->filters == NULL)
             return nullptr;
+        Py_INCREF(self->filters);
         self->_const_filter = PyUnicode_FromString("filter");
         self->_const_remove = PyUnicode_FromString("remove");
     }

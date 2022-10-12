@@ -639,3 +639,36 @@ def test_getlogger_setlevel_message_handled():
     assert child_logger.getEffectiveLevel() == picologging.DEBUG
     child_logger.log(picologging.DEBUG, "Hello World")
     assert stream.getvalue() == "Hello World\n"
+
+def test_getlogger_with_placeholder_parent():
+    # Logging levels when some parent does not exist yet.
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+
+    top_logger = picologging.getLogger("A")
+    top_logger.addHandler(handler)
+    bottom1_logger = picologging.getLogger("A.B.C")
+    bottom2_logger = picologging.getLogger("A.B.D")
+    top_logger.setLevel(picologging.INFO)
+
+    assert top_logger.getEffectiveLevel() == picologging.INFO
+    assert bottom1_logger.getEffectiveLevel() == picologging.INFO
+    assert bottom2_logger.getEffectiveLevel() == picologging.INFO
+
+    # These logs should be handled
+    top_logger.log(picologging.WARN, "TLW")
+    top_logger.info("TLI")
+    bottom1_logger.log(picologging.WARN, "BL1W")
+    bottom1_logger.info("BL1I")
+    bottom2_logger.log(picologging.WARN, "BL2W")
+    bottom2_logger.info("BL2I")
+
+    # These should not
+    top_logger.log(picologging.DEBUG, "TLD")
+    bottom1_logger.debug("BLD")
+
+    assert stream.getvalue() == 'TLW\nTLI\nBL1W\nBL1I\nBL2W\nBL2I\n'
+
+    # Now breathe life into the placeholder
+    middle_logger = picologging.getLogger("A.B")
+    assert middle_logger.getEffectiveLevel() == picologging.INFO
