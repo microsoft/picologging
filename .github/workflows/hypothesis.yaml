@@ -32,5 +32,5 @@ jobs:
 
     - name: Run pytest on hypothesis tests
       run: |
-       python -m pip install pytest hypothesis
+       python -m pip install pytest hypothesis flaky
        python -m pytest slowtests
