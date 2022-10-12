@@ -38,10 +38,31 @@ def test_hypothesis_logrecord_constructor(
     assert pico_record.levelno == stdl_record.levelno
     assert pico_record.lineno == stdl_record.lineno
     assert pico_record.module == stdl_record.module
-    assert pico_record.filename == stdl_record.filename
     assert pico_record.args == stdl_record.args
     assert abs(pico_record.created - stdl_record.created) < 0.5
     assert pico_record.getMessage() == stdl_record.getMessage()
+
+
+@given(
+    name=st.text(),
+    level=c_integers,
+    lineno=c_integers,
+    msg=st.text().filter(lambda t: t.find("%") < 0),
+    extra_arg=st.text(),
+    func=st.text(),
+    sinfo=st.text(),
+)
+def test_hypothesis_logrecord_filename(
+    name, level, lineno, msg, extra_arg, func, sinfo
+):
+    args = (extra_arg,)
+    pico_record = picologging.LogRecord(
+        name, level, __file__, lineno, msg + " %s", args, None, func, sinfo
+    )
+    stdl_record = logging.LogRecord(
+        name, level, __file__, lineno, msg + " %s", args, None, func, sinfo
+    )
+    assert pico_record.filename == stdl_record.filename
 
 
 @given(args=st.lists(st.text(), min_size=0, max_size=10).map(tuple))
