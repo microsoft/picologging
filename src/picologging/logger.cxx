@@ -48,9 +48,10 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         
         self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
         if (self->_fallback_handler == nullptr){
-            Py_DECREF(self->parent);
-            Py_DECREF(self->handlers);
-            Py_DECREF(self->manager);
+            Py_XDECREF(self->name);
+            Py_XDECREF(self->parent);
+            Py_XDECREF(self->handlers);
+            Py_XDECREF(self->manager);
             return nullptr;
         }
         self->_const_handle = PyUnicode_FromString("handle");
