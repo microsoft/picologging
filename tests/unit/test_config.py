@@ -1,6 +1,6 @@
 import pytest
 import picologging
-from picologging.config import dictConfig
+from picologging.config import dictConfig, valid_ident
 
 
 def test_dictconfig():
@@ -195,6 +195,12 @@ def test_reconfigure_dictconfig_with_child_loggers():
     }
 
     dictConfig(config)
+    logger = picologging.getLogger("test_config.module")
+    assert logger.name == "test_config.module"
+    assert logger.level == picologging.INFO
+    assert len(logger.handlers) == 1
+    assert logger.handlers[0].name == "console"
+    assert isinstance(logger.handlers[0], picologging.StreamHandler)
 
     config = {
         "version": 1,
@@ -212,3 +218,105 @@ def test_reconfigure_dictconfig_with_child_loggers():
     }
 
     dictConfig(config)
+    logger = picologging.getLogger("test_config")
+    assert logger.name == "test_config"
+    assert logger.level == picologging.INFO
+    assert len(logger.handlers) == 1
+    assert logger.handlers[0].name == "console"
+    assert isinstance(logger.handlers[0], picologging.StreamHandler)
+
+
+def test_valid_ident():
+    assert valid_ident("test")
+    with pytest.raises(ValueError):
+        valid_ident("test.test")
+    with pytest.raises(ValueError):
+        valid_ident("test test")
+    with pytest.raises(ValueError):
+        valid_ident("test-test")
+
+
+def test_configure_with_filters():
+    config = {
+        "version": 1,
+        "loggers": {
+            "test_config": {
+                "handlers": ["console"],
+                "level": "INFO",
+            },
+        },
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s %(levelname)s %(name)s::%(message)s",
+                "validate": True,
+            },
+        },
+        "handlers": {
+            "console": {
+                "class": "picologging.StreamHandler",
+                "filters": ["test_filter"],
+                "formatter": "standard",
+            },
+        },
+        "filters": {
+            "test_filter": {
+                "()": "picologging.Filter",
+                "name": "test_filter",
+            },
+        },
+    }
+
+    dictConfig(config)
+    logger = picologging.getLogger("test_config")
+    assert logger.name == "test_config"
+    assert logger.level == picologging.INFO
+    assert len(logger.handlers) == 1
+    assert logger.handlers[0].name == "console"
+    assert isinstance(logger.handlers[0], picologging.StreamHandler)
+    assert len(logger.handlers[0].filters) == 1
+    assert logger.handlers[0].filters[0].name == "test_filter"
+    assert isinstance(logger.handlers[0].filters[0], picologging.Filter)
+    assert (
+        logger.handlers[0].formatter._fmt
+        == "%(asctime)s %(levelname)s %(name)s::%(message)s"
+    )
+
+
+def test_configure_with_non_defined_handlers():
+    config = {
+        "version": 1,
+        "loggers": {
+            "test_config": {
+                "handlers": ["potato"],
+                "level": "INFO",
+            },
+        },
+    }
+    with pytest.raises(ValueError):
+        dictConfig(config)
+
+
+def test_config_existing_disabled_logger_90195():
+    # See gh-90195
+    config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {"a": {"level": "DEBUG", "handlers": ["console"]}},
+    }
+    logger = picologging.getLogger("a")
+    assert logger.disabled == False
+    dictConfig(config)
+    assert logger.disabled == False
+    # Should disable all loggers ...
+    dictConfig({"version": 1})
+    assert logger.disabled == True
+    del config["disable_existing_loggers"]
+    dictConfig(config)
+    # Logger should be enabled, since explicitly mentioned
+    assert logger.disabled == False

@@ -10,6 +10,9 @@ setup(
     name="picologging",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
+    package_data={
+        "picologging": ["py.typed", "__init__.pyi", "config.pyi", "handlers.pyi"]
+    },
     version="0.8.1",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
@@ -21,7 +24,7 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: System :: Logging",
         "Programming Language :: Python :: Implementation :: CPython",
@@ -38,6 +41,8 @@ setup(
             "rich",
             "pytest",
             "pytest-cov",
+            "hypothesis",
+            "flaky",
             "black",
         ]
     },

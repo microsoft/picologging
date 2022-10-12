@@ -98,6 +98,7 @@ def test_rotatingfilehandler(tmp_path):
 
     for _ in range(5):
         logger.warning("test")
+    handler.close()
 
     with open(log_file, "r") as f:
         assert f.read() == "test\n"
@@ -120,6 +121,7 @@ def test_rotatingfilehandler_avoids_non_regular_files(tmp_path, monkeypatch):
 
     monkeypatch.setattr(os.path, "isfile", lambda _: False)
     logger.warning("test")
+    handler.close()
 
 
 def test_rotatingfilehandler_without_maxbytes(tmp_path):
@@ -130,6 +132,7 @@ def test_rotatingfilehandler_without_maxbytes(tmp_path):
     logger.addHandler(handler)
 
     logger.warning("test")
+    handler.close()
 
 
 def test_baserotatinghandler_callable_rotator(tmp_path):
@@ -142,6 +145,7 @@ def test_baserotatinghandler_callable_rotator(tmp_path):
 
     logger.warning("test")
     logger.warning("test")
+    handler.close()
     assert sorted(os.listdir(tmp_path)) == ["log.txt", "log.txt.1"]
 
 
@@ -155,6 +159,7 @@ def test_baserotatinghandler_callable_namer(tmp_path):
 
     logger.warning("test")
     logger.warning("test")
+    handler.close()
     assert sorted(os.listdir(tmp_path)) == ["log.txt", "log.txt.1.5"]
 
 
@@ -167,7 +172,7 @@ def test_filehandler_repr(tmp_path):
 @pytest.mark.parametrize("utc", [False, True])
 def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     log_file = tmp_path / "log.txt"
-    handler = TimedRotatingFileHandler(log_file, when="S", backupCount=2, utc=utc)
+    handler = TimedRotatingFileHandler(log_file, when="S", backupCount=1, utc=utc)
     logger = picologging.getLogger("test")
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
@@ -176,7 +181,12 @@ def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     handler.rollover_at = time.time() - 1
 
     logger.warning("test")
-    for file_name in os.listdir(tmp_path):
+    handler.close()
+
+    files = os.listdir(tmp_path)
+    assert len(files) == 2
+
+    for file_name in files:
         with open(tmp_path / file_name, "r") as file:
             assert file.read() == "test\n"
 
@@ -194,6 +204,7 @@ def test_timed_rotatingfilehandler_rollover_removes_old_files(tmp_path):
     logger.warning("test")
     handler.rollover_at = time.time() - 1
     logger.warning("test")
+    handler.close()
 
     assert len(os.listdir(tmp_path)) == 2
 
@@ -211,6 +222,7 @@ def test_timed_rotatingfilehandler_rollover_keeps_non_related_files(tmp_path):
     logger.warning("test")
     handler.rollover_at = time.time() - 1
     logger.warning("test")
+    handler.close()
 
     assert len(os.listdir(tmp_path)) == 3
 
@@ -231,6 +243,7 @@ def test_timed_rotatingfilehandler_rollover_removes_existing_log(tmp_path, monke
     monkeypatch.setattr(handler, "rotation_filename", lambda _: existing_log_file)
     handler.rollover_at = time.time() - 1
     logger.warning("test")
+    handler.close()
 
     assert len(os.listdir(tmp_path)) == 2
 
@@ -243,6 +256,7 @@ def test_timed_rotatingfilehandler_non_existing_file(tmp_path, monkeypatch):
     logger = picologging.getLogger("test")
     logger.setLevel(picologging.DEBUG)
     logger.addHandler(handler)
+    handler.close()
 
 
 def test_timed_rotatingfilehandler_when_intervals(tmp_path):
@@ -259,6 +273,7 @@ def test_timed_rotatingfilehandler_when_intervals(tmp_path):
     for when, interval in when_interval:
         handler = TimedRotatingFileHandler(log_file, when=when)
         assert handler.interval == interval
+        handler.close()
 
 
 def test_timed_rotatingfilehandler_invalid_when(tmp_path):
@@ -277,6 +292,7 @@ def test_timed_rotatingfilehandler_invalid_when(tmp_path):
 def test_timed_rotatingfilehandler_utc(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = TimedRotatingFileHandler(log_file, when="MIDNIGHT", utc=True)
+    handler.close()
     assert handler.rollover_at > time.time()
 
 
@@ -284,6 +300,7 @@ def test_timed_rotatingfilehandler_atime(tmp_path):
     log_file = tmp_path / "log.txt"
     at_time = (datetime.now() - timedelta(hours=1)).time()
     handler = TimedRotatingFileHandler(log_file, when="MIDNIGHT", atTime=at_time)
+    handler.close()
     assert handler.rollover_at > time.time()
 
 
@@ -298,3 +315,4 @@ def test_timed_rotatingfilehandler_avoids_non_regular_files(tmp_path, monkeypatc
 
     monkeypatch.setattr(os.path, "isfile", lambda _: False)
     logger.warning("test")
+    handler.close()

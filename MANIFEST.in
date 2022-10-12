@@ -13,22 +13,18 @@ include LICENSE
 include README.md
 include SECURITY.md
 include SUPPORT.md
-include benchmarks/bench_handlers.py
-include benchmarks/bench_logger.py
+recursive-include benchmarks *.py
 include docs/Makefile
 include docs/make.bat
 include docs/requirements.txt
 include docs/source/conf.py
-include docs/source/examples.rst
-include docs/source/handlers.rst
-include docs/source/index.rst
-include docs/source/limitations.rst
-include docs/source/logging.rst
+recursive-include docs/source *.rst
 include pyproject.toml
 include setup.py
 graft src/picologging
 recursive-include tests *.py
 exclude MANIFEST.in
-exclude _skbuild/
+exclude _skbuild
 global-exclude *.py[cod]
 global-exclude *.so
+recursive-include tests *.md

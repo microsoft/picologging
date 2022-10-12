@@ -5,7 +5,6 @@
 #include "picologging.hxx"
 
 namespace fs = std::filesystem;
-#define CACHE_FILEPATH 1
 _PyTime_t startTime = current_time();
 
 const FilepathCacheEntry& FilepathCache::lookup(PyObject* pathname){
@@ -94,9 +93,9 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         argsLen = PyObject_Length(args);
     }
 
-    if (argsLen == 1 && PySequence_Check(args)){
+    if (argsLen == 1 && PySequence_Check(args)) {
         PyObject* firstValue = PySequence_GetItem(args, 0);
-        if (PyMapping_Check(firstValue)) {
+        if (PyDict_Check(firstValue)) {
             args = firstValue;
         }
         Py_DECREF(firstValue);
@@ -138,13 +137,13 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->pathname = pathname;
     Py_INCREF(pathname);
 
-#ifdef CACHE_FILEPATH
+#ifdef PICOLOGGING_CACHE_FILEPATH
     auto filepath = filepathCache.lookup(pathname);
     self->filename = filepath.filename;
     self->module = filepath.module;
     Py_INCREF(self->filename);
     Py_INCREF(self->module);
-#else
+#else // PICOLOGGING_CACHE_FILEPATH
     fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
 #ifdef WIN32
     const wchar_t* filename_wchar = fs_path.filename().c_str();
@@ -155,7 +154,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     self->filename = PyUnicode_FromString(fs_path.filename().c_str());
     self->module = PyUnicode_FromString(fs_path.stem().c_str());
 #endif
-#endif
+#endif // PICOLOGGING_CACHE_FILEPATH
 
     self->excInfo = exc_info;
     Py_INCREF(self->excInfo);
@@ -372,7 +371,7 @@ PyTypeObject LogRecordType = {
     PyObject_GenericGetAttr,                    /* tp_getattro */
     PyObject_GenericSetAttr,                    /* tp_setattro */
     0,                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT  ,  /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  /* tp_flags */
     PyDoc_STR("LogRecord objects are used to hold information about log events."),  /* tp_doc */
     0,                                          /* tp_traverse */
     0,                                          /* tp_clear */
