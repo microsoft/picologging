@@ -3,6 +3,7 @@ import sys
 
 import pytest
 from hypothesis import given, reproduce_failure, strategies as st
+from flaky import flaky
 
 import picologging
 
@@ -44,7 +45,7 @@ def test_hypothesis_logrecord_constructor(
     assert pico_record.getMessage() == stdl_record.getMessage()
 
 
-@pytest.mark.flaky(reason="Filename sometimes reported without extension on Windows")
+@flaky
 @given(
     name=st.text(),
     level=c_integers,
@@ -64,6 +65,7 @@ def test_hypothesis_logrecord_filename(
     stdl_record = logging.LogRecord(
         name, level, __file__, lineno, msg + " %s", args, None, func, sinfo
     )
+    # Filename sometimes reported without extension on Windows
     assert pico_record.filename == stdl_record.filename
 
 

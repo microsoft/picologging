@@ -39,6 +39,7 @@ setup(
             "pytest",
             "pytest-cov",
             "hypothesis",
+            "flaky",
             "black",
         ]
     },
