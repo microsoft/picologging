@@ -53,7 +53,6 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
             Py_DECREF(self->manager);
             return nullptr;
         }
-        Py_INCREF(self->_fallback_handler);
         self->_const_handle = PyUnicode_FromString("handle");
         self->_const_level = PyUnicode_FromString("level");
         self->_const_unknown = PyUnicode_FromString("<unknown>");
