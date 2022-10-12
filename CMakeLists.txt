@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4...3.22)
 
 option(COVERAGE "Enable coverage reporting" OFF)
-
+option(CACHE_FILEPATH "Enable cache filepath" ON)
 project(picologging)
 
 find_package(PythonExtensions REQUIRED)
@@ -13,6 +13,10 @@ if (MSVC)
 else()
     set_target_properties(_picologging PROPERTIES CXX_STANDARD 17)
 endif (MSVC)
+
+if (CACHE_FILEPATH)
+    add_definitions(-DPICOLOGGING_CACHE_FILEPATH)
+endif (CACHE_FILEPATH)
 
 if(COVERAGE)
     message(STATUS "Enabling coverage")

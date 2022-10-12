@@ -41,6 +41,8 @@ setup(
             "rich",
             "pytest",
             "pytest-cov",
+            "hypothesis",
+            "flaky",
             "black",
         ]
     },

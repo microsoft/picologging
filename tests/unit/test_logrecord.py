@@ -81,6 +81,31 @@ def test_no_args_and_format():
     assert record.message == "bork %s"
 
 
+def test_logrecord_single_string_arg():
+    record = LogRecord("", picologging.WARNING, "", 12, " %s", "\U000b6fb2", None)
+    assert record.args == "\U000b6fb2"
+    assert record.getMessage() == " \U000b6fb2"
+
+
+def test_logrecord_single_empty_string_in_tuple_arg():
+    record = LogRecord("", 0, "", 0, " %s", ("",), None)
+    assert record.args == ("",)
+    assert record.getMessage() == " "
+
+
+def test_logrecord_single_dict_in_tuple_arg():
+    record = LogRecord("", 0, "", 0, "%(key)s", ({"key": "val"},), None)
+    assert record.args == {"key": "val"}
+    assert record.getMessage() == "val"
+
+
+def test_logrecord_nested_tuple_arg():
+    record = LogRecord("", 0, "", 0, "%d %s", ((10, "bananas"),), None)
+    assert record.args == ((10, "bananas"),)
+    with pytest.raises(TypeError):
+        record.getMessage()
+
+
 def test_repr():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork %s", (0,), None)
     assert repr(record) == f"<LogRecord: hello, 30, {__file__}, 123, 'bork %s'>"

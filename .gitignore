@@ -20,3 +20,4 @@ crash-*
 oom-*
 .vs/
 .idea/
+.hypothesis/
