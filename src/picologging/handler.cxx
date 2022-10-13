@@ -41,7 +41,7 @@ PyObject* Handler_dealloc(Handler *self) {
     Py_XDECREF(self->_const_emit);
     Py_XDECREF(self->_const_format);
     delete self->lock;
-    ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
+    FiltererType.tp_dealloc((PyObject *)self);
     return nullptr;
 }
 

@@ -41,7 +41,7 @@ PyObject* StreamHandler_dealloc(StreamHandler *self) {
     Py_XDECREF(self->terminator);
     Py_XDECREF(self->_const_write);
     Py_XDECREF(self->_const_flush);
-    ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
+    HandlerType.tp_dealloc((PyObject *)self);
     return nullptr;
 }
 
