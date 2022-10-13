@@ -1,9 +1,11 @@
-import threading
-from picologging import LogRecord
-import picologging
 import logging
-import pytest
 import os
+import threading
+
+import pytest
+
+import picologging
+from picologging import LogRecord
 
 
 def test_logrecord_standard():

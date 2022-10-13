@@ -1,7 +1,9 @@
 import io
 import sys
-import picologging
+
 import pytest
+
+import picologging
 
 
 def test_stream_handler():

@@ -1,23 +1,19 @@
-import sys
+import io
 import os
+import sys
+import warnings
+from logging import BufferingFormatter, Filter, StringTemplateStyle, _checkLevel
+
+from ._picologging import Handler  # NOQA
 from ._picologging import (
-    LogRecord,
+    Filterer,
     FormatStyle,
     Formatter,
     Logger,
-    Filterer,
-    Handler,
+    LogRecord,
     StreamHandler,
     getLevelName,
-)  # NOQA
-from logging import (
-    _checkLevel,
-    Filter,
-    StringTemplateStyle,
-    BufferingFormatter,
 )
-import io
-import warnings
 
 __version__ = "0.8.1"
 

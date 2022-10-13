@@ -1,10 +1,11 @@
-from _typeshed import StrPath, SupportsWrite
 from collections.abc import Callable, Iterable, Mapping
 from io import TextIOWrapper
 from multiprocessing import Manager
 from string import Template
 from types import TracebackType
-from typing import Any, Generic, Pattern, TextIO, TypeVar, Union, overload, Optional
+from typing import Any, Generic, Optional, Pattern, TextIO, TypeVar, Union, overload
+
+from _typeshed import StrPath, SupportsWrite
 from typing_extensions import Literal, TypeAlias
 
 CRITICAL: int

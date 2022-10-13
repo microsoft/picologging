@@ -1,6 +1,5 @@
-from skbuild import setup
 from setuptools import find_packages
-
+from skbuild import setup
 
 with open("./README.md") as fh:
     long_description = fh.read()

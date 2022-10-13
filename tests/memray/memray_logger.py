@@ -2,8 +2,9 @@
 Create 100,000  logger instances and run a log test on them
 """
 
-import picologging
 from io import StringIO
+
+import picologging
 
 
 def log(level=picologging.INFO):

@@ -1,8 +1,10 @@
-from picologging import Formatter, LogRecord
+import datetime
 import logging
 import sys
+
 import pytest
-import datetime
+
+from picologging import Formatter, LogRecord
 
 
 def test_formatter_default_fmt():

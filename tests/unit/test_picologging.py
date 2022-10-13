@@ -1,7 +1,9 @@
-import sys
-import picologging
 import logging
+import sys
+
 import pytest
+
+import picologging
 
 levels = [
     (picologging.DEBUG, "DEBUG"),

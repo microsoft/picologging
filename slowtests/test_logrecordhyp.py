@@ -2,8 +2,9 @@ import logging
 import sys
 
 import pytest
-from hypothesis import given, reproduce_failure, strategies as st
 from flaky import flaky
+from hypothesis import given, reproduce_failure
+from hypothesis import strategies as st
 
 import picologging
 

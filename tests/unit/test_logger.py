@@ -1,8 +1,10 @@
 import io
-import uuid
-import picologging
 import logging
+import uuid
+
 import pytest
+
+import picologging
 
 
 def test_logger_attributes():

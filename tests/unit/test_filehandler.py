@@ -7,9 +7,9 @@ import pytest
 
 import picologging
 from picologging.handlers import (
-    WatchedFileHandler,
     RotatingFileHandler,
     TimedRotatingFileHandler,
+    WatchedFileHandler,
 )
 
 

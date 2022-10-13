@@ -1,10 +1,11 @@
-import tempfile
-import logging
-import picologging
-import logging.handlers as logging_handlers
-import picologging.handlers as picologging_handlers
-import queue
 import io
+import logging
+import logging.handlers as logging_handlers
+import queue
+import tempfile
+
+import picologging
+import picologging.handlers as picologging_handlers
 
 
 def filehandler_logging():

@@ -1,9 +1,11 @@
-import atheris
 import io
 
+import atheris
+
 with atheris.instrument_imports():
-    import picologging
     import sys
+
+    import picologging
 
     picologging.basicConfig()
     logger = picologging.Logger("fuzz", picologging.DEBUG)

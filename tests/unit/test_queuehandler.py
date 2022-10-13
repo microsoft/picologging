@@ -1,7 +1,8 @@
-from picologging.handlers import QueueHandler, QueueListener
-import picologging
-import queue
 import io
+import queue
+
+import picologging
+from picologging.handlers import QueueHandler, QueueListener
 
 
 def test_queue_handler_dispatch():

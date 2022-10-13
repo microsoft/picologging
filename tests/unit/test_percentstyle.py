@@ -1,7 +1,9 @@
-from picologging import PercentStyle, LogRecord, INFO
-import pytest
-import threading
 import logging
+import threading
+
+import pytest
+
+from picologging import INFO, LogRecord, PercentStyle
 
 
 def test_percentstyle():

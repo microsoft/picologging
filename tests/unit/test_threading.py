@@ -1,7 +1,8 @@
+import io
 import threading
+
 import picologging
 from picologging import Logger, StreamHandler
-import io
 
 
 def test_threaded_execution():
