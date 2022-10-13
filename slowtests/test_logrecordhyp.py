@@ -45,7 +45,7 @@ def test_hypothesis_logrecord_constructor(
     assert pico_record.getMessage() == stdl_record.getMessage()
 
 
-@flaky
+@flaky(max_runs=4, min_passes=1)
 @given(
     name=st.text(),
     level=c_integers,
