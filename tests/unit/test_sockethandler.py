@@ -89,7 +89,7 @@ class UDPServer(ControlMixin, ThreadingUDPServer):
                 data = self.wfile.getvalue()
                 if data:
                     try:
-                        super(DelegatingUDPRequestHandler, self).finish()
+                        super().finish()
                     except OSError:
                         if not self.server._closed:
                             raise

@@ -161,4 +161,4 @@ jobs:
     - name: Check Python Formatting
       run: black --check .
     - name: Check pyupgrade
-      run: pyupgrade --py37-plus src/picologging/*.py
+      run: pyupgrade --py37-plus src/picologging/*.py tests/**/*.py

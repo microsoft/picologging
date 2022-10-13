@@ -23,7 +23,7 @@ def test_memory_handler(tmp_path):
     logger.debug("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
     assert handler.buffer == []
 
@@ -39,6 +39,6 @@ def test_memory_handler_set_target(tmp_path):
     logger.debug("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
     assert handler.buffer == []
