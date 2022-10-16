@@ -2,7 +2,7 @@ from skbuild import setup
 from setuptools import find_packages
 
 
-with open("./README.md", "r") as fh:
+with open("./README.md") as fh:
     long_description = fh.read()
 
 
@@ -44,6 +44,7 @@ setup(
             "hypothesis",
             "flaky",
             "black",
+            "pre-commit",
         ]
     },
     project_urls={

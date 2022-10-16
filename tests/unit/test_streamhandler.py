@@ -102,14 +102,14 @@ def test_set_stream_return_value():
 
 
 def test_streamhandler_repr():
-    class StreamWithName(object):
+    class StreamWithName:
         level = picologging.NOTSET
         name = "beyonce"
 
     handler = picologging.StreamHandler(StreamWithName())
     assert repr(handler) == "<StreamHandler beyonce (NOTSET)>"
 
-    class StreamWithIntName(object):
+    class StreamWithIntName:
         level = picologging.NOTSET
         name = 2
 

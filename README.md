@@ -92,6 +92,7 @@ Once opened in the dev container, run:
 
 ```
 pip install -e ".[dev]"
+pre-commit install
 python setup.py build_ext --inplace --build-type Debug
 ```
 

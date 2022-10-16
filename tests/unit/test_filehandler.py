@@ -22,7 +22,7 @@ def test_filehandler(tmp_path):
     logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
 
@@ -35,7 +35,7 @@ def test_filehandler_delay(tmp_path):
     logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
 
@@ -49,7 +49,7 @@ def test_watchedfilehandler(tmp_path):
     logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
 
@@ -68,7 +68,7 @@ def test_watchedfilehandler_file_changed(tmp_path):
     logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
 
@@ -85,7 +85,7 @@ def test_watchedfilehandler_file_removed(tmp_path):
     logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
 
@@ -100,13 +100,13 @@ def test_rotatingfilehandler(tmp_path):
         logger.warning("test")
     handler.close()
 
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         assert f.read() == "test\n"
 
     for i in range(1, 3):
         log_file = tmp_path / f"log.txt.{i}"
 
-        with open(log_file, "r") as f:
+        with open(log_file) as f:
             assert f.read() == "test\n"
 
 
@@ -187,7 +187,7 @@ def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     assert len(files) == 2
 
     for file_name in files:
-        with open(tmp_path / file_name, "r") as file:
+        with open(tmp_path / file_name) as file:
             assert file.read() == "test\n"
 
 
