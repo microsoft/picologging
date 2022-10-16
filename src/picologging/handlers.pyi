@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Any, Callable, Pattern
-from _typeshed import StrPath
 from queue import Queue, SimpleQueue
 from socket import socket
+from typing import Any, Callable, Pattern
 
-from picologging import Handler, FileHandler, LogRecord
+from _typeshed import StrPath
+
+from picologging import FileHandler, Handler, LogRecord
 
 class WatchedFileHandler(FileHandler):
     baseFilename: str  # undocumented

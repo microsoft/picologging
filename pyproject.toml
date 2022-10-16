@@ -18,3 +18,6 @@ environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 [tool.pylint.messages_control]
 disable = "C0114,C0115,C0116"
+
+[tool.isort]
+profile = "black"

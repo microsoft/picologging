@@ -1,5 +1,6 @@
-import picologging
 from io import StringIO
+
+import picologging
 
 
 def log(level=picologging.INFO):

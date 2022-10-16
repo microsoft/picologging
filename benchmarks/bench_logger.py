@@ -1,5 +1,6 @@
-from io import StringIO
 import logging
+from io import StringIO
+
 import picologging
 
 logging.basicConfig()

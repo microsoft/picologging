@@ -1,5 +1,6 @@
-from picologging import Formatter
 import sys
+
+from picologging import Formatter
 
 
 def test_format_exception():

@@ -1,4 +1,5 @@
 import pytest
+
 import picologging
 from picologging.config import dictConfig, valid_ident
 

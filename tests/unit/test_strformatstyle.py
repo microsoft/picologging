@@ -1,7 +1,9 @@
-from picologging import Formatter, StrFormatStyle, LogRecord, INFO
-import pytest
-import threading
 import logging
+import threading
+
+import pytest
+
+from picologging import INFO, Formatter, LogRecord, StrFormatStyle
 
 
 def test_strformatstyle():

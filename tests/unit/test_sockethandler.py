@@ -6,8 +6,8 @@ import tempfile
 import threading
 from socketserver import (
     DatagramRequestHandler,
-    ThreadingTCPServer,
     StreamRequestHandler,
+    ThreadingTCPServer,
     ThreadingUDPServer,
 )
 

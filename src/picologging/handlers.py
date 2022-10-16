@@ -1,11 +1,12 @@
-import queue
 import os
 import pickle
+import queue
 import re
 import socket
 import struct
-import time
 import threading
+import time
+
 import picologging
 
 _MIDNIGHT = 24 * 60 * 60  # number of seconds in a day

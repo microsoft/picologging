@@ -1,5 +1,6 @@
-import picologging
 import pytest
+
+import picologging
 
 
 def test_basic_handler():
