@@ -132,7 +132,7 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->_const_stack_info);
     Py_XDECREF(self->_const_line_break);
     Py_XDECREF(self->_fallback_handler);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    FiltererType.tp_dealloc((PyObject *)self);
     return NULL;
 }
 
