@@ -1,4 +1,3 @@
-import copy
 import os
 import pickle
 import queue
@@ -581,7 +580,7 @@ class QueueHandler(picologging.Handler):
         """
         try:
             self.enqueue(self.prepare(record))
-        except Exception as e:
+        except Exception:
             self.handleError(record)
 
 
