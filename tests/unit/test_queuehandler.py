@@ -16,7 +16,7 @@ def test_queue_handler_dispatch():
     assert record.levelno == picologging.DEBUG
     assert record.name == "test"
     assert record.msg == "test"
-    assert record.args == ()
+    assert record.args is None
     assert record.exc_info is None
 
 
