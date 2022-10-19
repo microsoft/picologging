@@ -1,3 +1,4 @@
+import copy
 import os
 import pickle
 import queue
@@ -525,6 +526,53 @@ class QueueHandler(picologging.Handler):
         super().__init__()
         self.queue = queue
 
+    def enqueue(self, record):
+        """
+        Enqueue a record.
+
+        The base implementation uses put_nowait. You may want to override
+        this method if you want to use blocking, timeouts or custom queue
+        implementations.
+        """
+        self.queue.put_nowait(record)
+
+    def prepare(self, record):
+        """
+        Prepare a record for queuing. The object returned by this method is
+        enqueued.
+
+        The base implementation formats the record to merge the message and
+        arguments, and removes unpickleable items from the record in-place.
+        Specifically, it overwrites the record's `msg` and
+        `message` attributes with the merged message (obtained by
+        calling the handler's `format` method), and sets the `args`,
+        `exc_info` and `exc_text` attributes to None.
+
+        You might want to override this method if you want to convert
+        the record to a dict or JSON string, or send a modified copy
+        of the record while leaving the original intact.
+        """
+        # The format operation gets traceback text into record.exc_text
+        # (if there's exception data), and also returns the formatted
+        # message. We can then use this to replace the original
+        # msg + args, as these might be unpickleable. We also zap the
+        # exc_info, exc_text and stack_info attributes, as they are no longer
+        # needed and, if not None, will typically not be pickleable.
+        msg = self.format(record)
+        # bpo-35726: make copy of record to avoid affecting other handlers in the chain.
+        record = picologging.LogRecord(
+            record.name,
+            record.levelno,
+            record.pathname,
+            record.lineno,
+            msg,
+            None,
+            None,
+            record.funcName,
+            record.stack_info,
+        )
+        return record
+
     def emit(self, record: picologging.LogRecord):
         """
         Emit a record.
@@ -532,8 +580,8 @@ class QueueHandler(picologging.Handler):
         Writes the LogRecord to the queue, copying it first.
         """
         try:
-            self.queue.put_nowait(record)
-        except Exception:
+            self.enqueue(self.prepare(record))
+        except Exception as e:
             self.handleError(record)
 
 
