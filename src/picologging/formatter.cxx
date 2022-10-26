@@ -170,7 +170,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             }
             PyUnicode_Append(&result, logRecord->excText);
         }
-        if (logRecord->stackInfo != Py_None && logRecord->stackInfo != Py_False){
+        if (logRecord->stackInfo != Py_None && logRecord->stackInfo != Py_False && PyUnicode_GET_LENGTH(logRecord->stackInfo) > 0) {
             if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)){
                 PyUnicode_Append(&result, self->_const_line_break);
             }
