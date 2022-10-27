@@ -170,16 +170,21 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             }
             PyUnicode_Append(&result, logRecord->excText);
         }
-        if (logRecord->stackInfo != Py_None && logRecord->stackInfo != Py_False && PyUnicode_GET_LENGTH(logRecord->stackInfo) > 0) {
-            if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)){
-                PyUnicode_Append(&result, self->_const_line_break);
-            }
-            if (PyUnicode_Check(logRecord->stackInfo)){
-                PyUnicode_Append(&result, logRecord->stackInfo);
+        if (logRecord->stackInfo != Py_None && logRecord->stackInfo != Py_False ) {
+            if (PyUnicode_Check(logRecord->stackInfo) ) {
+                if (PyUnicode_GET_LENGTH(logRecord->stackInfo) > 0) {
+                    if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)) {
+                        PyUnicode_Append(&result, self->_const_line_break);
+                    }
+                    PyUnicode_Append(&result, logRecord->stackInfo);
+                }
             } else {
                 PyObject* s = PyObject_Str(logRecord->stackInfo);
                 if (s == nullptr){
                     return nullptr; // Got exception in str(stackInfo)
+                }
+                if (!PYUNICODE_ENDSWITH(result, self->_const_line_break)){
+                    PyUnicode_Append(&result, self->_const_line_break);
                 }
                 PyUnicode_Append(&result, s);
                 Py_DECREF(s);
