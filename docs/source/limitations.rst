@@ -21,8 +21,7 @@ Logger
 
 * Custom logging levels are not supported.
 * There is no Log Record Factory, picologging will always use LogRecord.
-* Logger will always default to the Sys.stderr and not observe (emittedNoHandlerWarning).
-* Having a logger with level NOTSET and a parent is supported, but changing the level of the parent *after* setting the parent field of the child will not propagate the level to the parent. See `#22 <https://github.com/microsoft/picologging/issues/22>`_.
+* Logger will always default to the `sys.stderr` and not observe an (undocumented) `logging.emittedNoHandlerWarning` flag in the Python standard library.
 
 Configuration
 -------------
