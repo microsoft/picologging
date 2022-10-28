@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.9.0
+
+* Fix formatting with black by @aminalaee in https://github.com/microsoft/picologging/pull/71
+* Improve test coverage by @tonybaloney in https://github.com/microsoft/picologging/pull/72
+* Fix FileHandler flaky test by @aminalaee in https://github.com/microsoft/picologging/pull/69
+* Update project classifiers by @aminalaee in https://github.com/microsoft/picologging/pull/74
+* Uplift test coverage by @aminalaee in https://github.com/microsoft/picologging/pull/76
+* Making LogRecord class derivable by @pamelafox in https://github.com/microsoft/picologging/pull/77
+* Properly raise error from Handler.emit by @pamelafox in https://github.com/microsoft/picologging/pull/81
+* Properly handle return value for setStream by @pamelafox in https://github.com/microsoft/picologging/pull/82
+* Fixing Stream.__repr__ to match CPython by @pamelafox in https://github.com/microsoft/picologging/pull/84
+* Add Handler repr by @aminalaee in https://github.com/microsoft/picologging/pull/88
+* Allow handle method to accept LogRecord subclasses by @aminalaee in https://github.com/microsoft/picologging/pull/85
+* Fix Handler.handle return type by @aminalaee in https://github.com/microsoft/picologging/pull/86
+* Make config fix by @pamelafox in https://github.com/microsoft/picologging/pull/97
+* Add failing Queue Listener Handler Test by @Goldziher in https://github.com/microsoft/picologging/pull/89
+* Add local development instructions to readme by @pamelafox in https://github.com/microsoft/picologging/pull/104
+* Add launch.json instructions to README by @pamelafox in https://github.com/microsoft/picologging/pull/106
+* Create py.typed by @Goldziher in https://github.com/microsoft/picologging/pull/92
+* Add config.pyi stub by @aminalaee in https://github.com/microsoft/picologging/pull/100
+* Add pylint config by @pamelafox in https://github.com/microsoft/picologging/pull/107
+* 3.7+ compatible code by @tonybaloney in https://github.com/microsoft/picologging/pull/114
+* Document the memray tests and add a script for automation by @tonybaloney in https://github.com/microsoft/picologging/pull/113
+* Adding regression test for LogRecord args issue by @pamelafox in https://github.com/microsoft/picologging/pull/105
+* Fix leaks identified memray by @tonybaloney in https://github.com/microsoft/picologging/pull/115
+* Set logger parents and levels by @pamelafox in https://github.com/microsoft/picologging/pull/108
+* Adding parameters to flaky decorator to increase reruns by @pamelafox in https://github.com/microsoft/picologging/pull/118
+* Adding precommit with black and pyupgr by @pamelafox in https://github.com/microsoft/picologging/pull/119
+* Call dealloc of base types by @pamelafox in https://github.com/microsoft/picologging/pull/120
+* Add isort by @pamelafox in https://github.com/microsoft/picologging/pull/121
+* Test on 3.11 vs 3.11-dev by @pamelafox in https://github.com/microsoft/picologging/pull/127
+* Make QueueHandler call format by @pamelafox in https://github.com/microsoft/picologging/pull/122
+
 ## 0.8.1
 
 * Fix `dictconfig` resetting child loggers by @aminalaee in https://github.com/microsoft/picologging/pull/70
