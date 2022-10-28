@@ -46,6 +46,26 @@ def test_formatter_default_fmt_against_builtin():
     assert pico_f.formatMessage(pico_record) == logging_f.formatMessage(pico_record)
 
 
+def test_formatter_default_fmt_exc_info_against_builtin():
+    pico_f = Formatter()
+    logging_f = logging.Formatter()
+
+    try:
+        raise Exception("error")
+    except Exception:
+        exc_info = sys.exc_info()
+
+    pico_record = LogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork bork bork", (), exc_info, "", ""
+    )
+    logging_record = logging.LogRecord(
+        "hello", logging.WARNING, "/serv/", 123, "bork bork bork", (), exc_info, "", ""
+    )
+    assert pico_f.format(pico_record) == logging_f.format(logging_record)
+    assert pico_f.format(pico_record) == logging_f.format(pico_record)
+    assert pico_f.formatMessage(pico_record) == logging_f.formatMessage(pico_record)
+
+
 def test_formatter_custom_datefmt():
     f = Formatter("%(name)s %(levelname)s %(message)s", datefmt="%Y-%m-%d")
     assert f.datefmt == "%Y-%m-%d"

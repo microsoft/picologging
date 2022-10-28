@@ -16,7 +16,7 @@ def test_queue_handler_dispatch():
     assert record.levelno == picologging.DEBUG
     assert record.name == "test"
     assert record.msg == "test"
-    assert record.args == ()
+    assert record.args is None
     assert record.exc_info is None
 
 
@@ -43,3 +43,23 @@ def test_queue_handler_handle_exception():
 
     handler.queue = None
     logger.debug("test")
+
+
+def test_queue_handler_format():
+    logger = picologging.getLogger("picologging_test")
+    logger.setLevel(picologging.INFO)
+    stream = io.StringIO()
+    stream_handler = picologging.StreamHandler(stream)
+    q = queue.Queue()
+    listener = QueueListener(q, stream_handler)
+    listener.start()
+    handler = QueueHandler(q)
+    handler.setLevel(picologging.DEBUG)
+    handler.setFormatter(
+        picologging.Formatter("%(levelname)s - %(name)s - %(message)s")
+    )
+    logger.addHandler(handler)
+    logger.info("Testing now!")
+
+    listener.stop()
+    assert stream.getvalue() == "INFO - picologging_test - Testing now!\n"
