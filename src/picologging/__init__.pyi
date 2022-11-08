@@ -8,6 +8,8 @@ from typing import Any, Generic, Optional, Pattern, TextIO, TypeVar, Union, over
 from _typeshed import StrPath, SupportsWrite
 from typing_extensions import Literal, TypeAlias
 
+__version__: str
+
 CRITICAL: int
 FATAL: int
 ERROR: int

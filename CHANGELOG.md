@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+* Add Windows Arm64 wheels by @aminalaee in https://github.com/microsoft/picologging/pull/130
+* Remove #22 as limitation since it's been fixed by @tonybaloney in https://github.com/microsoft/picologging/pull/128
+* Remove QueueListener test by @aminalaee in https://github.com/microsoft/picologging/pull/101
+
 ## 0.9.0
 
 * Fix formatting with black by @aminalaee in https://github.com/microsoft/picologging/pull/71
