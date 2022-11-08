@@ -12,6 +12,7 @@ build-backend = "setuptools.build_meta"
 skip = ["*-musllinux*", "pp*"] 
 test-requires = "pytest"
 test-command = "python -X dev -m pytest {project}/tests"
+test-skip = ["*-win_arm64", "*-macosx_universal2:arm64"]
 
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
