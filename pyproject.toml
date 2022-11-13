@@ -19,7 +19,7 @@ environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
 archs = ["x86_64", "universal2"]
 
 [tool.cibuildwheel.linux]
-archs = ["x86", "x86_64", "aarch64"]
+archs = ["i686", "x86_64", "aarch64"]
 
 [tool.cibuildwheel.windows]
 archs = ["x86", "AMD64", "ARM64"]
