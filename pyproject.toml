@@ -16,6 +16,13 @@ test-skip = ["*-win_arm64", "*-macosx_universal2:arm64"]
 
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
+archs = ["x86_64", "universal2"]
+
+[tool.cibuildwheel.linux]
+archs = ["i686", "x86_64", "aarch64"]
+
+[tool.cibuildwheel.windows]
+archs = ["x86", "AMD64", "ARM64"]
 
 [tool.pylint.messages_control]
 disable = "C0114,C0115,C0116"
