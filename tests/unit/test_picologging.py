@@ -3,6 +3,7 @@ import sys
 import pytest
 
 import picologging
+from picologging.handlers import BufferingHandler
 
 levels = [
     (picologging.DEBUG, "DEBUG"),
@@ -150,3 +151,15 @@ def test_make_log_record():
 @pytest.mark.parametrize("encoding", ["utf-8", None])
 def test_basic_config_encoding(encoding):
     picologging.basicConfig(filename="test.txt", encoding=encoding)
+
+
+def test_shutdown():
+    handler = BufferingHandler(capacity=1)
+    logger = picologging.getLogger("test")
+    logger.setLevel(picologging.DEBUG)
+    logger.addHandler(handler)
+    logger.debug("test")
+
+    picologging.shutdown()
+
+    assert handler.buffer == []

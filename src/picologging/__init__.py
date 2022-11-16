@@ -1,4 +1,6 @@
+import atexit
 import io
+import itertools
 import os
 import sys
 import warnings
@@ -518,3 +520,42 @@ def makeLogRecord(dict):
     for k, v in dict.items():
         setattr(rv, k, v)
     return rv
+
+
+def shutdown(handlerList=None):
+    """
+    Perform any cleanup actions in the logging system (e.g. flushing
+    buffers).
+    Should be called at application exit.
+    """
+    handlers = [logger.handlers for logger in root.manager.loggerDict.values()] + [
+        root.handlers
+    ]
+    handlerList = list(itertools.chain(*handlers))
+
+    for h in reversed(handlerList):
+        # errors might occur, for example, if files are locked
+        # we just ignore them if raiseExceptions is not set
+        try:
+            if h:
+                try:
+                    h.acquire()
+                    # MemoryHandlers might not want to be flushed on close,
+                    # but circular imports prevent us scoping this to just
+                    # those handlers.  hence the default to True.
+                    if getattr(h, "flushOnClose", True):
+                        h.flush()
+                    h.close()
+                except (OSError, ValueError):
+                    # Ignore errors which might be caused
+                    # because handlers have been closed but
+                    # references to them are still around at
+                    # application exit.
+                    pass
+                finally:
+                    h.release()
+        except:  # ignore everything, as we're shutting down
+            raise
+
+
+atexit.register(shutdown)

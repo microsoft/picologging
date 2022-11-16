@@ -4,7 +4,17 @@ from io import TextIOWrapper
 from multiprocessing import Manager
 from string import Template
 from types import TracebackType
-from typing import Any, Generic, Optional, Pattern, TextIO, TypeVar, Union, overload
+from typing import (
+    Any,
+    Generic,
+    Optional,
+    Pattern,
+    TextIO,
+    TypeVar,
+    Union,
+    overload,
+    Sequence,
+)
 
 from _typeshed import StrPath, SupportsWrite
 from typing_extensions import Literal, TypeAlias
@@ -373,3 +383,6 @@ BASIC_FORMAT: str
 
 def getLevelName(level: _Level) -> Any: ...
 def makeLogRecord(dict: Mapping[str, object]) -> LogRecord: ...
+def shutdown(
+    handlerList: Sequence[Any] = ...,
+) -> None: ...  # handlerList is undocumented
