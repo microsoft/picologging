@@ -20,6 +20,7 @@ def log(level=picologging.INFO):
     logger.handlers.append(handler)
 
     logger.debug("There has been a picologging issue")
+    repr(logger)
 
 
 if __name__ == "__main__":
