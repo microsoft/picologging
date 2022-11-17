@@ -151,17 +151,20 @@ PyObject* FormatStyle_usesTime(FormatStyle *self){
     if (self->usesDefaultFmt)
         Py_RETURN_FALSE;
     int ret = 0;
+    PyObject* asctime = nullptr;
     switch (self->style){
         case '%':
-            ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("%(asctime)"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+            asctime = PyUnicode_FromString("%(asctime)");
             break;
         case '{':
-            ret = PyUnicode_Find(self->fmt, PyUnicode_FromString("{asctime}"), 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+            asctime = PyUnicode_FromString("{asctime}");
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "Invalid style value");
             return nullptr;
     }
+    ret = PyUnicode_Find(self->fmt, asctime, 0, PyUnicode_GET_LENGTH(self->fmt), 1);
+    Py_XDECREF(asctime);
     if (ret >= 0){
         Py_RETURN_TRUE;
     } else if (ret == -1){
