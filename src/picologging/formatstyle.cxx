@@ -143,6 +143,7 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
     Py_INCREF(defaults);
 
     self->_const_format = PyUnicode_FromString("format");
+    self->_const__dict__ = PyUnicode_FromString("__dict__");
 
     return 0;
 }
@@ -305,7 +306,7 @@ PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
             }
             return _PyUnicodeWriter_Finish(&writer);
         } else {
-            PyObject* recordDict = PyObject_GetAttrString(record, "__dict__");
+            PyObject* recordDict = PyObject_GetAttr(record, self->_const__dict__);
             if (recordDict == nullptr)
                 return nullptr;
             PyObject* result = nullptr;
@@ -322,7 +323,7 @@ PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
         }
     }
 
-    PyObject* dict = PyObject_GetAttrString(record, "__dict__");
+    PyObject* dict = PyObject_GetAttr(record, self->_const__dict__);
     if (PyDict_Merge(dict, self->defaults, 1) < 0){
         Py_DECREF(dict);
         return nullptr;
@@ -406,6 +407,7 @@ PyObject* FormatStyle_dealloc(FormatStyle *self){
     Py_XDECREF(self->fmt);
     Py_XDECREF(self->defaults);
     Py_XDECREF(self->_const_format);
+    Py_XDECREF(self->_const__dict__);
     for (int i = 0 ; i < self->ob_base.ob_size; i++){
         Py_XDECREF(self->fragments[i].fragment);
     }
