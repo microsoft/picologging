@@ -53,8 +53,6 @@ void setEffectiveLevelOfChildren(Logger* logger, unsigned short level) {
     }
 }
 
-
-
 PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
     Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);

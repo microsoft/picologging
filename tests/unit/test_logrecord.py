@@ -8,6 +8,7 @@ import picologging
 from picologging import LogRecord
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_standard():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
@@ -23,6 +24,7 @@ def test_logrecord_standard():
     assert record.created
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_args():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork %s", ("boom"), None
@@ -33,6 +35,7 @@ def test_logrecord_args():
     assert record.message is None
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_getmessage_with_args():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork %s", ("boom"), None
@@ -43,6 +46,7 @@ def test_logrecord_getmessage_with_args():
     assert record.message == "bork boom"
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_getmessage_no_args():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
     assert record.message is None
@@ -51,6 +55,7 @@ def test_logrecord_getmessage_no_args():
     assert record.message == "bork boom"
 
 
+@pytest.mark.check_leaks("0B")
 def test_args_format_mismatch():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork boom %s %s", (0,), None
@@ -60,6 +65,7 @@ def test_args_format_mismatch():
         record.getMessage()
 
 
+@pytest.mark.check_leaks("0B")
 def test_args_len_mismatch():
     record = LogRecord(
         "hello", logging.WARNING, __file__, 123, "bork boom %s", (0, 1, 2), None
@@ -69,6 +75,7 @@ def test_args_len_mismatch():
         record.getMessage()
 
 
+@pytest.mark.check_leaks("0B")
 def test_no_args():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", None, None)
     assert record.message is None
@@ -76,6 +83,7 @@ def test_no_args():
     assert record.message == "bork boom"
 
 
+@pytest.mark.check_leaks("0B")
 def test_no_args_and_format():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork %s", None, None)
     assert record.message is None
@@ -83,24 +91,28 @@ def test_no_args_and_format():
     assert record.message == "bork %s"
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_single_string_arg():
     record = LogRecord("", picologging.WARNING, "", 12, " %s", "\U000b6fb2", None)
     assert record.args == "\U000b6fb2"
     assert record.getMessage() == " \U000b6fb2"
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_single_empty_string_in_tuple_arg():
     record = LogRecord("", 0, "", 0, " %s", ("",), None)
     assert record.args == ("",)
     assert record.getMessage() == " "
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_single_dict_in_tuple_arg():
     record = LogRecord("", 0, "", 0, "%(key)s", ({"key": "val"},), None)
     assert record.args == {"key": "val"}
     assert record.getMessage() == "val"
 
 
+@pytest.mark.check_leaks("0B")
 def test_logrecord_nested_tuple_arg():
     record = LogRecord("", 0, "", 0, "%d %s", ((10, "bananas"),), None)
     assert record.args == ((10, "bananas"),)
@@ -108,11 +120,13 @@ def test_logrecord_nested_tuple_arg():
         record.getMessage()
 
 
+@pytest.mark.check_leaks("0B")
 def test_repr():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork %s", (0,), None)
     assert repr(record) == f"<LogRecord: hello, 30, {__file__}, 123, 'bork %s'>"
 
 
+@pytest.mark.check_leaks("0B")
 def test_mapping_dict():
     args = {
         "a": "b",
@@ -123,20 +137,23 @@ def test_mapping_dict():
     assert record.args == {"a": "b"}
 
 
+@pytest.mark.check_leaks("0B")
 def test_threading_info():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
     assert record.thread == threading.get_ident()
     assert record.threadName is None  # Not supported
 
 
+@pytest.mark.check_leaks("0B")
 def test_process_info():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork", (), None)
     assert record.process == os.getpid()
     assert record.processName is None  # Not supported
 
 
+@pytest.mark.check_leaks("1.5KB")
 def test_logrecord_subclass():
-    class DerivedLogRecord(LogRecord):
+    class DerivedLogRecord(LogRecord):  # Leaks 1 ref (CPython implementation detail)
         pass
 
     record = DerivedLogRecord(
@@ -148,6 +165,3 @@ def test_logrecord_subclass():
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
     assert record.message == "bork boom"
-
-    handler = picologging.StreamHandler()
-    handler.emit(record)

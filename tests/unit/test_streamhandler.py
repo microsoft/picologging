@@ -3,6 +3,7 @@ import sys
 
 import pytest
 
+import logging
 import picologging
 
 
@@ -135,3 +136,22 @@ def test_streamhandler_handle_return_value():
     handler.addFilter(TestFilter())
     assert handler.handle(record) is None
     assert handler.emit(record) is None
+
+
+def test_emit_subclass():
+    class DerivedLogRecord(picologging.LogRecord):
+        pass
+
+    record = DerivedLogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork boom", (), None
+    )
+
+    assert DerivedLogRecord.__base__ is picologging.LogRecord
+    assert record.message is None
+    assert record.getMessage() == "bork boom"
+    assert record.message == "bork boom"
+    assert record.message == "bork boom"
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+    handler.emit(record)
+    assert stream.getvalue() == "bork boom\n"

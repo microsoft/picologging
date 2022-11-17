@@ -274,7 +274,6 @@ def test_logger_init_bad_args():
 
 
 @pytest.mark.parametrize("level", levels)
-@pytest.mark.check_leaks("0B", warmups=3)
 def test_logger_repr(level):
     logger = picologging.Logger("test", level)
     assert repr(logger) == f"<Logger 'test' ({level_names[levels.index(level)]})>"
