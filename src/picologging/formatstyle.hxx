@@ -49,6 +49,7 @@ typedef struct {
     bool usesDefaultFmt;
     int style;
     PyObject* _const_format;
+    PyObject* _const__dict__;
     FormatFragment fragments[1];
 } FormatStyle;
 
