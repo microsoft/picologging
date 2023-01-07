@@ -675,3 +675,15 @@ def test_getlogger_with_placeholder_parent():
     # Now breathe life into the placeholder
     middle_logger = picologging.getLogger("A.B")
     assert middle_logger.getEffectiveLevel() == picologging.INFO
+
+
+def test_is_enabled_for():
+    logger = picologging.Logger("test")
+    logger.setLevel(logging.INFO)
+
+    assert logger.isEnabledFor(logging.INFO) is True
+    assert logger.isEnabledFor(logging.WARNING) is True
+    assert logger.isEnabledFor(logging.DEBUG) is False
+
+    with pytest.raises(TypeError):
+        logger.isEnabledFor("INFO")
