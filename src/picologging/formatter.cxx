@@ -265,8 +265,8 @@ PyObject* Formatter_formatException(Formatter *self, PyObject *excInfo) {
 
 PyObject* Formatter_repr(Formatter *self)
 {
-    return PyUnicode_FromFormat("<Formatter: fmt='%U'>",
-            self->fmt);
+    return PyUnicode_FromFormat("<%s: fmt='%U'>",
+            _PyType_Name(Py_TYPE(self)), self->fmt);
 }
 
 PyObject* Formatter_dealloc(Formatter *self) {
