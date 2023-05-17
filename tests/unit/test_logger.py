@@ -59,6 +59,22 @@ def test_set_level():
     assert logger.level == logging.DEBUG
 
 
+def test_set_level_from_string():
+    logger = picologging.Logger("test")
+    logger.setLevel("DEBUG")
+    assert logger.level == logging.DEBUG
+    logger.setLevel("INFO")
+    assert logger.level == logging.INFO
+    logger.setLevel("WARNING")
+    assert logger.level == logging.WARNING
+    logger.setLevel("ERROR")
+    assert logger.level == logging.ERROR
+    logger.setLevel("CRITICAL")
+    assert logger.level == logging.CRITICAL
+    logger.setLevel("NOTSET")
+    assert logger.level == logging.NOTSET
+
+
 def test_disabled_logger():
     logger = picologging.Logger("test", logging.DEBUG)
     logger.disabled = True
