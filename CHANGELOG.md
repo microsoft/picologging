@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.2
+
+* Upgrade pre-commit hooks versions by @sadikkuzu in https://github.com/microsoft/picologging/pull/133
+* Compile x86 for linux and windows. Compile aarch64 for linux by @tonybaloney in https://github.com/microsoft/picologging/pull/135
+* moves devcontainer vscode settings by @kjaymiller in https://github.com/microsoft/picologging/pull/143
+* Fix Formatter __repr__ by @aminalaee in https://github.com/microsoft/picologging/pull/141
+* Fix leaks in __dict__ and asctime fields by @tonybaloney in https://github.com/microsoft/picologging/pull/145
+* Add Logger isEnabledFor by @aminalaee in https://github.com/microsoft/picologging/pull/139
+* Support Logger.setLevel from string input by @tonybaloney in https://github.com/microsoft/picologging/pull/146
+
 ## 0.9.1
 
 * Add Windows Arm64 wheels by @aminalaee in https://github.com/microsoft/picologging/pull/130
