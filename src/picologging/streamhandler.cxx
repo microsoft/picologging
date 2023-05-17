@@ -32,7 +32,7 @@ int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
     }
     self->stream = stream;
     Py_INCREF(self->stream);
-    self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
+    self->stream_has_flush = (PyObject_HasAttr(self->stream, self->_const_flush) == 1);
     return 0;
 }
 
