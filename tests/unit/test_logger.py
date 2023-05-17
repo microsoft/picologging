@@ -59,6 +59,22 @@ def test_set_level():
     assert logger.level == logging.DEBUG
 
 
+def test_set_level_from_string():
+    logger = picologging.Logger("test")
+    logger.setLevel("DEBUG")
+    assert logger.level == logging.DEBUG
+    logger.setLevel("INFO")
+    assert logger.level == logging.INFO
+    logger.setLevel("WARNING")
+    assert logger.level == logging.WARNING
+    logger.setLevel("ERROR")
+    assert logger.level == logging.ERROR
+    logger.setLevel("CRITICAL")
+    assert logger.level == logging.CRITICAL
+    logger.setLevel("NOTSET")
+    assert logger.level == logging.NOTSET
+
+
 def test_disabled_logger():
     logger = picologging.Logger("test", logging.DEBUG)
     logger.disabled = True
@@ -293,7 +309,13 @@ def test_logger_repr_invalid_level():
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)
     with pytest.raises(TypeError):
-        logger.setLevel("potato")
+        logger.setLevel(3.14)
+
+
+def test_set_level_invalid_name():
+    logger = picologging.Logger("goo", picologging.DEBUG)
+    with pytest.raises(ValueError):
+        logger.setLevel("POTATO")
 
 
 def test_add_remove_handlers():
