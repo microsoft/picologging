@@ -44,6 +44,7 @@ PyObject* Logger_setLevel(Logger *self, PyObject *args);
 PyObject* Logger_getEffectiveLevel(Logger *self);
 PyObject* Logger_dealloc(Logger *self);
 PyObject* Logger_addHandler(Logger *self, PyObject *handler);
+PyObject* Logger_isEnabledFor(Logger *self, PyObject *level);
 
 PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsigned short level);
 PyObject* Logger_debug(Logger *self, PyObject *args, PyObject *kwds);
