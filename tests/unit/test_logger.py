@@ -309,7 +309,13 @@ def test_logger_repr_invalid_level():
 def test_set_level_bad_type():
     logger = picologging.Logger("goo", picologging.DEBUG)
     with pytest.raises(TypeError):
-        logger.setLevel("potato")
+        logger.setLevel(3.14)
+
+
+def test_set_level_invalid_name():
+    logger = picologging.Logger("goo", picologging.DEBUG)
+    with pytest.raises(ValueError):
+        logger.setLevel("POTATO")
 
 
 def test_add_remove_handlers():

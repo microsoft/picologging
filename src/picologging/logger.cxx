@@ -53,8 +53,6 @@ void setEffectiveLevelOfChildren(Logger* logger, unsigned short level) {
     }
 }
 
-
-
 PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
     Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);
@@ -142,11 +140,20 @@ PyObject* Logger_repr(Logger *self) {
 }
 
 PyObject* Logger_setLevel(Logger *self, PyObject *level) {
-    if (!PyLong_Check(level)) {
+    if (PyLong_Check(level)) {
+        self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+    }
+    else if (PyUnicode_Check(level)){
+        short levelValue = getLevelByName(PyUnicode_AsUTF8(level));
+        if (levelValue < 0) {
+            PyErr_Format(PyExc_ValueError, "Invalid level value: %U", level);
+            return nullptr;
+        }
+        self->level = levelValue;
+    } else {
         PyErr_SetString(PyExc_TypeError, "level must be an integer");
         return NULL;
     }
-    self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
     self->effective_level = self->level;
     setEnabledBasedOnEffectiveLevel(self);
     setEffectiveLevelOfChildren(self, self->level);

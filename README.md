@@ -90,7 +90,7 @@ This project comes bundled with a dev container which sets up an appropriate env
 
 Once opened in the dev container, run:
 
-```
+```console
 pip install -e ".[dev]"
 pre-commit install
 python setup.py build_ext --inplace --build-type Debug
@@ -100,7 +100,7 @@ Run the build command whenever you make changes to the files.
 
 It's also helpful to create a `.vscode/launch.json` file like this one:
 
-```
+```json
 {
     "version": "0.2.0",
     "configurations": [
@@ -140,12 +140,14 @@ If you would like to be able to dive into the CPython code while debugging, then
 into the devcontainer's `/workspaces/` directory. You may need to `sudo`.
 2. Follow the instructions in the CPython README to compile the code.
 3. Add the following key to the the configuration in `launch.json`:
-    ```
+
+    ```json
     "sourceFileMap": { "/usr/src/python": "/workspaces/cpython" },
     ```
+
 4. Add the following command to the `setupCommands` in `launch.json`:
-    
-    ```
+
+    ```json
     {
         "description": "Find CPython source code",
         "text": "-gdb-set auto-load safe-path /workspaces/cpython"
@@ -159,8 +161,6 @@ Some components of this Python package are from CPython 3.11 logging library for
 CPython 3.11 is licensed under the PSF license.
 The logging module is Copyright (C) 2001-2019 Vinay Sajip. All Rights Reserved.
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
