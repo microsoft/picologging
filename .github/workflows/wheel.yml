@@ -23,7 +23,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.15.0
         env:
           CIBW_PRERELEASE_PYTHONS: True
 
