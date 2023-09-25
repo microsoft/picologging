@@ -27,7 +27,7 @@ def test_formatter_custom_fmt():
     )
     s = f.format(record)
     assert s == "hello WARNING bork bork bork"
-    assert f.usesTime() == False
+    assert f.usesTime() is False
     assert f.formatMessage(record) == s
 
 
@@ -225,7 +225,7 @@ def test_format_with_custom_datefmt():
     )
     s = f.format(record)
     assert s == f"hello WARNING bork bork bork {actual_date}"
-    assert f.usesTime() == True
+    assert f.usesTime() is True
     assert f.formatMessage(record) == s
 
 
@@ -292,7 +292,7 @@ def test_override_format_exception():
 
     try:
         raise Exception("error")
-    except Exception as e:
+    except Exception:
         ei = sys.exc_info()
 
     result = formatter.formatException(ei)

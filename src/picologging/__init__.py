@@ -2,10 +2,10 @@ import io
 import os
 import sys
 import warnings
-from logging import BufferingFormatter, Filter, StringTemplateStyle, _checkLevel
+from logging import BufferingFormatter, Filter, StringTemplateStyle, _checkLevel  # NOQA
 
 from ._picologging import Handler  # NOQA
-from ._picologging import (
+from ._picologging import (  # NOQA
     Filterer,
     FormatStyle,
     Formatter,
@@ -32,6 +32,7 @@ BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 if hasattr(io, "text_encoding"):
     text_encoding = io.text_encoding
 else:
+
     def text_encoding(encoding) -> str:
         if encoding is not None:
             return encoding

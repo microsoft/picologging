@@ -12,10 +12,10 @@ def test_logger_attributes():
     assert logger.name == "test"
     assert logger.level == logging.NOTSET
     assert logger.parent is None
-    assert logger.propagate == True
+    assert logger.propagate is True
     assert logger.handlers == []
-    assert logger.disabled == False
-    assert logger.propagate == True
+    assert logger.disabled is False
+    assert logger.propagate is True
 
 
 level_names = [
@@ -169,7 +169,7 @@ def test_filterer_direct_type():
 def test_no_filter():
     logger = picologging.Logger("test")
     record = picologging.LogRecord("test", logging.INFO, "test", 1, "test", (), {})
-    assert logger.filter(record) == True
+    assert logger.filter(record) is True
 
 
 def test_filter_record():
@@ -178,11 +178,11 @@ def test_filter_record():
     logger.addFilter(filter)
     record = picologging.LogRecord("hello", logging.INFO, "test", 1, "test", (), {})
     record2 = picologging.LogRecord("goodbye", logging.INFO, "test", 1, "test", (), {})
-    assert logger.filter(record) == True
-    assert logger.filter(record2) == False
+    assert logger.filter(record) is True
+    assert logger.filter(record2) is False
     logger.removeFilter(filter)
-    assert logger.filter(record) == True
-    assert logger.filter(record2) == True
+    assert logger.filter(record) is True
+    assert logger.filter(record2) is True
 
 
 def test_filter_callable():
@@ -193,9 +193,9 @@ def test_filter_callable():
 
     logger.addFilter(filter)
     record = picologging.LogRecord("hello", logging.INFO, "test", 1, "test", (), {})
-    assert logger.filter(record) == True
+    assert logger.filter(record) is True
     record = picologging.LogRecord("goodbye", logging.INFO, "test", 1, "test", (), {})
-    assert logger.filter(record) == False
+    assert logger.filter(record) is False
 
 
 def test_log_debug():
@@ -283,10 +283,10 @@ def test_getlogger_no_args():
 
 def test_logger_init_bad_args():
     with pytest.raises(TypeError):
-        logger = picologging.Logger("goo", 10, dog=1)
+        picologging.Logger("goo", 10, dog=1)
 
     with pytest.raises(TypeError):
-        logger = picologging.Logger(name="test", level="potato")
+        picologging.Logger(name="test", level="potato")
 
 
 @pytest.mark.parametrize("level", levels)
@@ -298,12 +298,12 @@ def test_logger_repr(level):
 def test_logger_repr_effective_level():
     logger = picologging.Logger("test")
     logger.parent = picologging.Logger("parent", picologging.WARNING)
-    assert repr(logger) == f"<Logger 'test' (WARNING)>"
+    assert repr(logger) == "<Logger 'test' (WARNING)>"
 
 
 def test_logger_repr_invalid_level():
     logger = picologging.Logger("test", level=100)
-    assert repr(logger) == f"<Logger 'test' ()>"
+    assert repr(logger) == "<Logger 'test' ()>"
 
 
 def test_set_level_bad_type():
