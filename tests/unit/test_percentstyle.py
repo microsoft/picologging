@@ -6,14 +6,14 @@ import pytest
 from picologging import INFO, LogRecord, PercentStyle
 
 
-@pytest.mark.check_leaks("168B")
+@pytest.mark.limit_leaks("168B")
 def test_percentstyle():
     perc = PercentStyle("%(msg)s %(levelno)d %(name)s")
     record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
     assert perc.format(record) == "hello 20 test"
 
 
-@pytest.mark.check_leaks("225B")
+@pytest.mark.limit_leaks("225B")
 def test_percentstyle_format_bad_argument():
     perc = PercentStyle("%(msg)s %(levelno)d %(name)s")
     with pytest.raises(AttributeError):
@@ -24,7 +24,7 @@ def test_percentstyle_format_bad_argument():
         perc.format({})
 
 
-@pytest.mark.check_leaks("223B")
+@pytest.mark.limit_leaks("223B")
 def test_custom_attribute():
     perc = PercentStyle("%(custom)s")
     record = LogRecord("test", INFO, __file__, 1, "hello", (), None, None, None)
