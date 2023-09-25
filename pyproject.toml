@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=65.4.1",
-    "scikit-build>=0.13",
+    "scikit-build>=0.17.0",
     "cmake>=3.18",
     "ninja",
 ]
@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 # skip musl and pypy
-skip = ["*-musllinux*", "pp*"] 
+skip = ["*-musllinux*", "pp*", "*-win_arm64"] 
 test-requires = "pytest"
 test-command = "python -X dev -m pytest {project}/tests"
 test-skip = ["*-win_arm64", "*-macosx_universal2:arm64"]

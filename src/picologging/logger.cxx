@@ -140,11 +140,20 @@ PyObject* Logger_repr(Logger *self) {
 }
 
 PyObject* Logger_setLevel(Logger *self, PyObject *level) {
-    if (!PyLong_Check(level)) {
+    if (PyLong_Check(level)) {
+        self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
+    }
+    else if (PyUnicode_Check(level)){
+        short levelValue = getLevelByName(PyUnicode_AsUTF8(level));
+        if (levelValue < 0) {
+            PyErr_Format(PyExc_ValueError, "Invalid level value: %U", level);
+            return nullptr;
+        }
+        self->level = levelValue;
+    } else {
         PyErr_SetString(PyExc_TypeError, "level must be an integer");
         return NULL;
     }
-    self->level = (unsigned short)PyLong_AsUnsignedLongMask(level);
     self->effective_level = self->level;
     setEnabledBasedOnEffectiveLevel(self);
     setEffectiveLevelOfChildren(self, self->level);
@@ -519,11 +528,23 @@ Logger_set_parent(Logger *self, PyObject *value, void *Py_UNUSED(ignored))
     return 0;
 }
 
+PyObject* Logger_isEnabledFor(Logger *self, PyObject *level) {
+    if (!PyLong_Check(level)) {
+        PyErr_SetString(PyExc_TypeError, "level must be an integer");
+        return NULL;
+    }
+    if (self->disabled || (unsigned short)PyLong_AsUnsignedLongMask(level) < self->effective_level) {
+        return Py_False;
+    }
+    return Py_True;
+}
+
 static PyMethodDef Logger_methods[] = {
     {"setLevel", (PyCFunction)Logger_setLevel, METH_O, "Set the level of the logger."},
     {"getEffectiveLevel", (PyCFunction)Logger_getEffectiveLevel, METH_NOARGS, "Get the effective level of the logger."},
     {"addHandler", (PyCFunction)Logger_addHandler, METH_O, "Add a handler to the logger."},
     {"removeHandler", (PyCFunction)Logger_removeHandler, METH_O, "Remove a handler from the logger."},
+    {"isEnabledFor", (PyCFunction)Logger_isEnabledFor, METH_O, "Check if logger enabled for this level."},
     // Logging methods
     {"debug", (PyCFunction)Logger_debug, METH_VARARGS | METH_KEYWORDS, "Log a message at level DEBUG."},
     {"info", (PyCFunction)Logger_info, METH_VARARGS | METH_KEYWORDS, "Log a message at level INFO."},

@@ -1,4 +1,3 @@
-import logging
 import sys
 
 import pytest
@@ -146,3 +145,8 @@ def test_make_log_record():
     log_record = picologging.makeLogRecord({"levelno": picologging.WARNING})
 
     assert log_record.levelno == picologging.WARNING
+
+
+@pytest.mark.parametrize("encoding", ["utf-8", None])
+def test_basic_config_encoding(encoding):
+    picologging.basicConfig(filename='test.txt', encoding=encoding)

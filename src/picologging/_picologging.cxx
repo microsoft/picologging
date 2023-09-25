@@ -42,7 +42,7 @@ std::string _getLevelName(short level) {
   return it->second;
 }
 
-short _getLevelByName(std::string levelName) {
+short getLevelByName(std::string levelName) {
   std::unordered_map<std::string, short>::const_iterator it;
   it = NAMES_TO_LEVELS.find(levelName);
 
@@ -65,7 +65,7 @@ static PyObject *getLevelName(PyObject *self, PyObject *level) {
   }
 
   if (PyUnicode_Check(level)) {
-    short levelValue = _getLevelByName(PyUnicode_AsUTF8(level));
+    short levelValue = getLevelByName(PyUnicode_AsUTF8(level));
     if (levelValue >= 0) {
       return PyLong_FromLong(levelValue);
     }
