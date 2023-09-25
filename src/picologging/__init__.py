@@ -15,7 +15,7 @@ from ._picologging import (
     getLevelName,
 )
 
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 CRITICAL = 50
 FATAL = CRITICAL
@@ -27,6 +27,17 @@ DEBUG = 10
 NOTSET = 0
 
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
+
+
+if hasattr(io, "text_encoding"):
+    text_encoding = io.text_encoding
+else:
+    def text_encoding(encoding) -> str:
+        if encoding is not None:
+            return encoding
+        if sys.flags.utf8_mode:
+            return "utf-8"
+        return "locale"
 
 
 class PercentStyle(FormatStyle):
@@ -269,7 +280,7 @@ def basicConfig(**kwargs):
                 if "b" in mode:
                     errors = None
                 else:
-                    encoding = io.text_encoding(encoding)
+                    encoding = text_encoding(encoding)
                 h = FileHandler(filename, mode, encoding=encoding, errors=errors)
             else:
                 stream = kwargs.pop("stream", sys.stderr)
