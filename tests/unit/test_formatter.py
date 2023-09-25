@@ -1,6 +1,8 @@
 import datetime
+import io
 import logging
 import sys
+import traceback
 
 import pytest
 
@@ -271,4 +273,30 @@ def test_format_exception():
     assert result.startswith("Traceback (most recent call last):")
     assert result.endswith(
         'test_format_exception\n    raise Exception("error")\nException: error'
+    )
+
+
+def test_override_format_exception():
+    class CustomFormatter(Formatter):
+        def formatException(self, ei) -> str:
+            sio = io.StringIO()
+            tb = ei[2]
+            traceback.print_exception(ei[0], ei[1], tb, None, sio)
+            s = sio.getvalue()
+            sio.close()
+            if s[-1:] == "\n":
+                s = s[:-1]
+            return "Custom " + s
+
+    formatter = CustomFormatter("%(message)s")
+
+    try:
+        raise Exception("error")
+    except Exception as e:
+        ei = sys.exc_info()
+
+    result = formatter.formatException(ei)
+    assert result.startswith("Custom Traceback (most recent call last):")
+    assert result.endswith(
+        'test_override_format_exception\n    raise Exception("error")\nException: error'
     )
