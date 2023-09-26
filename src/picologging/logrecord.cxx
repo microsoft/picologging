@@ -38,6 +38,7 @@ FilepathCache::~FilepathCache(){
     for (auto& entry : cache){
         Py_XDECREF(entry.second.filename);
         Py_XDECREF(entry.second.module);
+        // TODO: Release memory allocated by entry
     }
 }
 
