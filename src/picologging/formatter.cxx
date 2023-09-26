@@ -96,7 +96,6 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             } else {
                 char buf[100];
-                size_t len = strftime(buf, 100, "%Y-%m-%d %H:%M:%S", ct);
                 asctime = PyUnicode_FromFormat("%s,%03d", buf, logRecord->msecs);
             }
 
