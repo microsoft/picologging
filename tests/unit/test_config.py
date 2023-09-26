@@ -311,13 +311,13 @@ def test_config_existing_disabled_logger_90195():
         "loggers": {"a": {"level": "DEBUG", "handlers": ["console"]}},
     }
     logger = picologging.getLogger("a")
-    assert logger.disabled == False
+    assert logger.disabled is False
     dictConfig(config)
-    assert logger.disabled == False
+    assert logger.disabled is False
     # Should disable all loggers ...
     dictConfig({"version": 1})
-    assert logger.disabled == True
+    assert logger.disabled is True
     del config["disable_existing_loggers"]
     dictConfig(config)
     # Logger should be enabled, since explicitly mentioned
-    assert logger.disabled == False
+    assert logger.disabled is False
