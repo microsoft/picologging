@@ -1,4 +1,3 @@
-
 // Python includes
 #include <Python.h>
 
@@ -12,6 +11,9 @@
 #include "logger.hxx"
 #include "handler.hxx"
 #include "streamhandler.hxx"
+#include "filepathcache.hxx"
+
+FilepathCache* g_filepathCache = nullptr;
 
 const std::unordered_map<short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
@@ -85,17 +87,33 @@ static PyMethodDef picologging_methods[] = {
 
 //-----------------------------------------------------------------------------
 
+// Free module
+static void picologging_free(void *m)
+{
+  if (g_filepathCache != nullptr) {
+    delete g_filepathCache;
+    g_filepathCache = nullptr;
+  }
+}
+
 struct PyModuleDef _picologging_module = {
-  PyModuleDef_HEAD_INIT,
-  "_picologging",
-  "Internal \"_picologging\" module",
-  -1,
-  picologging_methods
+  .m_base = PyModuleDef_HEAD_INIT,
+  .m_name = "_picologging",
+  .m_doc = "Internal \"_picologging\" module",
+  .m_size = -1, // TODO: Support sub-interpreters
+  .m_methods = picologging_methods,
+  .m_slots = nullptr, // slots
+  .m_traverse = nullptr, // traverse
+  .m_clear = nullptr, // clear
+  .m_free = (freefunc)picologging_free // free - TODO : Never called because PyModule_GetState returns null
 };
 
 /* LCOV_EXCL_START */
 PyMODINIT_FUNC PyInit__picologging(void)
 {
+  if (g_filepathCache == nullptr) {
+    g_filepathCache = new FilepathCache();
+  }
   if (PyType_Ready(&LogRecordType) < 0)
     return NULL;
   if (PyType_Ready(&FormatStyleType) < 0)
