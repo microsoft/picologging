@@ -2,7 +2,6 @@ import logging
 import os
 import threading
 
-
 import pytest
 from utils import filter_gc
 

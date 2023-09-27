@@ -1,7 +1,6 @@
-from litestar import Litestar, get, Request
+from litestar import Litestar, Request, get
 from litestar.logging import LoggingConfig
 from litestar.testing import TestClient
-
 
 logging_config = LoggingConfig(
     loggers={
