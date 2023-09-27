@@ -48,16 +48,4 @@ extern PyTypeObject LogRecordType;
 #define LogRecord_CheckExact(op) Py_IS_TYPE(op, &LogRecordType)
 #define LogRecord_Check(op) PyObject_TypeCheck(op, &LogRecordType)
 
-typedef struct {
-    PyObject* filename;
-    PyObject* module;
-} FilepathCacheEntry;
-
-class FilepathCache {
-    std::vector<std::pair<Py_hash_t, FilepathCacheEntry>> cache;
-public:
-    const FilepathCacheEntry& lookup(PyObject* filepath);
-    ~FilepathCache();
-};
-
 #endif // PICOLOGGING_LOGRECORD_H

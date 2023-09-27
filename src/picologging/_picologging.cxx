@@ -1,4 +1,3 @@
-
 // Python includes
 #include <Python.h>
 
@@ -12,6 +11,9 @@
 #include "logger.hxx"
 #include "handler.hxx"
 #include "streamhandler.hxx"
+#include "filepathcache.hxx"
+
+FilepathCache* g_filepathCache = nullptr;
 
 const std::unordered_map<short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
@@ -85,17 +87,33 @@ static PyMethodDef picologging_methods[] = {
 
 //-----------------------------------------------------------------------------
 
+// Free module
+static void picologging_free(void *m)
+{
+  if (g_filepathCache != nullptr) {
+    delete g_filepathCache;
+    g_filepathCache = nullptr;
+  }
+}
+
 struct PyModuleDef _picologging_module = {
   PyModuleDef_HEAD_INIT,
   "_picologging",
   "Internal \"_picologging\" module",
   -1,
-  picologging_methods
+  picologging_methods,
+  NULL, // slots
+  NULL, // traverse
+  NULL, // clear
+  (freefunc)picologging_free // free
 };
 
 /* LCOV_EXCL_START */
 PyMODINIT_FUNC PyInit__picologging(void)
 {
+  if (g_filepathCache == nullptr) {
+    g_filepathCache = new FilepathCache();
+  }
   if (PyType_Ready(&LogRecordType) < 0)
     return NULL;
   if (PyType_Ready(&FormatStyleType) < 0)
