@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Callable, Iterable, Mapping
 from io import TextIOWrapper
 from multiprocessing import Manager
@@ -328,15 +329,24 @@ class FileHandler(StreamHandler[TextIOWrapper]):
     mode: str  # undocumented
     encoding: str | None  # undocumented
     delay: bool  # undocumented
-    errors: str | None  # undocumented
-    def __init__(
-        self,
-        filename: StrPath,
-        mode: str = ...,
-        encoding: str | None = ...,
-        delay: bool = ...,
-        errors: str | None = ...,
-    ) -> None: ...
+    if sys.version_info >= (3, 9):
+        errors: str | None  # undocumented
+        def __init__(
+            self,
+            filename: StrPath,
+            mode: str = "a",
+            encoding: str | None = None,
+            delay: bool = False,
+            errors: str | None = None,
+        ) -> None: ...
+    else:
+        def __init__(
+            self,
+            filename: StrPath,
+            mode: str = "a",
+            encoding: str | None = None,
+            delay: bool = False,
+        ) -> None: ...
 
 class NullHandler(Handler): ...
 

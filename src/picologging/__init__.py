@@ -2,10 +2,10 @@ import io
 import os
 import sys
 import warnings
-from logging import BufferingFormatter, Filter, StringTemplateStyle, _checkLevel
+from logging import BufferingFormatter, Filter, StringTemplateStyle, _checkLevel  # NOQA
 
 from ._picologging import Handler  # NOQA
-from ._picologging import (
+from ._picologging import (  # NOQA
     Filterer,
     FormatStyle,
     Formatter,
@@ -32,6 +32,7 @@ BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 if hasattr(io, "text_encoding"):
     text_encoding = io.text_encoding
 else:
+
     def text_encoding(encoding) -> str:
         if encoding is not None:
             return encoding
@@ -437,7 +438,7 @@ class FileHandler(StreamHandler):
     A handler class which writes formatted logging records to disk files.
     """
 
-    def __init__(self, filename, mode="a", encoding=None, delay=False):
+    def __init__(self, filename, mode="a", encoding=None, delay=False, errors=None):
         """
         Open the specified file and use it as the stream for logging.
         """
@@ -449,6 +450,7 @@ class FileHandler(StreamHandler):
         self.mode = mode
         self.encoding = encoding
         self.delay = delay
+        self.errors = errors
         if delay:
             # We don't open the stream, but we still need to call the
             # Handler constructor to set level, formatter, lock etc.
@@ -484,7 +486,9 @@ class FileHandler(StreamHandler):
         Open the current base file with the (original) mode and encoding.
         Return the resulting stream.
         """
-        return open(self.baseFilename, self.mode, encoding=self.encoding)
+        return open(
+            self.baseFilename, self.mode, encoding=self.encoding, errors=self.errors
+        )
 
     def emit(self, record):
         """
