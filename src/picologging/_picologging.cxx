@@ -97,15 +97,15 @@ static void picologging_free(void *m)
 }
 
 struct PyModuleDef _picologging_module = {
-  PyModuleDef_HEAD_INIT,
-  "_picologging",
-  "Internal \"_picologging\" module",
-  -1,
-  picologging_methods,
-  NULL, // slots
-  NULL, // traverse
-  NULL, // clear
-  (freefunc)picologging_free // free
+  .m_base = PyModuleDef_HEAD_INIT,
+  .m_name = "_picologging",
+  .m_doc = "Internal \"_picologging\" module",
+  .m_size = -1, // TODO: Support sub-interpreters
+  .m_methods = picologging_methods,
+  .m_slots = nullptr, // slots
+  .m_traverse = nullptr, // traverse
+  .m_clear = nullptr, // clear
+  .m_free = (freefunc)picologging_free // free - TODO : Never called because PyModule_GetState returns null
 };
 
 /* LCOV_EXCL_START */
