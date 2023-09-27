@@ -1,4 +1,4 @@
-from litestar import  Litestar, get, Request
+from litestar import Litestar, get, Request
 from litestar.logging import LoggingConfig
 from litestar.testing import TestClient
 
@@ -32,4 +32,3 @@ if __name__ == "__main__":
     with TestClient(app=app) as client:
         for _ in range(100_000):
             response = client.get("/")
-
