@@ -91,6 +91,8 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->_const_extra = PyUnicode_FromString("extra");
         self->_const_stack_info = PyUnicode_FromString("stack_info");
         self->_const_line_break = PyUnicode_FromString("\n");
+        self->_const_getvalue = PyUnicode_FromString("getvalue");
+        self->_const_close = PyUnicode_FromString("close");
     }
     return (PyObject*)self;
 }
@@ -129,6 +131,8 @@ PyObject* Logger_dealloc(Logger *self) {
     Py_XDECREF(self->_const_extra);
     Py_XDECREF(self->_const_stack_info);
     Py_XDECREF(self->_const_line_break);
+    Py_XDECREF(self->_const_getvalue);
+    Py_XDECREF(self->_const_close);
     Py_XDECREF(self->_fallback_handler);
     FiltererType.tp_dealloc((PyObject *)self);
     return NULL;
@@ -216,7 +220,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             return nullptr; // Got exception in print_stack()
         }
         Py_DECREF(printStackResult);
-        PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+        PyObject* s = PyObject_CallMethod_NOARGS(sio, self->_const_getvalue);
         if (s == nullptr){
             Py_XDECREF(sio);
             Py_XDECREF(sio_cls);
@@ -224,7 +228,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             return nullptr; // Got exception in StringIO.getvalue()
         }
         
-        Py_XDECREF(PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close")));
+        Py_XDECREF(PyObject_CallMethod_NOARGS(sio, self->_const_close));
         Py_DECREF(sio);
         Py_DECREF(sio_cls);
         Py_DECREF(print_stack);
