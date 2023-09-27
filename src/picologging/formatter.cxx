@@ -49,7 +49,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         fmt = Py_None;
     if (dateFmt == nullptr)
         dateFmt = Py_None;
-    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, PyUnicode_FromFormat("%c", style), NULL);
+    PyObject * style_c = PyUnicode_FromFormat("%c", style);
+    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, style_c, NULL);
+    Py_DECREF(style_c);
     if (styleCls == nullptr){
         //PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return -1;
