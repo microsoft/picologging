@@ -11,9 +11,6 @@
 #include "logger.hxx"
 #include "handler.hxx"
 #include "streamhandler.hxx"
-#include "filepathcache.hxx"
-
-FilepathCache* g_filepathCache = nullptr;
 
 const std::unordered_map<short, std::string> LEVELS_TO_NAMES = {
   {LOG_LEVEL_DEBUG, "DEBUG"},
@@ -32,6 +29,12 @@ const std::unordered_map<std::string, short> NAMES_TO_LEVELS = {
   {"CRITICAL", LOG_LEVEL_CRITICAL},
   {"NOTSET", LOG_LEVEL_NOTSET},
 };
+
+static inline picologging_state* get_picologging_state(PyObject* module) {
+  void *state = PyModule_GetState(module);
+  assert(state != NULL);
+  return (picologging_state*)state;
+}
 
 std::string _getLevelName(short level) {
   std::unordered_map<short, std::string>::const_iterator it;
@@ -87,33 +90,38 @@ static PyMethodDef picologging_methods[] = {
 
 //-----------------------------------------------------------------------------
 
-// Free module
-static void picologging_free(void *m)
+static int
+picologging_clear(PyObject *module)
 {
-  if (g_filepathCache != nullptr) {
-    delete g_filepathCache;
-    g_filepathCache = nullptr;
-  }
+    picologging_state *state = get_picologging_state(module);
+    if (state && state->g_filepathCache) {
+      delete state->g_filepathCache;
+      state->g_filepathCache = nullptr;
+    }
+    return 0;
+}
+
+static void
+picologging_free(void *module)
+{
+    picologging_clear((PyObject *)module);
 }
 
 struct PyModuleDef _picologging_module = {
   .m_base = PyModuleDef_HEAD_INIT,
   .m_name = "_picologging",
   .m_doc = "Internal \"_picologging\" module",
-  .m_size = -1, // TODO: Support sub-interpreters
+  .m_size = sizeof(picologging_state),
   .m_methods = picologging_methods,
   .m_slots = nullptr, // slots
   .m_traverse = nullptr, // traverse
-  .m_clear = nullptr, // clear
-  .m_free = (freefunc)picologging_free // free - TODO : Never called because PyModule_GetState returns null
+  .m_clear = picologging_clear, // clear
+  .m_free = (freefunc)picologging_free // free
 };
 
 /* LCOV_EXCL_START */
 PyMODINIT_FUNC PyInit__picologging(void)
 {
-  if (g_filepathCache == nullptr) {
-    g_filepathCache = new FilepathCache();
-  }
   if (PyType_Ready(&LogRecordType) < 0)
     return NULL;
   if (PyType_Ready(&FormatStyleType) < 0)
@@ -138,6 +146,10 @@ PyMODINIT_FUNC PyInit__picologging(void)
   PyObject* m = PyModule_Create(&_picologging_module);
   if (m == NULL)
     return NULL;
+
+  // Initialize module state
+  picologging_state *state = get_picologging_state(m);
+  state->g_filepathCache = new FilepathCache();
 
   Py_INCREF(&LogRecordType);
   Py_INCREF(&FormatStyleType);
