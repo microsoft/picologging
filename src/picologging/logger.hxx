@@ -35,6 +35,8 @@ typedef struct LoggerT {
     PyObject* _const_extra;
     PyObject* _const_stack_info;
     PyObject* _const_line_break;
+    PyObject* _const_close;
+    PyObject* _const_getvalue;
 
     StreamHandler* _fallback_handler;
 } Logger ;

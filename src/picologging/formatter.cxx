@@ -13,6 +13,10 @@ PyObject* Formatter_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->dateFmt = Py_None;
         self->style = Py_None;
         self->_const_line_break = PyUnicode_FromString("\n");
+        self->_const_close = PyUnicode_FromString("close");
+        self->_const_getvalue = PyUnicode_FromString("getvalue");
+        self->_const_usesTime = PyUnicode_FromString("usesTime");
+        self->_const_format = PyUnicode_FromString("format");
     }
     return (PyObject*)self;
 }
@@ -45,7 +49,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         fmt = Py_None;
     if (dateFmt == nullptr)
         dateFmt = Py_None;
-    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, PyUnicode_FromFormat("%c", style), NULL);
+    PyObject * style_c = PyUnicode_FromFormat("%c", style);
+    PyObject * styleCls = PyObject_CallFunctionObjArgs(styleType, fmt, Py_None, style_c, NULL);
+    Py_DECREF(style_c);
     if (styleCls == nullptr){
         //PyErr_Format(PyExc_ValueError, "Could not initialize Style formatter class.");
         return -1;
@@ -108,7 +114,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         if (FormatStyle_CheckExact(self->style)){
             result = FormatStyle_format((FormatStyle*)self->style, record);
         } else {
-            result = PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
+            result = PyObject_CallMethod_ONEARG(self->style, self->_const_format, record);
         }
         if (result == nullptr)
             return nullptr;
@@ -122,7 +128,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
             PyObject* print_exception = PyDict_GetItemString(modDict, "print_exception"); // PyDict_GetItemString returns a borrowed reference
             Py_XINCREF(print_exception);
-            PyObject* sio_cls = PyDict_GetItemString(modDict, "StringIO");
+            PyObject* sio_cls = PyDict_GetItemString(modDict, "StringIO"); // borrowed reference
             Py_XINCREF(sio_cls);
             PyObject* sio = PyObject_CallFunctionObjArgs(sio_cls, NULL);
             if (sio == nullptr){
@@ -143,7 +149,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
                 Py_XDECREF(print_exception);
                 return nullptr; // Got exception in print_exception()
             }
-            PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+            PyObject* s = PyObject_CallMethod_NOARGS(sio, self->_const_getvalue);
             if (s == nullptr){
                 Py_XDECREF(sio);
                 Py_XDECREF(sio_cls);
@@ -151,7 +157,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
                 return nullptr; // Got exception in StringIO.getvalue()
             }
             
-            PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+            PyObject_CallMethod_NOARGS(sio, self->_const_close);
             Py_DECREF(sio);
             Py_DECREF(sio_cls);
             Py_DECREF(print_exception);
@@ -200,12 +206,12 @@ PyObject* Formatter_usesTime(Formatter *self) {
     if (FormatStyle_CheckExact(self->style)){
         return FormatStyle_usesTime((FormatStyle*)self->style);
     } else {
-        return PyObject_CallMethod_NOARGS(self->style, PyUnicode_FromString("usesTime"));
+        return PyObject_CallMethod_NOARGS(self->style, self->_const_usesTime);
     }
 }
 
 PyObject* Formatter_formatMessage(Formatter *self, PyObject* record){
-    return PyObject_CallMethod_ONEARG(self->style, PyUnicode_FromString("format"), record);
+    return PyObject_CallMethod_ONEARG(self->style, self->_const_format, record);
 }
 
 PyObject* Formatter_formatStack(Formatter *self, PyObject *stackInfo) {
@@ -241,7 +247,7 @@ PyObject* Formatter_formatException(Formatter *self, PyObject *excInfo) {
         Py_XDECREF(print_exception);
         return nullptr; // Got exception in print_exception()
     }
-    PyObject* s = PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("getvalue"));
+    PyObject* s = PyObject_CallMethod_NOARGS(sio, self->_const_getvalue);
 
     if (s == nullptr){
         Py_XDECREF(sio);
@@ -250,7 +256,7 @@ PyObject* Formatter_formatException(Formatter *self, PyObject *excInfo) {
         return nullptr; // Got exception in StringIO.getvalue()
     }
     
-    PyObject_CallMethod_NOARGS(sio, PyUnicode_FromString("close"));
+    PyObject_CallMethod_NOARGS(sio, self->_const_close);
     Py_DECREF(sio);
     Py_DECREF(sio_cls);
     Py_DECREF(print_exception);
@@ -273,6 +279,10 @@ PyObject* Formatter_dealloc(Formatter *self) {
     Py_XDECREF(self->dateFmt);
     Py_XDECREF(self->style);
     Py_XDECREF(self->_const_line_break);
+    Py_XDECREF(self->_const_close);
+    Py_XDECREF(self->_const_getvalue);
+    Py_XDECREF(self->_const_usesTime);
+    Py_XDECREF(self->_const_format);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }

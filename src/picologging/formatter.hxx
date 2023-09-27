@@ -14,6 +14,10 @@ typedef struct {
     bool usesTime;
     const char* dateFmtStr;
     PyObject *_const_line_break;
+    PyObject *_const_close;
+    PyObject *_const_getvalue;
+    PyObject *_const_usesTime;
+    PyObject *_const_format;
 } Formatter;
 
 int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds);
