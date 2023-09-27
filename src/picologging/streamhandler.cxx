@@ -110,10 +110,15 @@ PyObject* StreamHandler_flush(StreamHandler* self, PyObject* const* args, Py_ssi
 PyObject* StreamHandler_repr(StreamHandler *self)
 {
     std::string level = _getLevelName(self->handler.level);
-    return PyUnicode_FromFormat("<%s %U (%s)>",
+    PyObject* streamName = PyObject_GetAttrString(self->stream, "name");
+    PyObject* streamNameStr = PyObject_Str(streamName);
+    PyObject* repr = PyUnicode_FromFormat("<%s %U (%s)>",
         _PyType_Name(Py_TYPE(self)),
-        PyObject_Str(PyObject_GetAttrString(self->stream, "name")),
+        streamNameStr,
         level.c_str());
+    Py_XDECREF(streamName);
+    Py_XDECREF(streamNameStr);
+    return repr;
 }
 
 static PyMethodDef StreamHandler_methods[] = {
