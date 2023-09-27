@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import threading
@@ -166,3 +167,23 @@ def test_logrecord_subclass():
     assert record.getMessage() == "bork boom"
     assert record.message == "bork boom"
     assert record.message == "bork boom"
+
+    handler = picologging.StreamHandler()
+    handler.emit(record)
+
+
+def test_logrecord_copy():
+    record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
+    copied_record = copy.copy(record)
+
+    assert copied_record.name == record.name
+    assert copied_record.levelno == record.levelno
+    assert copied_record.levelname == record.levelname
+    assert copied_record.pathname == record.pathname
+    assert copied_record.lineno == record.lineno
+    assert copied_record.msg == record.msg
+    assert copied_record.message == record.message
+    assert copied_record.args == record.args
+    assert copied_record.exc_info == record.exc_info
+    assert copied_record.funcName == record.funcName
+    assert copied_record.stack_info == record.stack_info

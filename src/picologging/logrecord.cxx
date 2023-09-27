@@ -23,7 +23,7 @@ _PyTime_t current_time()
     return t;
 }
 
-int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
+PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
 {
     PyObject *name = nullptr, *exc_info = nullptr, *sinfo = nullptr, *msg = nullptr, *args = nullptr, *levelname = nullptr, *pathname = nullptr, *filename = nullptr, *module = nullptr, *funcname = nullptr;
     int levelno, lineno;
@@ -41,7 +41,14 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
         NULL};
     if (!PyArg_ParseTupleAndKeywords(initargs, kwds, "OiOiOOO|OO", const_cast<char**>(kwlist), 
             &name, &levelno, &pathname, &lineno, &msg, &args, &exc_info, &funcname, &sinfo))
-        return -1;
+        return NULL;
+
+    LogRecord* self = (LogRecord*)type->tp_alloc(type, 0);
+    if (self == NULL)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
 
     self->name = name;
     Py_INCREF(name);
@@ -175,7 +182,7 @@ int LogRecord_init(LogRecord *self, PyObject *initargs, PyObject *kwds)
     Py_INCREF(Py_None);
     self->asctime = Py_None;
     Py_INCREF(Py_None);
-    return 0;
+    return (PyObject*)self;;
 
 error:
     Py_XDECREF(self->name);
@@ -197,7 +204,7 @@ error:
     if (!PyErr_Occurred()) {
         PyErr_Format(PyExc_ValueError, "Could not create LogRecord, unknown error.");
     }
-    return -1;
+    return NULL;
 }
 
 PyObject* LogRecord_dealloc(LogRecord *self)
@@ -221,6 +228,11 @@ PyObject* LogRecord_dealloc(LogRecord *self)
     Py_XDECREF(self->dict);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
+}
+
+int LogRecord_init(LogRecord *self, PyObject *args, PyObject *kwds)
+{
+    return 0;
 }
 
 void LogRecord_writeMessage(LogRecord *self)
@@ -253,6 +265,11 @@ PyObject* LogRecord_getMessage(LogRecord *self)
     LogRecord_writeMessage(self);
     Py_XINCREF(self->message);
     return self->message;
+}
+
+PyObject* LogRecordLogRecord_getnewargs(LogRecord *self)
+{
+    return Py_BuildValue("OlOlOOOOO", self->name, self->levelno, self->pathname, self->lineno,  self->msg, self->args, self->excInfo, self->funcName, self->stackInfo);
 }
 
 PyObject* LogRecord_repr(LogRecord *self)
@@ -322,6 +339,7 @@ static PyMemberDef LogRecord_members[] = {
 
 static PyMethodDef LogRecord_methods[] = {
     {"getMessage", (PyCFunction)LogRecord_getMessage, METH_NOARGS, "Get message"},
+    {"__getnewargs__", (PyCFunction)LogRecordLogRecord_getnewargs, METH_NOARGS, "Picke LogRecord"},
     {NULL}
 };
 
@@ -368,6 +386,6 @@ PyTypeObject LogRecordType = {
     offsetof(LogRecord, dict),                  /* tp_dictoffset */
     (initproc)LogRecord_init,                   /* tp_init */
     0,                                          /* tp_alloc */
-    PyType_GenericNew,                          /* tp_new */
+    LogRecord_new,                              /* tp_new */
     PyObject_Del,                               /* tp_free */
 };
