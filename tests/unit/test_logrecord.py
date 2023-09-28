@@ -153,7 +153,7 @@ def test_process_info():
     assert record.processName is None  # Not supported
 
 
-@pytest.mark.limit_leaks("1.5KB")
+@pytest.mark.limit_leaks("1.5KB", filter_fn=filter_gc)
 def test_logrecord_subclass():
     class DerivedLogRecord(LogRecord):  # Leaks 1 ref (CPython implementation detail)
         pass
