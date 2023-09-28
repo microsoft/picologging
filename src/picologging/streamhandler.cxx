@@ -69,6 +69,9 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         goto error;
     }
     PyUnicode_Append(&msg, self->terminator);
+    if (msg == nullptr) { // PyUnicode_Append sets *pleft to null on error. Error is extremely unlikely
+        goto error;
+    }
     writeResult = PyObject_CallMethod_ONEARG(self->stream, self->_const_write, msg);
     if (writeResult == nullptr){
         if (!PyErr_Occurred())
@@ -76,8 +79,8 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
         goto error;
     }
     flush(self);
-    Py_DECREF(msg);
-    Py_DECREF(writeResult);
+    Py_XDECREF(msg);
+    Py_XDECREF(writeResult);
     Py_RETURN_NONE;
 error:
     // TODO: #4 handle error path (see handleError(record))
@@ -97,7 +100,7 @@ PyObject* StreamHandler_setStream(StreamHandler* self, PyObject* stream){
     // And set new stream
     self->stream = stream;
     Py_INCREF(self->stream);
-    self->stream_has_flush = (PyObject_HasAttrString(self->stream, "flush") == 1);
+    self->stream_has_flush = (PyObject_HasAttr(self->stream, self->_const_flush) == 1);
     // Return previous stream (now flushed)
     return result;
 }

@@ -39,6 +39,11 @@ jobs:
       run: | 
        python -m pip install pytest-repeat
        python -m pytest --count=10 tests
+    - name: Run pytest with memray
+      if: matrix.python_version == '3.11' && matrix.os == 'ubuntu-20.04'
+      run: | 
+       python -m pip install pytest-memray flaky
+       python -m pytest tests/unit/ --memray --stacks=7 --native
 
     - name: Run benchmarks
       if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-20.04'
