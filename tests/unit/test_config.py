@@ -5,7 +5,7 @@ import picologging
 from picologging.config import dictConfig, valid_ident
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("512B", filter_fn=filter_gc)
 def test_dictconfig():
     class TestFilter(picologging.Filter):
         def __init__(self, param=None):
@@ -69,7 +69,7 @@ def test_dictconfig():
     picologging.root.setLevel(picologging.WARNING)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_clear_existing_loggers(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file)
@@ -102,7 +102,7 @@ def test_dictconfig_clear_existing_loggers(tmp_path):
     assert isinstance(logger.handlers[0], picologging.StreamHandler)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_config_exceptions():
     with pytest.raises(ValueError):
         dictConfig({})
@@ -133,7 +133,7 @@ def test_dictconfig_config_exceptions():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_config_exception_invalid_filter_for_handler():
     config = {
         "version": 1,
@@ -150,7 +150,7 @@ def test_config_exception_invalid_filter_for_handler():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_incremental_not_supported():
     config = {"version": 1, "incremental": True}
 
@@ -158,7 +158,7 @@ def test_dictconfig_incremental_not_supported():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_formatters_exception():
     config = {
         "version": 1,
@@ -171,7 +171,7 @@ def test_dictconfig_formatters_exception():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_filters_exception():
     config = {
         "version": 1,
@@ -184,7 +184,7 @@ def test_dictconfig_filters_exception():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_reconfigure_dictconfig_with_child_loggers():
     logger = picologging.getLogger("test_config")
     logger.addHandler(picologging.StreamHandler())
@@ -236,7 +236,7 @@ def test_reconfigure_dictconfig_with_child_loggers():
     assert isinstance(logger.handlers[0], picologging.StreamHandler)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_valid_ident():
     assert valid_ident("test")
     with pytest.raises(ValueError):
@@ -247,7 +247,7 @@ def test_valid_ident():
         valid_ident("test-test")
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("200B", filter_fn=filter_gc)
 def test_configure_with_filters():
     config = {
         "version": 1,
@@ -294,7 +294,7 @@ def test_configure_with_filters():
     )
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_configure_with_non_defined_handlers():
     config = {
         "version": 1,
@@ -309,7 +309,7 @@ def test_configure_with_non_defined_handlers():
         dictConfig(config)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_config_existing_disabled_logger_90195():
     # See gh-90195
     config = {

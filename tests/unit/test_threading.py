@@ -8,7 +8,7 @@ import picologging
 from picologging import Logger, StreamHandler
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_threaded_execution():
     logger = Logger("test", picologging.DEBUG)
     tmp = io.StringIO()

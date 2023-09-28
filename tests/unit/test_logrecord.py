@@ -172,6 +172,7 @@ def test_logrecord_subclass():
     handler.emit(record)
 
 
+@pytest.mark.limit_leaks("512B", filter_fn=filter_gc)
 def test_logrecord_copy():
     record = LogRecord("hello", logging.WARNING, __file__, 123, "bork boom", (), None)
     copied_record = copy.copy(record)

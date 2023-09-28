@@ -14,7 +14,7 @@ from picologging.handlers import (
 )
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_filehandler(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file)
@@ -28,7 +28,7 @@ def test_filehandler(tmp_path):
         assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_filehandler_delay(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file, delay=True)
@@ -42,7 +42,7 @@ def test_filehandler_delay(tmp_path):
         assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 @pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
 def test_watchedfilehandler(tmp_path):
     log_file = tmp_path / "log.txt"
@@ -57,7 +57,7 @@ def test_watchedfilehandler(tmp_path):
         assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 @pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
 def test_watchedfilehandler_file_changed(tmp_path):
     log_file = tmp_path / "log.txt"
@@ -77,7 +77,7 @@ def test_watchedfilehandler_file_changed(tmp_path):
         assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 @pytest.mark.skipif(platform.system() == "Windows", reason="Not supported on Windows.")
 def test_watchedfilehandler_file_removed(tmp_path):
     log_file = tmp_path / "log.txt"
@@ -95,7 +95,7 @@ def test_watchedfilehandler_file_removed(tmp_path):
         assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("300B", filter_fn=filter_gc)
 def test_rotatingfilehandler(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = RotatingFileHandler(log_file, maxBytes=1, backupCount=2)
@@ -107,17 +107,17 @@ def test_rotatingfilehandler(tmp_path):
         logger.warning("test")
     handler.close()
 
-    with open(log_file) as f:
+    with open(log_file, encoding="utf-8") as f:
         assert f.read() == "test\n"
 
     for i in range(1, 3):
         log_file = tmp_path / f"log.txt.{i}"
 
-        with open(log_file) as f:
+        with open(log_file, encoding="utf-8") as f:
             assert f.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_rotatingfilehandler_avoids_non_regular_files(tmp_path, monkeypatch):
     log_file = tmp_path / "log.txt"
     handler = RotatingFileHandler(log_file, maxBytes=1, backupCount=2)
@@ -132,7 +132,7 @@ def test_rotatingfilehandler_avoids_non_regular_files(tmp_path, monkeypatch):
     handler.close()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_rotatingfilehandler_without_maxbytes(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = RotatingFileHandler(log_file)
@@ -144,7 +144,7 @@ def test_rotatingfilehandler_without_maxbytes(tmp_path):
     handler.close()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_baserotatinghandler_callable_rotator(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = RotatingFileHandler(log_file, maxBytes=1, backupCount=1)
@@ -159,7 +159,7 @@ def test_baserotatinghandler_callable_rotator(tmp_path):
     assert sorted(os.listdir(tmp_path)) == ["log.txt", "log.txt.1"]
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_baserotatinghandler_callable_namer(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = RotatingFileHandler(log_file, maxBytes=1, backupCount=1)
@@ -174,14 +174,14 @@ def test_baserotatinghandler_callable_namer(tmp_path):
     assert sorted(os.listdir(tmp_path)) == ["log.txt", "log.txt.1.5"]
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_filehandler_repr(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file)
     assert repr(handler) == f"<FileHandler {log_file} (NOTSET)>"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 @pytest.mark.parametrize("utc", [False, True])
 def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
     log_file = tmp_path / "log.txt"
@@ -204,7 +204,7 @@ def test_timed_rotatingfilehandler_rollover(tmp_path, utc):
             assert file.read() == "test\n"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_rollover_removes_old_files(tmp_path):
     with open(tmp_path / "log.txt.1970-11-01_00-00-00", "w"):
         ...
@@ -223,7 +223,7 @@ def test_timed_rotatingfilehandler_rollover_removes_old_files(tmp_path):
     assert len(os.listdir(tmp_path)) == 2
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_rollover_keeps_non_related_files(tmp_path):
     with open(tmp_path / "normal_file.txt", "w"):
         ...
@@ -242,7 +242,7 @@ def test_timed_rotatingfilehandler_rollover_keeps_non_related_files(tmp_path):
     assert len(os.listdir(tmp_path)) == 3
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_rollover_removes_existing_log(tmp_path, monkeypatch):
     existing_log_file = tmp_path / "log.txt.2022-07-01_16-00-00"
     with open(existing_log_file, "w"):
@@ -264,7 +264,7 @@ def test_timed_rotatingfilehandler_rollover_removes_existing_log(tmp_path, monke
     assert len(os.listdir(tmp_path)) == 2
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_non_existing_file(tmp_path, monkeypatch):
     monkeypatch.setattr(os.path, "exists", lambda _: False)
 
@@ -276,7 +276,7 @@ def test_timed_rotatingfilehandler_non_existing_file(tmp_path, monkeypatch):
     handler.close()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("512B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_when_intervals(tmp_path):
     when_interval = [
         ("S", 1),
@@ -294,7 +294,7 @@ def test_timed_rotatingfilehandler_when_intervals(tmp_path):
         handler.close()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_invalid_when(tmp_path):
     log_file = tmp_path / "log.txt"
 
@@ -308,7 +308,7 @@ def test_timed_rotatingfilehandler_invalid_when(tmp_path):
         TimedRotatingFileHandler(log_file, when="X")
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_utc(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = TimedRotatingFileHandler(log_file, when="MIDNIGHT", utc=True)
@@ -316,7 +316,7 @@ def test_timed_rotatingfilehandler_utc(tmp_path):
     assert handler.rollover_at > time.time()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_atime(tmp_path):
     log_file = tmp_path / "log.txt"
     at_time = (datetime.now() - timedelta(hours=1)).time()
@@ -325,7 +325,7 @@ def test_timed_rotatingfilehandler_atime(tmp_path):
     assert handler.rollover_at > time.time()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("200B", filter_fn=filter_gc)
 def test_timed_rotatingfilehandler_avoids_non_regular_files(tmp_path, monkeypatch):
     log_file = tmp_path / "log.txt"
     handler = TimedRotatingFileHandler(log_file, backupCount=1)

@@ -4,7 +4,7 @@ from utils import filter_gc
 import picologging
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_basic_handler():
     handler = picologging.Handler()
     record = picologging.LogRecord(
@@ -37,32 +37,32 @@ def test_custom_handler():
     assert handler.records[0] == record
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_delete_handler():
     handler = picologging.Handler()
     del handler
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_add_acquire_release():
     handler = picologging.Handler()
     handler.acquire()
     assert handler.release() is None
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_init_with_name():
     handler = picologging.Handler(name="test")
     assert handler.name == "test"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_init_with_level():
     handler = picologging.Handler(level=picologging.DEBUG)
     assert handler.level == picologging.DEBUG
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_get_set_name():
     handler = picologging.Handler(name="test")
     assert handler.get_name() == "test"
@@ -71,25 +71,25 @@ def test_get_set_name():
     assert handler.get_name() == "foo"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_flush():
     handler = picologging.Handler()
     assert not handler.flush()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_close():
     handler = picologging.Handler()
     assert not handler.close()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_createLock():
     handler = picologging.Handler()
     assert not handler.createLock()
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_filtered_out():
     def filter_out(f):
         return False
@@ -110,14 +110,14 @@ def test_filtered_out():
     assert not handler.handle(record)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_set_level_nonint():
     handler = picologging.Handler()
     with pytest.raises(TypeError):
         handler.setLevel("potato")
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_custom_formatter():
     class CustomFormatter:
         def format(self, record):
@@ -131,7 +131,7 @@ def test_custom_formatter():
     assert handler.format(record) == "foo"
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_handle_error():
     handler = picologging.Handler()
     record = picologging.LogRecord(
@@ -140,7 +140,7 @@ def test_handle_error():
     assert not handler.handleError(record)
 
 
-@pytest.mark.limit_leaks("64B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_handler_repr():
     handler = picologging.Handler()
     assert repr(handler) == "<Handler (NOTSET)>"

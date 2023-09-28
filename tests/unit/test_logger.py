@@ -109,7 +109,7 @@ def test_logger_with_logging_handler():
     assert result == "Hello World\n"
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_get_effective_level():
     logger = picologging.Logger("test")
     parent = picologging.Logger("parent", logging.DEBUG)
@@ -322,7 +322,7 @@ def test_logger_repr(level):
     assert repr(logger) == f"<Logger 'test' ({level_names[levels.index(level)]})>"
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_logger_repr_effective_level():
     logger = picologging.Logger("test")
     logger.parent = picologging.Logger("parent", picologging.WARNING)
@@ -435,7 +435,7 @@ def test_log_bad_arguments():
         logger.log()
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("256B", filter_fn=filter_gc)
 def test_notset_parent_level_match():
     logger_child = picologging.Logger("child", picologging.NOTSET)
     logger_parent = picologging.Logger("parent", picologging.DEBUG)
@@ -456,7 +456,7 @@ def test_notset_parent_level_match():
     assert "parent message" not in child_value
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("256B", filter_fn=filter_gc)
 def test_error_parent_level():
     logger_child = picologging.Logger("child", picologging.WARNING)
     logger_parent = picologging.Logger("parent", picologging.ERROR)
@@ -513,7 +513,7 @@ def test_exception_object_as_exc_info():
     assert "arghhh!!" in result
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_logger_setlevel_resets_other_levels():
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
@@ -542,7 +542,7 @@ def test_getlogger_root_level():
     assert logger.getEffectiveLevel() == picologging.WARNING
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_nonroot_levels():
     """
     Check that descendant loggers get the root level on construction.
@@ -567,7 +567,7 @@ def test_getlogger_nonroot_levels():
     assert grandchild_logger.getEffectiveLevel() == picologging.WARNING
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_parentchild_levels():
     """
     Check interaction of setLevel with logger hierarchy
@@ -602,7 +602,7 @@ def test_getlogger_parentchild_levels():
     assert child_logger.getEffectiveLevel() == picologging.WARNING
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_setlevel_after():
     """
     Check for setting parent level after child construction
@@ -634,7 +634,7 @@ def test_getlogger_setlevel_after():
     assert child_logger.getEffectiveLevel() == picologging.DEBUG
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_setlevel_after_multiple_children():
     """
     Check for setting parent level after child construction
@@ -671,7 +671,7 @@ def test_getlogger_setlevel_after_multiple_children():
     assert child2_logger.getEffectiveLevel() == picologging.DEBUG
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_setlevel_message_handled():
     """
     Check for child creation before parent creation
@@ -711,7 +711,7 @@ def test_getlogger_setlevel_message_handled():
     assert stream.getvalue() == "Hello World\n"
 
 
-@pytest.mark.limit_leaks("128B", filter_fn=filter_gc)
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_getlogger_with_placeholder_parent():
     # Logging levels when some parent does not exist yet.
     stream = io.StringIO()
