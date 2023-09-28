@@ -167,6 +167,7 @@ def test_filehandler_repr(tmp_path):
     log_file = tmp_path / "log.txt"
     handler = picologging.FileHandler(log_file)
     assert repr(handler) == f"<FileHandler {log_file} (NOTSET)>"
+    handler.close()
 
 
 @pytest.mark.parametrize("utc", [False, True])
@@ -280,13 +281,13 @@ def test_timed_rotatingfilehandler_invalid_when(tmp_path):
     log_file = tmp_path / "log.txt"
 
     with pytest.raises(ValueError):
-        TimedRotatingFileHandler(log_file, when="W")
+        TimedRotatingFileHandler(log_file, when="W", delay=True)
 
     with pytest.raises(ValueError):
-        TimedRotatingFileHandler(log_file, when="W7")
+        TimedRotatingFileHandler(log_file, when="W7", delay=True)
 
     with pytest.raises(ValueError):
-        TimedRotatingFileHandler(log_file, when="X")
+        TimedRotatingFileHandler(log_file, when="X", delay=True)
 
 
 def test_timed_rotatingfilehandler_utc(tmp_path):
