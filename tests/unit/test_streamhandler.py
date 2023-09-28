@@ -1,11 +1,14 @@
 import io
+import logging
 import sys
 
 import pytest
+from utils import filter_gc
 
 import picologging
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_handler():
     stream = io.StringIO()
     handler = picologging.StreamHandler(stream)
@@ -19,6 +22,7 @@ def test_stream_handler():
     assert stream.getvalue() == "test\n"
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_handler_defaults_to_stderr():
     handler = picologging.StreamHandler()
     assert handler.stream == sys.stderr
@@ -27,6 +31,7 @@ def test_stream_handler_defaults_to_stderr():
     assert handler.stream == sys.stderr
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_handler_bad_init_args():
     with pytest.raises(TypeError):
         picologging.StreamHandler(1, 2, 3, 4)
@@ -35,6 +40,7 @@ def test_stream_handler_bad_init_args():
         picologging.StreamHandler(dog=1)
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_handler_invalid_stream_type():
     handler = picologging.StreamHandler("potato")
     record = picologging.LogRecord(
@@ -44,6 +50,7 @@ def test_stream_handler_invalid_stream_type():
         handler.handle(record)
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_non_flushable_stream():
     class TestStream:
         def write(self, data):
@@ -53,18 +60,21 @@ def test_non_flushable_stream():
     assert not handler.flush()
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_emit_no_args():
     handler = picologging.StreamHandler()
     with pytest.raises(ValueError):
         handler.emit()
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_emit_invalid_args_type():
     handler = picologging.StreamHandler()
     with pytest.raises(TypeError):
         handler.emit(1234)
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_write_raises_error():
     class TestStream:
         def write(self, data):
@@ -75,6 +85,7 @@ def test_stream_write_raises_error():
         handler.emit("foo 123")
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_set_stream():
     class TestStream:
         def write(self, data):
@@ -91,6 +102,7 @@ def test_set_stream():
     assert handler.stream is b
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_set_stream_return_value():
     h = picologging.StreamHandler()
     stream = io.StringIO()
@@ -103,6 +115,7 @@ def test_set_stream_return_value():
     assert actual is None
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_streamhandler_repr():
     class StreamWithName:
         level = picologging.NOTSET
@@ -119,6 +132,7 @@ def test_streamhandler_repr():
     assert repr(handler) == "<StreamHandler 2 (NOTSET)>"
 
 
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_streamhandler_handle_return_value():
     handler = picologging.StreamHandler()
     record = picologging.LogRecord(
@@ -135,3 +149,23 @@ def test_streamhandler_handle_return_value():
     handler.addFilter(TestFilter())
     assert handler.handle(record) is None
     assert handler.emit(record) is None
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_emit_subclass():
+    class DerivedLogRecord(picologging.LogRecord):
+        pass
+
+    record = DerivedLogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork boom", (), None
+    )
+
+    assert DerivedLogRecord.__base__ is picologging.LogRecord
+    assert record.message is None
+    assert record.getMessage() == "bork boom"
+    assert record.message == "bork boom"
+    assert record.message == "bork boom"
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream)
+    handler.emit(record)
+    assert stream.getvalue() == "bork boom\n"
