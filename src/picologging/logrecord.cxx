@@ -284,20 +284,42 @@ LogRecord_getDict(PyObject *obj, void *context)
     PyDict_SetItemString(dict, "name", ((LogRecord*)obj)->name);
     PyDict_SetItemString(dict, "msg", ((LogRecord*)obj)->msg);
     PyDict_SetItemString(dict, "args", ((LogRecord*)obj)->args);
-    PyDict_SetItemString(dict, "levelno", PyLong_FromLong(((LogRecord*)obj)->levelno)); // Leaks a reference
+    
+    PyObject * levelno = PyLong_FromLong(((LogRecord*)obj)->levelno);
+    PyDict_SetItemString(dict, "levelno", levelno);
+     Py_DECREF(levelno);
+
     PyDict_SetItemString(dict, "levelname", ((LogRecord*)obj)->levelname);
     PyDict_SetItemString(dict, "pathname", ((LogRecord*)obj)->pathname);
     PyDict_SetItemString(dict, "filename", ((LogRecord*)obj)->filename);
     PyDict_SetItemString(dict, "module", ((LogRecord*)obj)->module);
     PyDict_SetItemString(dict, "funcName", ((LogRecord*)obj)->funcName);
-    PyDict_SetItemString(dict, "lineno", PyLong_FromLong(((LogRecord*)obj)->lineno)); // Leaks a reference
-    PyDict_SetItemString(dict, "created", PyFloat_FromDouble(((LogRecord*)obj)->created)); // Leaks a reference
-    PyDict_SetItemString(dict, "msecs", PyLong_FromLong(((LogRecord*)obj)->msecs)); // Leaks a reference
+
+    PyObject *lineno = PyLong_FromLong(((LogRecord*)obj)->lineno);
+    PyDict_SetItemString(dict, "lineno", lineno); 
+    Py_DECREF(lineno);
+
+    PyObject *created = PyFloat_FromDouble(((LogRecord*)obj)->created);
+    PyDict_SetItemString(dict, "created", created);
+    Py_DECREF(created);
+
+    PyObject *msecs = PyLong_FromLong(((LogRecord*)obj)->msecs);
+    PyDict_SetItemString(dict, "msecs", msecs);
+    Py_DECREF(msecs);
+
     PyDict_SetItemString(dict, "relativeCreated", ((LogRecord*)obj)->relativeCreated);
-    PyDict_SetItemString(dict, "thread", PyLong_FromUnsignedLong(((LogRecord*)obj)->thread)); // Leaks a reference
+
+    PyObject *thread = PyLong_FromUnsignedLong(((LogRecord*)obj)->thread);
+    PyDict_SetItemString(dict, "thread", thread);
+    Py_DECREF(thread);
+
     PyDict_SetItemString(dict, "threadName", ((LogRecord*)obj)->threadName);
     PyDict_SetItemString(dict, "processName", ((LogRecord*)obj)->processName);
-    PyDict_SetItemString(dict, "process", PyLong_FromLong(((LogRecord*)obj)->process)); // Leaks a reference
+
+    PyObject *process = PyLong_FromLong(((LogRecord*)obj)->process);
+    PyDict_SetItemString(dict, "process", process);
+    Py_DECREF(process);
+
     PyDict_SetItemString(dict, "exc_info", ((LogRecord*)obj)->excInfo);
     PyDict_SetItemString(dict, "exc_text", ((LogRecord*)obj)->excText);
     PyDict_SetItemString(dict, "stack_info", ((LogRecord*)obj)->stackInfo);
