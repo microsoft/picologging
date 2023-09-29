@@ -12,7 +12,7 @@ setup(
     package_data={
         "picologging": ["py.typed", "__init__.pyi", "config.pyi", "handlers.pyi"]
     },
-    version="0.9.2",
+    version="0.9.3",
     author="Microsoft",
     description="A fast and lightweight logging library for Python",
     long_description=long_description,
