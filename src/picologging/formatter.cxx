@@ -58,14 +58,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     }
 
     self->style = styleCls;
-
-    self->fmt = ((FormatStyle*)(self->style))->fmt;
-    Py_INCREF(self->fmt);
-
+    self->fmt = Py_NewRef(((FormatStyle*)(self->style))->fmt);
     self->usesTime = (FormatStyle_usesTime((FormatStyle*)self->style) == Py_True);
-
-    self->dateFmt = dateFmt;
-    Py_INCREF(self->dateFmt);
+    self->dateFmt = Py_NewRef(dateFmt);
 
     if (dateFmt != Py_None) {
         self->dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
@@ -78,9 +73,9 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 
     if (validate){
         if (PyObject_CallMethod(self->style, "validate", NULL) == nullptr){
-            Py_DECREF(self->style);
-            Py_DECREF(self->fmt);
-            Py_DECREF(self->dateFmt);
+            Py_CLEAR(self->style);
+            Py_CLEAR(self->fmt);
+            Py_CLEAR(self->dateFmt);
             return -1;
         }
     }
@@ -88,6 +83,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 }
 
 PyObject* Formatter_format(Formatter *self, PyObject *record){
+    /* TODO: Review allocators */
     if (LogRecord_Check(record)){
         LogRecord* logRecord = (LogRecord*)record;
         LogRecord_writeMessage(logRecord);
@@ -275,14 +271,14 @@ PyObject* Formatter_repr(Formatter *self)
 }
 
 PyObject* Formatter_dealloc(Formatter *self) {
-    Py_XDECREF(self->fmt);
-    Py_XDECREF(self->dateFmt);
-    Py_XDECREF(self->style);
-    Py_XDECREF(self->_const_line_break);
-    Py_XDECREF(self->_const_close);
-    Py_XDECREF(self->_const_getvalue);
-    Py_XDECREF(self->_const_usesTime);
-    Py_XDECREF(self->_const_format);
+    Py_CLEAR(self->fmt);
+    Py_CLEAR(self->dateFmt);
+    Py_CLEAR(self->style);
+    Py_CLEAR(self->_const_line_break);
+    Py_CLEAR(self->_const_close);
+    Py_CLEAR(self->_const_getvalue);
+    Py_CLEAR(self->_const_usesTime);
+    Py_CLEAR(self->_const_format);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }

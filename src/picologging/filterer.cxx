@@ -59,9 +59,9 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
 }
 
 PyObject* Filterer_dealloc(Filterer *self) {
-    Py_XDECREF(self->filters);
-    Py_XDECREF(self->_const_filter);
-    Py_XDECREF(self->_const_remove);
+    Py_CLEAR(self->filters);
+    Py_CLEAR(self->_const_filter);
+    Py_CLEAR(self->_const_remove);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }

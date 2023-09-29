@@ -30,17 +30,16 @@ int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
     if (stream == NULL || stream == Py_None){
         stream = PySys_GetObject("stderr");
     }
-    self->stream = stream;
-    Py_INCREF(self->stream);
+    self->stream = Py_NewRef(stream);
     self->stream_has_flush = (PyObject_HasAttr(self->stream, self->_const_flush) == 1);
     return 0;
 }
 
 PyObject* StreamHandler_dealloc(StreamHandler *self) {
-    Py_XDECREF(self->stream);
-    Py_XDECREF(self->terminator);
-    Py_XDECREF(self->_const_write);
-    Py_XDECREF(self->_const_flush);
+    Py_CLEAR(self->stream);
+    Py_CLEAR(self->terminator);
+    Py_CLEAR(self->_const_write);
+    Py_CLEAR(self->_const_flush);
     HandlerType.tp_dealloc((PyObject *)self);
     return nullptr;
 }
@@ -118,7 +117,7 @@ PyObject* StreamHandler_repr(StreamHandler *self)
         _PyType_Name(Py_TYPE(self)),
         streamName,
         level.c_str());
-    Py_XDECREF(streamName);
+    Py_CLEAR(streamName);
     return repr;
 }
 

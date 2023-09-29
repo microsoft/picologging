@@ -58,30 +58,27 @@ PyObject* Logger_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
     Logger* self = (Logger*)FiltererType.tp_new(type, args, kwds);
     if (self != NULL)
     {
-        self->name = Py_None;
-        Py_INCREF(self->name);
-        self->parent = Py_None;
-        Py_INCREF(self->parent);
+        self->name = Py_NewRef(Py_None);
+        self->parent = Py_NewRef(Py_None);
         self->children = PyList_New(0);
         if (self->children == NULL)
             return nullptr;
         self->propagate = true;
         self->handlers = PyList_New(0);
         if (self->handlers == NULL){
-            Py_XDECREF(self->name);
-            Py_XDECREF(self->parent);
+            Py_CLEAR(self->name);
+            Py_CLEAR(self->parent);
             return nullptr;
         }
         self->disabled = false;
-        self->manager = Py_None;
-        Py_INCREF(self->manager);
+        self->manager = Py_NewRef(Py_None);
         
         self->_fallback_handler = (StreamHandler*)PyObject_CallFunctionObjArgs((PyObject *)&StreamHandlerType, NULL);
         if (self->_fallback_handler == nullptr){
-            Py_XDECREF(self->name);
-            Py_XDECREF(self->parent);
-            Py_XDECREF(self->handlers);
-            Py_XDECREF(self->manager);
+            Py_CLEAR(self->name);
+            Py_CLEAR(self->parent);
+            Py_CLEAR(self->handlers);
+            Py_CLEAR(self->manager);
             return nullptr;
         }
         self->_const_handle = PyUnicode_FromString("handle");
@@ -108,10 +105,8 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|H", const_cast<char**>(kwlist), &name, &level))
         return -1;
     
-    self->name = name;
-    Py_INCREF(self->name);
+    self->name = Py_NewRef(name);
     self->level = level;
-
     self->effective_level = findEffectiveLevelFromParents(self);
     setEnabledBasedOnEffectiveLevel(self);
     
@@ -119,21 +114,21 @@ int Logger_init(Logger *self, PyObject *args, PyObject *kwds)
 }
 
 PyObject* Logger_dealloc(Logger *self) {
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->parent);
-    Py_XDECREF(self->children);
-    Py_XDECREF(self->handlers);
-    Py_XDECREF(self->manager);
-    Py_XDECREF(self->_const_handle);
-    Py_XDECREF(self->_const_level);
-    Py_XDECREF(self->_const_unknown);
-    Py_XDECREF(self->_const_exc_info);
-    Py_XDECREF(self->_const_extra);
-    Py_XDECREF(self->_const_stack_info);
-    Py_XDECREF(self->_const_line_break);
-    Py_XDECREF(self->_const_getvalue);
-    Py_XDECREF(self->_const_close);
-    Py_XDECREF(self->_fallback_handler);
+    Py_CLEAR(self->name);
+    Py_CLEAR(self->parent);
+    Py_CLEAR(self->children);
+    Py_CLEAR(self->handlers);
+    Py_CLEAR(self->manager);
+    Py_CLEAR(self->_const_handle);
+    Py_CLEAR(self->_const_level);
+    Py_CLEAR(self->_const_unknown);
+    Py_CLEAR(self->_const_exc_info);
+    Py_CLEAR(self->_const_extra);
+    Py_CLEAR(self->_const_stack_info);
+    Py_CLEAR(self->_const_line_break);
+    Py_CLEAR(self->_const_getvalue);
+    Py_CLEAR(self->_const_close);
+    Py_CLEAR(self->_fallback_handler);
     FiltererType.tp_dealloc((PyObject *)self);
     return NULL;
 }
@@ -274,8 +269,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     }
     PyObject* exc_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_exc_info) : nullptr;
     if (exc_info == nullptr){
-        exc_info = Py_None;
-        Py_INCREF(exc_info);
+        exc_info = Py_NewRef(Py_None);
     } else {
         if (PyExceptionInstance_Check(exc_info)){
             PyObject * unpackedExcInfo = PyTuple_New(3);
@@ -296,13 +290,11 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
     }
     PyObject* extra = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_extra) : nullptr;
     if (extra == nullptr){
-        extra = Py_None;
-        Py_INCREF(extra);
+        extra = Py_NewRef(Py_None);
     }
     PyObject* stack_info = kwds != nullptr ? PyDict_GetItem(kwds, self->_const_stack_info) : nullptr;
     if (stack_info == nullptr){
-        stack_info = Py_False;
-        Py_INCREF(stack_info);
+        stack_info = Py_NewRef(Py_False);
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, level, msg, args_, exc_info, extra, stack_info, 1);
@@ -504,8 +496,7 @@ Logger_get_parent(Logger *self, void *closure)
     if (self->parent == nullptr) {
         Py_RETURN_NONE;
     }
-    Py_INCREF(self->parent);
-    return self->parent;
+    return Py_NewRef(self->parent);
 }
 
 static int
@@ -538,9 +529,9 @@ PyObject* Logger_isEnabledFor(Logger *self, PyObject *level) {
         return NULL;
     }
     if (self->disabled || (unsigned short)PyLong_AsUnsignedLongMask(level) < self->effective_level) {
-        return Py_False;
+        Py_RETURN_FALSE;
     }
-    return Py_True;
+    Py_RETURN_TRUE;
 }
 
 static PyMethodDef Logger_methods[] = {
