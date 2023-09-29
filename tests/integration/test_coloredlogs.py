@@ -1,10 +1,18 @@
 import io
 
-import coloredlogs
+try:
+    import coloredlogs
+
+    has_libs = True
+except ImportError:
+    has_libs = False
+
+import pytest
 
 import picologging as logging
 
 
+@pytest.mark.skipif(not has_libs, "Missing libraries")
 def test_coloredlogs_logger():
     # Setup colored logger
     stream = io.StringIO()
