@@ -101,6 +101,8 @@ def test_dictconfig_clear_existing_loggers(tmp_path):
     assert logger.handlers[0].name == "console"
     assert isinstance(logger.handlers[0], picologging.StreamHandler)
 
+    handler.close()
+
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_dictconfig_config_exceptions():

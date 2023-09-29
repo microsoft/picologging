@@ -88,6 +88,7 @@ def test_root_logger_warning(capsys):
     assert cap.err == "WARNING:root:test\n"
 
 
+@pytest.mark.filterwarnings("ignore:The 'warn' function is deprecated")
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_root_logger_warn(capsys):
     picologging.root.handlers = []
