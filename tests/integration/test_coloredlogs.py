@@ -1,6 +1,8 @@
-import picologging as logging
 import io
+
 import coloredlogs
+
+import picologging as logging
 
 
 def test_coloredlogs_logger():
