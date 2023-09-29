@@ -12,7 +12,7 @@ import pytest
 import picologging as logging
 
 
-@pytest.mark.skipif(not has_libs, "Missing libraries")
+@pytest.mark.skipif(not has_libs, reason="Missing libraries")
 def test_coloredlogs_logger():
     # Setup colored logger
     stream = io.StringIO()
