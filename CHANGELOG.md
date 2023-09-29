@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.9.3
+
+* Support for Python 3.12
+* Module can be used in sub-interpreters (3.12+)
+* Allow LogRecord to be copied by @aminalaee in https://github.com/microsoft/picologging/pull/164
+
+### Bug fixes
+
+* Fix memory leak in LogRecord.__dict__. Use Py_NewRef and Py_CLEAR patterns for cleaner code by @tonybaloney in https://github.com/microsoft/picologging/pull/173
+* Fix `io` text_encoding on Python 3.9 and older by @aminalaee in https://github.com/microsoft/picologging/pull/152
+* Add tests for override formatter formatException by @aminalaee in https://github.com/microsoft/picologging/pull/140
+* Fix formatting issues by @aminalaee in https://github.com/microsoft/picologging/pull/160
+* Add FileHandler errors argument by @aminalaee in https://github.com/microsoft/picologging/pull/161
+* Move filepath cache to within free-able module state by @tonybaloney in https://github.com/microsoft/picologging/pull/166
+* Bump pypa/cibuildwheel from 2.12.3 to 2.15.0 by @dependabot in https://github.com/microsoft/picologging/pull/158
+* Use a module state attribute to support subinterpreters by @tonybaloney in https://github.com/microsoft/picologging/pull/167
+* Cleanup all danging unicode references. by @tonybaloney in https://github.com/microsoft/picologging/pull/169
+* Adopt the memray trace leaks test markers by @tonybaloney in https://github.com/microsoft/picologging/pull/137
+* Fix unclosed resources in tests by @aminalaee in https://github.com/microsoft/picologging/pull/171
+* Verify the integration of coloredlogs is fixed by @tonybaloney in https://github.com/microsoft/picologging/pull/174
+
 ## 0.9.2
 
 * Upgrade pre-commit hooks versions by @sadikkuzu in https://github.com/microsoft/picologging/pull/133
