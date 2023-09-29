@@ -42,9 +42,8 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
         PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
         if (PyObject_HasAttr(filter, self->_const_filter)) {
             result = PyObject_CallMethod_ONEARG(filter, self->_const_filter, record);
-            if (result == NULL) {
-                return NULL;
-            }
+            if (result == nullptr)
+                return nullptr;
         } else {
             result = PyObject_CallFunctionObjArgs(filter, record, NULL);
         }
