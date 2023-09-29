@@ -62,4 +62,20 @@ static inline void _Py_SET_SIZE(PyVarObject *ob, Py_ssize_t size) {
 #define PyFrame_GETLINENO(f) f->f_lineno
 #endif
 
+#ifndef Py_NewRef
+#  define Py_NewRef(obj) _Py_NewRef((PyObject*)obj)
+#  define Py_XNewRef(obj) _Py_XNewRef(PyObject*)(obj))
+static inline PyObject* _Py_NewRef(PyObject *obj)
+{
+    Py_INCREF(obj);
+    return obj;
+}
+
+static inline PyObject* _Py_XNewRef(PyObject *obj)
+{
+    Py_XINCREF(obj);
+    return obj;
+}
+#endif
+
 #endif // COMPAT_H

@@ -32,7 +32,7 @@ const FilepathCacheEntry& FilepathCache::lookup(PyObject* pathname){
 
 FilepathCache::~FilepathCache(){
     for (auto& entry : cache){
-        Py_XDECREF(entry.second.filename);
-        Py_XDECREF(entry.second.module);
+        Py_CLEAR(entry.second.filename);
+        Py_CLEAR(entry.second.module);
     }
 }

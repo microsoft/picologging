@@ -95,8 +95,7 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
             return -1;
     }
 
-    self->fmt = fmt;
-    Py_INCREF(fmt);
+    self->fmt = Py_NewRef(fmt);
 
     std::string const format_string(PyUnicode_AsUTF8(fmt));
     auto fragments_begin = std::sregex_iterator(format_string.begin(), format_string.end(), fragment_search);
@@ -139,9 +138,7 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
         self->fragments[idx].fragment = PyUnicode_FromString(format_string.substr(cursor, format_string.size() - cursor).c_str());
         idx ++;
     }
-    self->defaults = defaults;
-    Py_INCREF(defaults);
-
+    self->defaults = Py_NewRef(defaults);
     self->_const_format = PyUnicode_FromString("format");
     self->_const__dict__ = PyUnicode_FromString("__dict__");
 
@@ -179,7 +176,7 @@ PyObject* FormatStyle_usesTime(FormatStyle *self){
 PyObject* FormatStyle_validate(FormatStyle *self){
     /// TODO: #6 #5 Implement percentage style validation.
 
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
@@ -404,12 +401,12 @@ FormatStyle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 PyObject* FormatStyle_dealloc(FormatStyle *self){
-    Py_XDECREF(self->fmt);
-    Py_XDECREF(self->defaults);
-    Py_XDECREF(self->_const_format);
-    Py_XDECREF(self->_const__dict__);
+    Py_CLEAR(self->fmt);
+    Py_CLEAR(self->defaults);
+    Py_CLEAR(self->_const_format);
+    Py_CLEAR(self->_const__dict__);
     for (int i = 0 ; i < self->ob_base.ob_size; i++){
-        Py_XDECREF(self->fragments[i].fragment);
+        Py_CLEAR(self->fragments[i].fragment);
     }
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;

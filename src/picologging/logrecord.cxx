@@ -50,10 +50,8 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
         return NULL;
     }
 
-    self->name = name;
-    Py_INCREF(name);
-    self->msg = msg;
-    Py_INCREF(msg);
+    self->name = Py_NewRef(name);
+    self->msg = Py_NewRef(msg);
 
     // This is a copy of the behaviour in the Python class
     // if (args and len(args) == 1 and isinstance(args[0], collections.abc.Mapping)
@@ -76,8 +74,7 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     } else {
         self->hasArgs = true;
     }
-    self->args = args;
-    Py_INCREF(args);
+    self->args = Py_NewRef(args);
 
     self->levelno = levelno;
     switch (levelno) {
@@ -105,17 +102,14 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     }
 
     self->levelname = levelname;
-    self->pathname = pathname;
-    Py_INCREF(pathname);
+    self->pathname = Py_NewRef(pathname);
 
 #ifdef PICOLOGGING_CACHE_FILEPATH
     picologging_state *state = GET_PICOLOGGING_STATE();
     if (state && state->g_filepathCache != nullptr) {
         auto filepath = state->g_filepathCache->lookup(pathname);
-        self->filename = filepath.filename;
-        self->module = filepath.module;
-        Py_INCREF(self->filename);
-        Py_INCREF(self->module);
+        self->filename = Py_NewRef(filepath.filename);
+        self->module = Py_NewRef(filepath.module);
     } else {
         // Manual lookup - TODO Raise warning?
         fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
@@ -142,26 +136,21 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
 #endif
 #endif // PICOLOGGING_CACHE_FILEPATH
 
-    self->excInfo = exc_info;
-    Py_INCREF(self->excInfo);
-    self->excText = Py_None;
-    Py_INCREF(self->excText);
+    self->excInfo = Py_NewRef(exc_info);
+    self->excText = Py_NewRef(Py_None);
 
     if (sinfo != NULL){
-        self->stackInfo = sinfo;
-        Py_INCREF(sinfo);
+        self->stackInfo = Py_NewRef(sinfo);
     } else {
-        self->stackInfo = Py_None;
-        Py_INCREF(Py_None);
+        self->stackInfo = Py_NewRef(Py_None);
     }
     
     self->lineno = lineno;
     if (funcname != NULL){
-        self->funcName = funcname;
+        self->funcName = Py_NewRef(funcname);
     } else {
-        self->funcName = Py_None;
+        self->funcName = Py_NewRef(Py_None);
     }
-    Py_INCREF(self->funcName);
     _PyTime_t ctime = current_time();
     if (ctime == -1){
         goto error;
@@ -172,16 +161,12 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);    
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     // TODO #2 : See if there is a performant way to get the thread name.
-    self->threadName = Py_None;
-    Py_INCREF(Py_None);
+    self->threadName = Py_NewRef(Py_None);
     // TODO #1 : See if there is a performant way to get the process name.
-    self->processName = Py_None;
-    Py_INCREF(Py_None);
+    self->processName = Py_NewRef(Py_None);
     self->process = getpid();
-    self->message = Py_None;
-    Py_INCREF(Py_None);
-    self->asctime = Py_None;
-    Py_INCREF(Py_None);
+    self->message = Py_NewRef(Py_None);
+    self->asctime = Py_NewRef(Py_None);
     return (PyObject*)self;;
 
 error:
@@ -209,23 +194,23 @@ error:
 
 PyObject* LogRecord_dealloc(LogRecord *self)
 {
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->msg);
-    Py_XDECREF(self->args);
-    Py_XDECREF(self->levelname);
-    Py_XDECREF(self->pathname);
-    Py_XDECREF(self->filename);
-    Py_XDECREF(self->module);
-    Py_XDECREF(self->funcName);
-    Py_XDECREF(self->relativeCreated);
-    Py_XDECREF(self->threadName);
-    Py_XDECREF(self->processName);
-    Py_XDECREF(self->excInfo);
-    Py_XDECREF(self->excText);
-    Py_XDECREF(self->stackInfo);
-    Py_XDECREF(self->message);
-    Py_XDECREF(self->asctime);
-    Py_XDECREF(self->dict);
+    Py_CLEAR(self->name);
+    Py_CLEAR(self->msg);
+    Py_CLEAR(self->args);
+    Py_CLEAR(self->levelname);
+    Py_CLEAR(self->pathname);
+    Py_CLEAR(self->filename);
+    Py_CLEAR(self->module);
+    Py_CLEAR(self->funcName);
+    Py_CLEAR(self->relativeCreated);
+    Py_CLEAR(self->threadName);
+    Py_CLEAR(self->processName);
+    Py_CLEAR(self->excInfo);
+    Py_CLEAR(self->excText);
+    Py_CLEAR(self->stackInfo);
+    Py_CLEAR(self->message);
+    Py_CLEAR(self->asctime);
+    Py_CLEAR(self->dict);
     ((PyObject*)self)->ob_type->tp_free((PyObject*)self);
     return nullptr;
 }
@@ -235,25 +220,35 @@ int LogRecord_init(LogRecord *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-void LogRecord_writeMessage(LogRecord *self)
+int LogRecord_writeMessage(LogRecord *self)
 {
     PyObject *msg = nullptr;
     PyObject *args = self->args;
 
     if (PyUnicode_Check(self->msg)){
-        msg = self->msg;
         // Add new reference for return value, all other code paths return a new object
-        Py_INCREF(self->msg);
+        msg = Py_NewRef(self->msg);
     } else {
         msg = PyObject_Str(self->msg);
+        if (msg == nullptr) {
+            return -1;
+        }
     }
 
     if (!self->hasArgs) {
-        Py_XDECREF(self->message);
+        Py_DECREF(self->message);
         self->message = msg;
+        return 0;
     } else {
-        Py_XDECREF(self->message);
-        self->message = PyUnicode_Format(msg, args);
+        PyObject * formatted = PyUnicode_Format(msg, args);
+        Py_DECREF(msg);
+        if (formatted == nullptr){
+            return -1;
+        } else {
+            Py_DECREF(self->message);
+            self->message = formatted;
+            return 0;
+        }
     }
 }
 
@@ -262,9 +257,9 @@ void LogRecord_writeMessage(LogRecord *self)
  */
 PyObject* LogRecord_getMessage(LogRecord *self)
 {
-    LogRecord_writeMessage(self);
-    Py_XINCREF(self->message);
-    return self->message;
+    if (LogRecord_writeMessage(self) == -1)
+        return nullptr;
+    return Py_NewRef(self->message);
 }
 
 PyObject* LogRecordLogRecord_getnewargs(LogRecord *self)
@@ -289,20 +284,42 @@ LogRecord_getDict(PyObject *obj, void *context)
     PyDict_SetItemString(dict, "name", ((LogRecord*)obj)->name);
     PyDict_SetItemString(dict, "msg", ((LogRecord*)obj)->msg);
     PyDict_SetItemString(dict, "args", ((LogRecord*)obj)->args);
-    PyDict_SetItemString(dict, "levelno", PyLong_FromLong(((LogRecord*)obj)->levelno));
+    
+    PyObject * levelno = PyLong_FromLong(((LogRecord*)obj)->levelno);
+    PyDict_SetItemString(dict, "levelno", levelno);
+     Py_DECREF(levelno);
+
     PyDict_SetItemString(dict, "levelname", ((LogRecord*)obj)->levelname);
     PyDict_SetItemString(dict, "pathname", ((LogRecord*)obj)->pathname);
     PyDict_SetItemString(dict, "filename", ((LogRecord*)obj)->filename);
     PyDict_SetItemString(dict, "module", ((LogRecord*)obj)->module);
     PyDict_SetItemString(dict, "funcName", ((LogRecord*)obj)->funcName);
-    PyDict_SetItemString(dict, "lineno", PyLong_FromLong(((LogRecord*)obj)->lineno));
-    PyDict_SetItemString(dict, "created", PyFloat_FromDouble(((LogRecord*)obj)->created));
-    PyDict_SetItemString(dict, "msecs", PyLong_FromLong(((LogRecord*)obj)->msecs));
+
+    PyObject *lineno = PyLong_FromLong(((LogRecord*)obj)->lineno);
+    PyDict_SetItemString(dict, "lineno", lineno); 
+    Py_DECREF(lineno);
+
+    PyObject *created = PyFloat_FromDouble(((LogRecord*)obj)->created);
+    PyDict_SetItemString(dict, "created", created);
+    Py_DECREF(created);
+
+    PyObject *msecs = PyLong_FromLong(((LogRecord*)obj)->msecs);
+    PyDict_SetItemString(dict, "msecs", msecs);
+    Py_DECREF(msecs);
+
     PyDict_SetItemString(dict, "relativeCreated", ((LogRecord*)obj)->relativeCreated);
-    PyDict_SetItemString(dict, "thread", PyLong_FromUnsignedLong(((LogRecord*)obj)->thread));
+
+    PyObject *thread = PyLong_FromUnsignedLong(((LogRecord*)obj)->thread);
+    PyDict_SetItemString(dict, "thread", thread);
+    Py_DECREF(thread);
+
     PyDict_SetItemString(dict, "threadName", ((LogRecord*)obj)->threadName);
     PyDict_SetItemString(dict, "processName", ((LogRecord*)obj)->processName);
-    PyDict_SetItemString(dict, "process", PyLong_FromLong(((LogRecord*)obj)->process));
+
+    PyObject *process = PyLong_FromLong(((LogRecord*)obj)->process);
+    PyDict_SetItemString(dict, "process", process);
+    Py_DECREF(process);
+
     PyDict_SetItemString(dict, "exc_info", ((LogRecord*)obj)->excInfo);
     PyDict_SetItemString(dict, "exc_text", ((LogRecord*)obj)->excText);
     PyDict_SetItemString(dict, "stack_info", ((LogRecord*)obj)->stackInfo);

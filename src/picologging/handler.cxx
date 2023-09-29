@@ -14,8 +14,7 @@ PyObject* Handler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->_const_emit = PyUnicode_FromString("emit");
         self->_const_format = PyUnicode_FromString("format");
         self->name = Py_None;
-        self->formatter = Py_None;
-        Py_INCREF(self->formatter);
+        self->formatter = Py_NewRef(Py_None);
     }
     return (PyObject*)self;
 }
@@ -29,17 +28,16 @@ int Handler_init(Handler *self, PyObject *args, PyObject *kwds){
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OH", const_cast<char**>(kwlist), &name, &level)){
         return -1;
     }
-    self->name = name;
-    Py_INCREF(name);
+    self->name = Py_NewRef(name);
     self->level = level;
     return 0;
 }
 
 PyObject* Handler_dealloc(Handler *self) {
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->formatter);
-    Py_XDECREF(self->_const_emit);
-    Py_XDECREF(self->_const_format);
+    Py_CLEAR(self->name);
+    Py_CLEAR(self->formatter);
+    Py_CLEAR(self->_const_emit);
+    Py_CLEAR(self->_const_format);
     delete self->lock;
     FiltererType.tp_dealloc((PyObject *)self);
     return nullptr;
@@ -105,8 +103,7 @@ PyObject* Handler_format(Handler *self, PyObject *record){
 
 PyObject* Handler_setFormatter(Handler *self, PyObject *formatter) {
     Py_XDECREF(self->formatter);
-    self->formatter = formatter;
-    Py_INCREF(self->formatter);
+    self->formatter = Py_NewRef(formatter);
     Py_RETURN_NONE;
 }
 
@@ -143,8 +140,7 @@ PyObject* Handler_getName(Handler *self){
 
 PyObject* Handler_setName(Handler *self, PyObject *name){
     Py_XDECREF(self->name);
-    self->name = name;
-    Py_INCREF(self->name);
+    self->name = Py_NewRef(name);
     Py_RETURN_NONE;
 }
 

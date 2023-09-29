@@ -42,9 +42,8 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
         PyObject *filter = PyList_GET_ITEM(self->filters, i); // borrowed ref
         if (PyObject_HasAttr(filter, self->_const_filter)) {
             result = PyObject_CallMethod_ONEARG(filter, self->_const_filter, record);
-            if (result == NULL) {
-                return NULL;
-            }
+            if (result == nullptr)
+                return nullptr;
         } else {
             result = PyObject_CallFunctionObjArgs(filter, record, NULL);
         }
@@ -59,9 +58,9 @@ PyObject* Filterer_filter(Filterer* self, PyObject *record) {
 }
 
 PyObject* Filterer_dealloc(Filterer *self) {
-    Py_XDECREF(self->filters);
-    Py_XDECREF(self->_const_filter);
-    Py_XDECREF(self->_const_remove);
+    Py_CLEAR(self->filters);
+    Py_CLEAR(self->_const_filter);
+    Py_CLEAR(self->_const_remove);
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }

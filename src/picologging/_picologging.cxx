@@ -79,7 +79,7 @@ static PyObject *getLevelName(PyObject *self, PyObject *level) {
   }
 
   PyErr_SetString(PyExc_TypeError, "level must be an integer or a string.");
-  return NULL;
+  return nullptr;
 }
 
 //-----------------------------------------------------------------------------
