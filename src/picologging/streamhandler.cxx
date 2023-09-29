@@ -82,7 +82,7 @@ PyObject* StreamHandler_emit(StreamHandler* self, PyObject* const* args, Py_ssiz
     Py_XDECREF(writeResult);
     Py_RETURN_NONE;
 error:
-    // TODO: #4 handle error path (see handleError(record))
+    Handler_handleError(&self->handler, args[0]);
     Py_XDECREF(msg);
     return nullptr;
 }

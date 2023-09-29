@@ -151,6 +151,8 @@ PyMODINIT_FUNC PyInit__picologging(void)
   picologging_state *state = get_picologging_state(m);
   state->g_filepathCache = new FilepathCache();
 
+  PyModule_AddObject(m, "raiseExceptions", Py_NewRef(Py_False));
+
   Py_INCREF(&LogRecordType);
   Py_INCREF(&FormatStyleType);
   Py_INCREF(&FormatterType);
