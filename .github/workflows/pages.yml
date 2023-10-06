@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -34,7 +34,7 @@ jobs:
       - name: Get latest CMake and ninja
         # Using 'latest' branch, the most recent CMake and ninja are installed.
         uses: lukka/get-cmake@latest
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install requirements and package
         run: |
           python -m pip install -U pip
