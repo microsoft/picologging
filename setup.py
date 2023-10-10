@@ -41,6 +41,7 @@ setup(
             "rich",
             "pytest",
             "pytest-cov",
+            "memray>=1.10.0",
             "pytest-memray>=1.5.0",
             "hypothesis",
             "flaky",
