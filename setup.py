@@ -49,7 +49,7 @@ setup(
         "memray": [
             "memray>=1.10.0",
             "pytest-memray>=1.5.0",
-        ]
+        ],
     },
     project_urls={
         "Source": "https://github.com/microsoft/picologging",
