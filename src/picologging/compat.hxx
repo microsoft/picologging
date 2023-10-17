@@ -63,7 +63,7 @@ static inline void _Py_SET_SIZE(PyVarObject *ob, Py_ssize_t size) {
 #endif
 
 #if PY_VERSION_HEX < 0x03080000 // Python 3.7 and below
-// #define PY_VECTORCALL_ARGUMENTS_OFFSET ((size_t)1 << (8 * sizeof(size_t) - 1))
+#define PY_VECTORCALL_ARGUMENTS_OFFSET ((size_t)1 << (8 * sizeof(size_t) - 1))
 
 static inline Py_ssize_t
 PyVectorcall_NARGS(size_t n)
