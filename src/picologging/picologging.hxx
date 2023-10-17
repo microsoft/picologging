@@ -7,6 +7,12 @@
 
 typedef struct {
   FilepathCache* g_filepathCache;
+  PyObject* g_const_CRITICAL;
+  PyObject* g_const_ERROR;
+  PyObject* g_const_WARNING;
+  PyObject* g_const_INFO;
+  PyObject* g_const_DEBUG;
+  PyObject* g_const_NOTSET;
 } picologging_state;
 
 extern struct PyModuleDef _picologging_module;

@@ -80,25 +80,27 @@ LogRecord* LogRecord_create(LogRecord* self, PyObject* name, PyObject* msg, PyOb
     self->args = Py_NewRef(args);
 
     self->levelno = levelno;
+
+    picologging_state *state = GET_PICOLOGGING_STATE();
     PyObject* levelname = nullptr;
     switch (levelno) {
         case LOG_LEVEL_CRITICAL:
-            levelname = PyUnicode_FromString("CRITICAL");
+            levelname = Py_NewRef(state->g_const_CRITICAL);
             break;
         case LOG_LEVEL_ERROR:
-            levelname = PyUnicode_FromString("ERROR");
+            levelname = Py_NewRef(state->g_const_ERROR);
             break;
         case LOG_LEVEL_WARNING:
-            levelname = PyUnicode_FromString("WARNING");
+            levelname = Py_NewRef(state->g_const_WARNING);
             break;
         case LOG_LEVEL_INFO:
-            levelname = PyUnicode_FromString("INFO");
+            levelname = Py_NewRef(state->g_const_INFO);
             break;
         case LOG_LEVEL_DEBUG:
-            levelname = PyUnicode_FromString("DEBUG");
+            levelname = Py_NewRef(state->g_const_DEBUG);
             break;
         case LOG_LEVEL_NOTSET:
-            levelname = PyUnicode_FromString("NOTSET");
+            levelname = Py_NewRef(state->g_const_NOTSET);
             break;
         default:
             levelname = PyUnicode_FromFormat("%d", levelno);
@@ -109,7 +111,6 @@ LogRecord* LogRecord_create(LogRecord* self, PyObject* name, PyObject* msg, PyOb
     self->pathname = Py_NewRef(pathname);
 
 #ifdef PICOLOGGING_CACHE_FILEPATH
-    picologging_state *state = GET_PICOLOGGING_STATE();
     if (state && state->g_filepathCache != nullptr) {
         auto filepath = state->g_filepathCache->lookup(pathname);
         self->filename = Py_NewRef(filepath.filename);
