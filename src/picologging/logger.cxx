@@ -468,7 +468,7 @@ PyObject* Logger_exception(Logger *self, PyObject *const *args, Py_ssize_t nargs
     
     PyObject* result = Logger_logAndHandle(self, args_, nargs, kwnames, LOG_LEVEL_ERROR);
     Py_XDECREF(kwnames);
-    PyMem_Free(args_); // TODO: Verify clean up
+    PyMem_Free(args_);
     return result;
 }
 
@@ -495,7 +495,7 @@ PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyOb
     }
 
     PyObject* result = Logger_logAndHandle(self, args_, nargs - 1, kwnames, level);
-    PyMem_Free(args_); // TODO: Verify clean up
+    PyMem_Free(args_);
     return result;
 }
 
