@@ -13,7 +13,7 @@ def run_profile(level=picologging.DEBUG):
     handler.setFormatter(formatter)
     logger.handlers.append(handler)
 
-    for _ in range(100_000):
+    for _ in range(1_000_000):
         logger.debug("There has been a picologging issue %s %s %s", 1, 2, 3)
 
     assert tmp.getvalue() != ""
