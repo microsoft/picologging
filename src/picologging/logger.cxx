@@ -402,7 +402,7 @@ PyObject* Logger_info(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyO
         PyErr_SetString(PyExc_TypeError, "info() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwnames, LOG_LEVEL_DEBUG);
+    return Logger_logAndHandle(self, args, nargs, kwnames, LOG_LEVEL_INFO);
 }
 PyObject* Logger_warning(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames){
     if (self->disabled || !self->enabledForWarning) {
@@ -413,7 +413,7 @@ PyObject* Logger_warning(Logger *self, PyObject *const *args, Py_ssize_t nargs, 
         PyErr_SetString(PyExc_TypeError, "warning() requires 1 positional argument");
         return nullptr;
     }
-    return Logger_logAndHandle(self, args, nargs, kwnames, LOG_LEVEL_DEBUG);
+    return Logger_logAndHandle(self, args, nargs, kwnames, LOG_LEVEL_WARNING);
 }
 
 PyObject* Logger_fatal(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames){
