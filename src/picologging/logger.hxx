@@ -48,15 +48,15 @@ PyObject* Logger_dealloc(Logger *self);
 PyObject* Logger_addHandler(Logger *self, PyObject *handler);
 PyObject* Logger_isEnabledFor(Logger *self, PyObject *level);
 
-PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsigned short level);
-PyObject* Logger_debug(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_info(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_warning(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_fatal(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_error(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_critical(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_exception(Logger *self, PyObject *args, PyObject *kwds);
-PyObject* Logger_log(Logger *self, PyObject *args, PyObject *kwds);
+PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames, unsigned short level);
+PyObject* Logger_debug(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_info(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_warning(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_fatal(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_error(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_critical(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_exception(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
+PyObject* Logger_log(Logger *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames);
 
 LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObject *msg, PyObject *args, PyObject * exc_info, PyObject *extra, PyObject *stack_info, int stacklevel=1);
 
