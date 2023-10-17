@@ -181,7 +181,7 @@ PyObject* FormatStyle_validate(FormatStyle *self){
 
 PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
     if (self->defaults == Py_None){
-        if (LogRecord_Check(record)){
+        if (LogRecord_CheckExact(record) || LogRecord_Check(record)){
             _PyUnicodeWriter writer;
             _PyUnicodeWriter_Init(&writer);
             LogRecord* log_record = reinterpret_cast<LogRecord*>(record);
