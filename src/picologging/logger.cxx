@@ -182,7 +182,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         f = orig_f;
     }
     PyObject *co_filename = f != nullptr ? PyFrame_GETCODE(f)->co_filename : self->_const_unknown;
-    PyObject *lineno = f != nullptr ? PyLong_FromLong(PyFrame_GETLINENO(f)) : PyLong_FromLong(0);
+    long lineno = f != nullptr ? PyFrame_GETLINENO(f) : 0;
     PyObject *co_name = f != nullptr ? PyFrame_GETCODE(f)->co_name : self->_const_unknown;
 
     if (stack_info == Py_True){
@@ -235,22 +235,25 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         stack_info = s;
     }
 
-    PyObject* record = PyObject_CallFunctionObjArgs(
-        (PyObject*)&LogRecordType,
+    LogRecord* record = (LogRecord*) (&LogRecordType)->tp_alloc(&LogRecordType, 0);
+    if (record == NULL)
+    {
+        PyErr_NoMemory();
+        return nullptr;
+    }
+
+    return LogRecord_create(
+        record,
         self->name,
-        PyLong_FromUnsignedLong(level),
-        co_filename,
-        lineno,
         msg,
         args,
+        level,
+        co_filename,
+        lineno,
         exc_info,
         co_name,
-        stack_info,
-        NULL
+        stack_info
     );
-    Py_DECREF(lineno);
-
-    return (LogRecord*)record;
 }
 
 PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsigned short level){
