@@ -321,7 +321,7 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *args, PyObject *kwds, unsi
         for (int i = 0; i < PyList_GET_SIZE(cur->handlers) ; i++){
             found ++;
             PyObject* handler = PyList_GET_ITEM(cur->handlers, i); // borrowed
-            if (Handler_Check(handler)){
+            if (Handler_CheckExact(handler) || Handler_Check(handler)){
                 if (record->levelno >= ((Handler*)handler)->level){
                     if (Handler_handle((Handler*)handler, (PyObject*)record) == nullptr){
                         Py_DECREF(record);
