@@ -9,7 +9,7 @@
 > This project is in *beta*.
 > There are some incomplete features (see [Limitations](https://microsoft.github.io/picologging/limitations.html)).
 
-Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
+Picologging is a high-performance logging library for Python. picologging is 4-17x faster than the `logging` module in the standard library.
 
 Picologging is designed to be used as a *drop-in* replacement for applications which already use logging, and supports the same API as the `logging` module.
 
