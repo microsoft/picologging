@@ -83,7 +83,7 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
 }
 
 PyObject* Formatter_format(Formatter *self, PyObject *record){
-    if (LogRecord_Check(record)){
+    if (LogRecord_CheckExact(record) || LogRecord_Check(record)){
         LogRecord* logRecord = (LogRecord*)record;
         if (LogRecord_writeMessage(logRecord) == -1){
             return nullptr;

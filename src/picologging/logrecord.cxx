@@ -49,7 +49,10 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
         PyErr_NoMemory();
         return NULL;
     }
+    return (PyObject*)LogRecord_create(self, name, msg, args, levelno, pathname, lineno, exc_info, funcname, sinfo);
+}
 
+LogRecord* LogRecord_create(LogRecord* self, PyObject* name, PyObject* msg, PyObject* args, int levelno, PyObject* pathname, int lineno, PyObject* exc_info, PyObject* funcname, PyObject* sinfo) {
     self->name = Py_NewRef(name);
     self->msg = Py_NewRef(msg);
 
@@ -77,24 +80,27 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     self->args = Py_NewRef(args);
 
     self->levelno = levelno;
+
+    picologging_state *state = GET_PICOLOGGING_STATE();
+    PyObject* levelname = nullptr;
     switch (levelno) {
         case LOG_LEVEL_CRITICAL:
-            levelname = PyUnicode_FromString("CRITICAL");
+            levelname = Py_NewRef(state->g_const_CRITICAL);
             break;
         case LOG_LEVEL_ERROR:
-            levelname = PyUnicode_FromString("ERROR");
+            levelname = Py_NewRef(state->g_const_ERROR);
             break;
         case LOG_LEVEL_WARNING:
-            levelname = PyUnicode_FromString("WARNING");
+            levelname = Py_NewRef(state->g_const_WARNING);
             break;
         case LOG_LEVEL_INFO:
-            levelname = PyUnicode_FromString("INFO");
+            levelname = Py_NewRef(state->g_const_INFO);
             break;
         case LOG_LEVEL_DEBUG:
-            levelname = PyUnicode_FromString("DEBUG");
+            levelname = Py_NewRef(state->g_const_DEBUG);
             break;
         case LOG_LEVEL_NOTSET:
-            levelname = PyUnicode_FromString("NOTSET");
+            levelname = Py_NewRef(state->g_const_NOTSET);
             break;
         default:
             levelname = PyUnicode_FromFormat("%d", levelno);
@@ -105,7 +111,6 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     self->pathname = Py_NewRef(pathname);
 
 #ifdef PICOLOGGING_CACHE_FILEPATH
-    picologging_state *state = GET_PICOLOGGING_STATE();
     if (state && state->g_filepathCache != nullptr) {
         auto filepath = state->g_filepathCache->lookup(pathname);
         self->filename = Py_NewRef(filepath.filename);
@@ -167,7 +172,7 @@ PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
     self->process = getpid();
     self->message = Py_NewRef(Py_None);
     self->asctime = Py_NewRef(Py_None);
-    return (PyObject*)self;;
+    return self;
 
 error:
     Py_XDECREF(self->name);
@@ -189,7 +194,7 @@ error:
     if (!PyErr_Occurred()) {
         PyErr_Format(PyExc_ValueError, "Could not create LogRecord, unknown error.");
     }
-    return NULL;
+    return nullptr;
 }
 
 PyObject* LogRecord_dealloc(LogRecord *self)
