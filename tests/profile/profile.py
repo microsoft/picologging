@@ -1,13 +1,15 @@
 from io import StringIO
 
 import picologging
+import picologging.handlers
+import queue
 
 
 def run_profile(level=picologging.DEBUG):
     logger = picologging.Logger("test", level)
     tmp = StringIO()
-
-    handler = picologging.StreamHandler(tmp)
+    queue_ = queue.SimpleQueue()
+    handler = picologging.handlers.QueueHandler(queue_)
     handler.setLevel(level)
     formatter = picologging.Formatter("%(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
