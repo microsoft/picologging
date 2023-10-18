@@ -6,7 +6,7 @@
 #define PICOLOGGING_H
 
 typedef struct {
-  FilepathCache* g_filepathCache;
+  PyObject* g_filepathCache;
   PyObject* g_const_CRITICAL;
   PyObject* g_const_ERROR;
   PyObject* g_const_WARNING;

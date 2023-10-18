@@ -112,9 +112,9 @@ LogRecord* LogRecord_create(LogRecord* self, PyObject* name, PyObject* msg, PyOb
 
 #ifdef PICOLOGGING_CACHE_FILEPATH
     if (state && state->g_filepathCache != nullptr) {
-        auto filepath = state->g_filepathCache->lookup(pathname);
-        self->filename = Py_NewRef(filepath.filename);
-        self->module = Py_NewRef(filepath.module);
+        auto filepath = lookup(state->g_filepathCache, pathname);
+        self->filename = Py_NewRef(PyTuple_GET_ITEM(filepath, 0));
+        self->module = Py_NewRef(PyTuple_GET_ITEM(filepath, 1));
     } else {
         // Manual lookup - TODO Raise warning?
         fs::path fs_path = fs::path(PyUnicode_AsUTF8(pathname));
