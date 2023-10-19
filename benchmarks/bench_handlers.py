@@ -109,7 +109,7 @@ def queue_listener_logging():
         logger.debug("test")
 
     listener.stop()
-    assert stream.getvalue() != ''
+    assert stream.getvalue() != ""
 
 
 def queue_listener_picologging():
@@ -125,7 +125,7 @@ def queue_listener_picologging():
         logger.debug("test")
 
     listener.stop()
-    assert stream.getvalue() != ''
+    assert stream.getvalue() != ""
 
 
 def memoryhandler_logging():

@@ -8,7 +8,7 @@ import threading
 import time
 
 import picologging
-from ._picologging import QueueHandler # NOQA
+from ._picologging import QueueHandler  # NOQA
 
 _MIDNIGHT = 24 * 60 * 60  # number of seconds in a day
 

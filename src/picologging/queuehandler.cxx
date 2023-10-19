@@ -99,7 +99,6 @@ PyObject* QueueHandler_prepare(QueueHandler* self, PyObject* record){
         PyErr_SetString(PyExc_ValueError, "prepare() takes a LogRecord as argument");
         return nullptr;
     }
-    Py_RETURN_NONE;
 }
 
 PyObject* QueueHandler_emit(QueueHandler* self, PyObject* record){
@@ -114,6 +113,7 @@ PyObject* QueueHandler_emit(QueueHandler* self, PyObject* record){
         Handler_handleError(&self->handler, record);
         Py_RETURN_NONE;
     }
+    // TODO : Decref the old record?
     // Enqueue result of .prepare()
     if (QueueHandler_CheckExact((PyObject*)self)){
         enqueueResult = QueueHandler_enqueue(self, prepareResult);
@@ -124,6 +124,7 @@ PyObject* QueueHandler_emit(QueueHandler* self, PyObject* record){
         Handler_handleError(&self->handler, record);
         Py_RETURN_NONE;
     }
+    Py_DECREF(enqueueResult);
     Py_RETURN_NONE;
 }
 

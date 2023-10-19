@@ -22,7 +22,8 @@ def log():
         logger.debug("test")
 
     listener.stop()
-    assert stream.getvalue() != ''
+    assert stream.getvalue() != ""
+
 
 if __name__ == "__main__":
     log()
