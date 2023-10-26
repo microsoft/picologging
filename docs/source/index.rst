@@ -6,7 +6,7 @@
 picologging
 ===========
 
-**Status** This project is an *early-alpha*. There are some incomplete features (see Issues).
+**Status** This project is in *beta*. There are some incomplete features (see Issues).
 
 Picologging is a high-performance logging library for Python. picologging is 4-10x faster than the `logging` module in the standard library.
 
@@ -82,4 +82,5 @@ Any use of third-party trademarks or logos are subject to those third-party's po
    logging
    handlers
    examples
+   django
    limitations
