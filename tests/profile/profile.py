@@ -1,8 +1,8 @@
+import queue
 from io import StringIO
 
 import picologging
 import picologging.handlers
-import queue
 
 
 def run_profile(level=picologging.DEBUG):

@@ -2,8 +2,8 @@
 Create 100,000  logger instances and run a log test on them
 """
 
-import queue
 import io
+import queue
 
 import picologging
 import picologging.handlers
