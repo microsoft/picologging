@@ -177,7 +177,7 @@ class Manager:
         self.cls = klass
 
     def setLogRecordFactory(self, factory):
-        raise NotImplementedError("setLoggerClass is not supported in picologging.")
+        raise NotImplementedError("setLogRecordFactory is not supported in picologging.")
 
 
 root = Logger(name="root", level=WARNING)
