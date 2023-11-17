@@ -68,7 +68,10 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
     }
     
     self->lock->unlock();
-    return result == nullptr ? nullptr : Py_True;
+
+    if (PyErr_Occurred()) 
+        return nullptr;
+    return result == nullptr ? Py_False : Py_True;
 }
 
 PyObject* Handler_setLevel(Handler *self, PyObject *level){
@@ -128,8 +131,12 @@ PyObject* Handler_close(Handler *self){
 }
 
 PyObject* Handler_handleError(Handler *self, PyObject *record){
-    // TODO: Develop this behaviour further.
-    PyErr_Print();
+    PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
+    PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
+    PyObject* raiseExceptions = PyDict_GetItemString(modDict, "raiseExceptions"); // PyDict_GetItemString returns a borrowed reference
+    if (PyBool_Check(raiseExceptions) && PyErr_Occurred()) {
+        PyErr_Print();
+    }
     Py_RETURN_NONE;
 }
 

@@ -13,6 +13,7 @@ from ._picologging import (  # NOQA
     LogRecord,
     StreamHandler,
     getLevelName,
+    raiseExceptions,
 )
 
 __version__ = "0.9.3"

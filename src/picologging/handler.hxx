@@ -22,6 +22,7 @@ PyObject* Handler_handle(Handler *self, PyObject *record);
 PyObject* Handler_setLevel(Handler *self, PyObject *level);
 PyObject* Handler_setFormatter(Handler *self, PyObject *formatter);
 PyObject* Handler_format(Handler *self, PyObject *record);
+PyObject* Handler_handleError(Handler *self, PyObject *record);
 PyObject* Handler_acquire(Handler *self);
 PyObject* Handler_release(Handler *self);
 
