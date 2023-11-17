@@ -20,6 +20,8 @@ INFO: int
 DEBUG: int
 NOTSET: int
 
+raiseExceptions: bool
+
 _SysExcInfoType: TypeAlias = Union[
     tuple[type[BaseException], BaseException, TracebackType | None],
     tuple[None, None, None],

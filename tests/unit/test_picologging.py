@@ -171,3 +171,10 @@ def test_make_log_record():
 @pytest.mark.parametrize("encoding", ["utf-8", None])
 def test_basic_config_encoding(encoding):
     picologging.basicConfig(filename="test.txt", encoding=encoding)
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_raiseExceptions():
+    assert picologging.raiseExceptions is False
+    picologging.raiseExceptions = True
+    assert picologging.raiseExceptions is True

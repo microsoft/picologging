@@ -164,6 +164,8 @@ PyMODINIT_FUNC PyInit__picologging(void)
   state->g_const_DEBUG = PyUnicode_FromString("DEBUG");
   state->g_const_NOTSET = PyUnicode_FromString("NOTSET");
 
+  PyModule_AddObject(m, "raiseExceptions", Py_NewRef(Py_False));
+
   Py_INCREF(&LogRecordType);
   Py_INCREF(&FormatStyleType);
   Py_INCREF(&FormatterType);
