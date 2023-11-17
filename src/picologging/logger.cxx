@@ -173,13 +173,12 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         return nullptr;
     }
     PyFrameObject *f = PyFrame_GETBACK(frame);
-    PyFrameObject *orig_f = f;
     while (f != NULL && stacklevel > 1) {
         f = PyFrame_GETBACK(f);
         stacklevel--;
     }
     if (f == NULL) {
-        f = orig_f;
+        f = frame;
     }
     PyObject *co_filename = f != nullptr ? PyFrame_GETCODE(f)->co_filename : self->_const_unknown;
     long lineno = f != nullptr ? PyFrame_GETLINENO(f) : 0;
