@@ -45,6 +45,7 @@ typedef struct {
 typedef struct {
     PyObject_VAR_HEAD
     PyObject *fmt;
+    Py_ssize_t fmt_len;
     PyObject *defaults;
     bool usesDefaultFmt;
     int style;
