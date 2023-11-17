@@ -29,5 +29,5 @@ app = Litestar(
 
 if __name__ == "__main__":
     with TestClient(app=app) as client:
-        for _ in range(100_000):
+        for _ in range(1_000):
             response = client.get("/")
