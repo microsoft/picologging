@@ -90,7 +90,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             return nullptr;
         }
         if (self->usesTime){
-            PyObject* asctime = Py_None;
+            PyObject * asctime = Py_None;
             double createdInt;
             int createdFrac = std::modf(logRecord->created, &createdInt) * 1e6;
             std::time_t created = static_cast<std::time_t>(createdInt);
