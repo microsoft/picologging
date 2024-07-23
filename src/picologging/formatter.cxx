@@ -92,7 +92,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         if (self->usesTime){
             PyObject * asctime = Py_None;
             double createdInt;
-            int createdFrac = std::modf(logRecord->created, &createdInt) * 1e6;
+            int createdFrac = std::modf(logRecord->created, &createdInt) * 1e3;
             std::time_t created = static_cast<std::time_t>(createdInt);
             std::tm *ct = localtime(&created);
             if (self->dateFmt != Py_None){
@@ -102,7 +102,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             } else {
                 char buf[100];
                 size_t len = strftime(buf, sizeof(buf), "%F %T" , ct);
-                len += snprintf(buf + len, sizeof(buf) - len, ".%06d", createdFrac);
+                len += snprintf(buf + len, sizeof(buf) - len, ".%03d", createdFrac);
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             }
 
