@@ -102,7 +102,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             } else {
                 char buf[100];
                 size_t len = strftime(buf, sizeof(buf), "%F %T" , ct);
-                len += snprintf(buf + len, sizeof(buf) - len, ".%03d", createdFrac);
+                len += snprintf(buf + len, sizeof(buf) - len, ",%03d", createdFrac);
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             }
 
