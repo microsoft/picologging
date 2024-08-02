@@ -6,8 +6,10 @@
 #include "formatstyle.hxx"
 #include "logrecord.hxx"
 
-constexpr const size_t MAX_FORMATED_ASCTIME_SIZE = 64;
-constexpr const size_t MAX_DATEFMT_WITH_MICROSECONDS_SIZE = 64;
+// Size of the temporary buffer on stack to format asctime.
+// 64 - is big enough.
+// For example: "2024-07-23 03:27:04.982856" - is just 29 bytes
+constexpr const size_t MAX_FORMATTED_ASCTIME_SIZE = 64;
 
 PyObject* Formatter_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
@@ -77,10 +79,11 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         std::string_view dateFmtSV = self->dateFmtStr;
         self->dateFmtStrSize = dateFmtSV.size();
 
-        // We use temporary buffer on stack later to format %f before using standard strftime
-        // This protects against buffer overflow
-        // Breaching this will simply disable formatting of %f
-        if (self->dateFmtStrSize < MAX_DATEFMT_WITH_MICROSECONDS_SIZE - 8)
+        // Later we use temporary buffer allocated on stack to format %f before using standard strftime
+        // This check protects against buffer overflow. If dateFmt is too large for the buffer
+        // (bigger than in this check) then %f formatting will be disabled thus dateFmt will be passed
+        // directly to strftime
+        if (self->dateFmtStrSize <= MAX_FORMATTED_ASCTIME_SIZE - 4)
             self->dateFmtMicrosendsPos = dateFmtSV.find("%f");
     } else {
         self->dateFmtStr = nullptr;
@@ -110,15 +113,13 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             std::time_t created = static_cast<std::time_t>(createdInt);
             std::tm *ct = localtime(&created);
 
-            // 64 - is big enough to fit any formatted asctime
-            // For example: "2024-07-23 03:27:04.982856" - is just 29 bytes
-            char buf[MAX_FORMATED_ASCTIME_SIZE];
+            char buf[MAX_FORMATTED_ASCTIME_SIZE + 1];
 
             if (self->dateFmt != Py_None){
                 size_t len;
 
                 if (self->dateFmtMicrosendsPos != std::string_view::npos){
-                    char formatStrBuf[MAX_DATEFMT_WITH_MICROSECONDS_SIZE];
+                    char formatStrBuf[MAX_FORMATTED_ASCTIME_SIZE + 1];
                     // Copy everything before %f
                     memcpy(formatStrBuf, self->dateFmtStr, self->dateFmtMicrosendsPos);
                     // Format microseconds
