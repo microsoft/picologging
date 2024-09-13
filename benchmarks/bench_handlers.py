@@ -80,7 +80,7 @@ def rotatingfilehandler_picologging():
 
 def queuehandler_logging():
     logger = logging.Logger("test", picologging.DEBUG)
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     handler = logging_handlers.QueueHandler(q)
     logger.addHandler(handler)
     for _ in range(10_000):
@@ -89,7 +89,7 @@ def queuehandler_logging():
 
 def queuehandler_picologging():
     logger = picologging.Logger("test", picologging.DEBUG)
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     handler = picologging_handlers.QueueHandler(q)
     logger.addHandler(handler)
     for _ in range(10_000):
@@ -100,7 +100,7 @@ def queue_listener_logging():
     logger = logging.Logger("test", picologging.DEBUG)
     stream = io.StringIO()
     stream_handler = logging.StreamHandler(stream)
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     listener = logging_handlers.QueueListener(q, stream_handler)
     listener.start()
     handler = logging_handlers.QueueHandler(q)
@@ -109,13 +109,14 @@ def queue_listener_logging():
         logger.debug("test")
 
     listener.stop()
+    assert stream.getvalue() != ""
 
 
 def queue_listener_picologging():
     logger = picologging.Logger("test", picologging.DEBUG)
     stream = io.StringIO()
     stream_handler = picologging.StreamHandler(stream)
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     listener = picologging_handlers.QueueListener(q, stream_handler)
     listener.start()
     handler = picologging_handlers.QueueHandler(q)
@@ -124,6 +125,7 @@ def queue_listener_picologging():
         logger.debug("test")
 
     listener.stop()
+    assert stream.getvalue() != ""
 
 
 def memoryhandler_logging():
