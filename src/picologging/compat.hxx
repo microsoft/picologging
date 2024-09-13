@@ -88,4 +88,12 @@ static inline PyObject* _Py_XNewRef(PyObject *obj)
 }
 #endif
 
+// For Python 3.13 and above, PyTime_t is now part of the public API
+#if PY_VERSION_HEX >= 0x030d0000
+#define _PyTime_t PyTime_t
+#define _PyTime_AsSecondsDouble PyTime_AsSecondsDouble
+#define _PyTime_AsMilliseconds PyTime_AsMilliseconds
+#define _PyTime_ROUND_CEILING PyTime_ROUND_CEILING
+#endif
+
 #endif // COMPAT_H
