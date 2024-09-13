@@ -156,7 +156,7 @@ def test_asctime_field_buffer():
     )
     logging_f = LoggingFormatter("%(asctime)s")
 
-    assert pico_f.format(record).split(',')[0] == logging_f.format(record).split(',')[0]
+    assert pico_f.format(record).split(",")[0] == logging_f.format(record).split(",")[0]
     assert pico_f.usesTime()
 
 
