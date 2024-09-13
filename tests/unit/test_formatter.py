@@ -3,12 +3,12 @@ import io
 import logging
 import sys
 import traceback
+from logging import Formatter as LoggingFormatter
 
 import pytest
 from utils import filter_gc
 
 from picologging import Formatter, LogRecord
-from logging import Formatter as LoggingFormatter
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
