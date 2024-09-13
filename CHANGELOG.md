@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.4
+
+* Improve the performance of logging records by inlining log creation to remove temporary Python objects into the logger. by @tonybaloney in https://github.com/microsoft/picologging/pull/186
+* Improve the performance of logger methods with fastcalls by @tonybaloney in https://github.com/microsoft/picologging/pull/188
+* Improve perf and memory usage of log records with const level names by @tonybaloney in https://github.com/microsoft/picologging/pull/190
+* Add example using picologging and django by @tonybaloney in https://github.com/microsoft/picologging/pull/194
+* Fix setLogRecordFactory exception message by @GabrielCappelli in https://github.com/microsoft/picologging/pull/196
+* Fix asctime formatting, don't print uninitialized buffer's content (issue #203) by @tarasko in https://github.com/microsoft/picologging/pull/208
+* Add a test for issue Using `asctime` in formatter by @tonybaloney in https://github.com/microsoft/picologging/pull/210
+
 ## 0.9.3
 
 * Support for Python 3.12

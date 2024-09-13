@@ -15,7 +15,7 @@ from ._picologging import (  # NOQA
     getLevelName,
 )
 
-__version__ = "0.9.3"
+__version__ = "0.9.4"
 
 CRITICAL = 50
 FATAL = CRITICAL
