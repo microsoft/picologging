@@ -96,6 +96,7 @@ int FormatStyle_init(FormatStyle *self, PyObject *args, PyObject *kwds){
     }
 
     self->fmt = Py_NewRef(fmt);
+    self->fmt_len = PyUnicode_GET_LENGTH(fmt);
 
     std::string const format_string(PyUnicode_AsUTF8(fmt));
     auto fragments_begin = std::sregex_iterator(format_string.begin(), format_string.end(), fragment_search);
@@ -184,6 +185,8 @@ PyObject* FormatStyle_format(FormatStyle *self, PyObject *record){
         if (LogRecord_CheckExact(record) || LogRecord_Check(record)){
             _PyUnicodeWriter writer;
             _PyUnicodeWriter_Init(&writer);
+            writer.overallocate = 1;
+            writer.min_length = self->fmt_len + 100;
             LogRecord* log_record = reinterpret_cast<LogRecord*>(record);
             for (int i = 0 ; i < self->ob_base.ob_size ; i++){
                 switch (self->fragments[i].field){
