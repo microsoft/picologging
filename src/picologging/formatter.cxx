@@ -1,4 +1,5 @@
 #include <ctime>
+#include <charconv>
 #include "picologging.hxx"
 #include "formatter.hxx"
 #include "formatstyle.hxx"
@@ -90,15 +91,19 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
         }
         if (self->usesTime){
             PyObject * asctime = Py_None;
-            std::time_t created = (std::time_t)logRecord->created;
+            double createdInt;
+            int createdFrac = std::modf(logRecord->created, &createdInt) * 1e3;
+            std::time_t created = static_cast<std::time_t>(createdInt);
             std::tm *ct = localtime(&created);
             if (self->dateFmt != Py_None){
                 char buf[100];
-                size_t len = strftime(buf, 100, self->dateFmtStr, ct);
+                size_t len = strftime(buf, sizeof(buf), self->dateFmtStr, ct);
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             } else {
                 char buf[100];
-                asctime = PyUnicode_FromFormat("%s,%03d", buf, logRecord->msecs);
+                size_t len = strftime(buf, sizeof(buf), "%F %T" , ct);
+                len += snprintf(buf + len, sizeof(buf) - len, ",%03d", createdFrac);
+                asctime = PyUnicode_FromStringAndSize(buf, len);
             }
 
             Py_XDECREF(logRecord->asctime);
