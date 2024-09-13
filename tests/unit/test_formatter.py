@@ -8,6 +8,7 @@ import pytest
 from utils import filter_gc
 
 from picologging import Formatter, LogRecord
+from logging import Formatter as LoggingFormatter
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
@@ -144,6 +145,18 @@ def test_asctime_field():
         "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
     )
     assert pico_f.format(record)
+    assert pico_f.usesTime()
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_asctime_field_buffer():
+    pico_f = Formatter("%(asctime)s")
+    record = LogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
+    )
+    logging_f = LoggingFormatter("%(asctime)s")
+
+    assert pico_f.format(record) == logging_f.format(record)
     assert pico_f.usesTime()
 
 
