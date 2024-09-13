@@ -27,6 +27,6 @@ jobs:
         env:
           CIBW_PRERELEASE_PYTHONS: True
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
