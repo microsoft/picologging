@@ -16,11 +16,19 @@ _PyFloat_FromPyTime(_PyTime_t t)
 
 _PyTime_t current_time()
 {
+#if PY_VERSION_HEX >= 0x030d0000
+    _PyTime_t t;
+    if (PyTime_Time(&t) < 0) {
+        return -1;
+    }
+    return t;
+#else
     _PyTime_t t;
     if (_PyTime_GetSystemClockWithInfo(&t, NULL) < 0) {
         return -1;
     }
     return t;
+#endif
 }
 
 PyObject* LogRecord_new(PyTypeObject* type, PyObject *initargs, PyObject *kwds)
@@ -162,7 +170,12 @@ LogRecord* LogRecord_create(LogRecord* self, PyObject* name, PyObject* msg, PyOb
     }
 
     self->created = _PyTime_AsSecondsDouble(ctime);
+// msecs conversion isn't in 3.13 API
+#if PY_VERSION_HEX < 0x030d0000
     self->msecs = _PyTime_AsMilliseconds(ctime, _PyTime_ROUND_CEILING);
+#else
+    self->msecs = 0;
+#endif
     self->relativeCreated = _PyFloat_FromPyTime((ctime - startTime) * 1000);    
     self->thread = PyThread_get_thread_ident(); // Only supported in Python 3.7+, if big demand for 3.6 patch this out for the old API.
     // TODO #2 : See if there is a performant way to get the thread name.
