@@ -264,6 +264,22 @@ def test_format_with_custom_datefmt():
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_format_with_custom_datefmt_and_microseconds_specifier():
+    f = Formatter(
+        "%(name)s %(levelname)s %(message)s %(asctime)s bork", datefmt="%F %T,%f"
+    )
+    assert f.datefmt == "%F %T,%f"
+    record = LogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
+    )
+    s = f.format(record)
+    actual_date = datetime.datetime.fromtimestamp(record.created).strftime("%F %T,%f")
+    assert s == f"hello WARNING bork bork bork {actual_date} bork"
+    assert f.usesTime() is True
+    assert f.formatMessage(record) == s
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_formatter_repr():
     f = Formatter("%(message)s")
     assert repr(f) == "<Formatter: fmt='%(message)s'>"
