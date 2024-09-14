@@ -3,6 +3,7 @@ import io
 import logging
 import sys
 import traceback
+from logging import Formatter as LoggingFormatter
 
 import pytest
 from utils import filter_gc
@@ -148,6 +149,18 @@ def test_asctime_field():
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_asctime_field_buffer():
+    pico_f = Formatter("%(asctime)s")
+    record = LogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
+    )
+    logging_f = LoggingFormatter("%(asctime)s")
+
+    assert pico_f.format(record).split(",")[0] == logging_f.format(record).split(",")[0]
+    assert pico_f.usesTime()
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_record_with_stack_info():
     pico_f = Formatter("%(message)s")
     record = LogRecord(
@@ -246,6 +259,20 @@ def test_format_with_custom_datefmt():
     )
     s = f.format(record)
     assert s == f"hello WARNING bork bork bork {actual_date}"
+    assert f.usesTime() is True
+    assert f.formatMessage(record) == s
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_format_with_custom_datefmt_and_microseconds_specifier():
+    f = Formatter("%(name)s %(levelname)s %(message)s %(asctime)s bork", datefmt="%F %T,%f")
+    assert f.datefmt == "%F %T,%f"
+    record = LogRecord(
+        "hello", logging.WARNING, __file__, 123, "bork bork bork", (), None
+    )
+    s = f.format(record)
+    actual_date = datetime.datetime.fromtimestamp(record.created).strftime("%F %T,%f")
+    assert s == f"hello WARNING bork bork bork {actual_date} bork"
     assert f.usesTime() is True
     assert f.formatMessage(record) == s
 

@@ -15,7 +15,7 @@ from ._picologging import (  # NOQA
     getLevelName,
 )
 
-__version__ = "0.9.3"
+__version__ = "0.9.4"
 
 CRITICAL = 50
 FATAL = CRITICAL
@@ -177,7 +177,9 @@ class Manager:
         self.cls = klass
 
     def setLogRecordFactory(self, factory):
-        raise NotImplementedError("setLogRecordFactory is not supported in picologging.")
+        raise NotImplementedError(
+            "setLogRecordFactory is not supported in picologging."
+        )
 
 
 root = Logger(name="root", level=WARNING)
