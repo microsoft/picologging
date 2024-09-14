@@ -82,8 +82,10 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
         // Later we use temporary buffer allocated on stack to format %f before using standard strftime
         // This check protects against buffer overflow. If dateFmt is too large for the buffer
         // (bigger than in this check) then %f formatting will be disabled thus dateFmt will be passed
-        // directly to strftime
-        if (self->_dateFmtStrSize <= MAX_FORMATTED_ASCTIME_SIZE - 4)
+        // directly to strftime.
+        // -6 means we need extra space for 6 digits of microseconds
+        // +2 we reuse 2 digits of %f specifier
+        if (self->_dateFmtStrSize <= MAX_FORMATTED_ASCTIME_SIZE - 6 + 2)
             self->_dateFmtMicrosendsPos = dateFmtSV.find("%f");
     } else {
         self->_dateFmtStr = nullptr;
@@ -113,31 +115,38 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             std::time_t created = static_cast<std::time_t>(createdInt);
             std::tm *ct = localtime(&created);
 
+            // Buffer for formatted asctime
             char buf[MAX_FORMATTED_ASCTIME_SIZE + 1];
 
             if (self->dateFmt != Py_None){
-                size_t len;
+                // dateFmt has been specified for asctime
+                size_t len = [&](){
+                    if (self->_dateFmtMicrosendsPos != std::string_view::npos){
+                        // There is %f in it the provided dateFmt.
+                        // Prepare format string for strftime where %f will
+                        // be replaced with the actual microseconds
+                        char formatStrBuf[MAX_FORMATTED_ASCTIME_SIZE + 1];
 
-                if (self->_dateFmtMicrosendsPos != std::string_view::npos){
-                    char formatStrBuf[MAX_FORMATTED_ASCTIME_SIZE + 1];
-                    // Copy everything before %f
-                    memcpy(formatStrBuf, self->_dateFmtStr, self->_dateFmtMicrosendsPos);
-                    // Format microseconds
-                    snprintf(formatStrBuf + self->_dateFmtMicrosendsPos,
-                             sizeof(formatStrBuf) - 1, "%06d",
-                             static_cast<int>(createdFrac * 1e6));
-                    // Copy everthing after %f, including null terminator
-                    memcpy(formatStrBuf + self->_dateFmtMicrosendsPos + 6,
-                           self->_dateFmtStr + self->_dateFmtMicrosendsPos + 2,
-                           self->_dateFmtStrSize - self->_dateFmtMicrosendsPos - 2 + 1);
+                        // Copy everything before %f
+                        memcpy(formatStrBuf, self->_dateFmtStr, self->_dateFmtMicrosendsPos);
+                        // Format microseconds
+                        snprintf(formatStrBuf + self->_dateFmtMicrosendsPos,
+                                 sizeof(formatStrBuf) - 1, "%06d",
+                                 static_cast<int>(createdFrac * 1e6));
+                        // Copy everthing after %f, including null terminator
+                        memcpy(formatStrBuf + self->_dateFmtMicrosendsPos + 6,
+                               self->_dateFmtStr + self->_dateFmtMicrosendsPos + 2,
+                               self->_dateFmtStrSize - self->_dateFmtMicrosendsPos - 2 + 1);
 
-                    len = strftime(buf, sizeof(buf), formatStrBuf, ct);
-                } else {
-                    len = strftime(buf, sizeof(buf), self->_dateFmtStr, ct);
-                }
+                        return strftime(buf, sizeof(buf), formatStrBuf, ct);
+                    } else {
+                        return strftime(buf, sizeof(buf), self->_dateFmtStr, ct);
+                    }
+                }();
 
                 asctime = PyUnicode_FromStringAndSize(buf, len);
             } else {
+                // dateFmt has not been specified for asctime, use default formatting
                 size_t len = strftime(buf, sizeof(buf), "%F %T" , ct);
                 len += snprintf(buf + len, sizeof(buf) - len, ",%03d", static_cast<int>(createdFrac * 1e3));
                 asctime = PyUnicode_FromStringAndSize(buf, len);
