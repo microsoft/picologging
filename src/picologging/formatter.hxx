@@ -12,9 +12,9 @@ typedef struct {
     PyObject *dateFmt;
     PyObject *style;
     bool usesTime;
-    size_t dateFmtMicrosendsPos;        // If %f is specified in dateFmt then points to '%' character, otherwise std::string_view::npos
-    size_t dateFmtStrSize;              // Size of the dateFmt without null terminator
-    const char* dateFmtStr;             // C-string, null terminated
+    size_t _dateFmtMicrosendsPos;        // If %f is specified in dateFmt then points to '%' character, otherwise std::string_view::npos
+    size_t _dateFmtStrSize;              // Size of the dateFmt without null terminator
+    const char* _dateFmtStr;             // dateFmt as a C-string, null terminated
     PyObject *_const_line_break;
     PyObject *_const_close;
     PyObject *_const_getvalue;

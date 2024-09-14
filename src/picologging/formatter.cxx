@@ -69,24 +69,24 @@ int Formatter_init(Formatter *self, PyObject *args, PyObject *kwds){
     self->usesTime = (FormatStyle_usesTime((FormatStyle*)self->style) == Py_True);
     self->dateFmt = Py_NewRef(dateFmt);
 
-    self->dateFmtMicrosendsPos = std::string_view::npos;
-    self->dateFmtStrSize = 0;
+    self->_dateFmtMicrosendsPos = std::string_view::npos;
+    self->_dateFmtStrSize = 0;
     if (dateFmt != Py_None) {
-        self->dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
-        if (self->dateFmtStr == nullptr) {
+        self->_dateFmtStr = PyUnicode_AsUTF8(self->dateFmt);
+        if (self->_dateFmtStr == nullptr) {
             return -1;
         }
-        std::string_view dateFmtSV = self->dateFmtStr;
-        self->dateFmtStrSize = dateFmtSV.size();
+        std::string_view dateFmtSV = self->_dateFmtStr;
+        self->_dateFmtStrSize = dateFmtSV.size();
 
         // Later we use temporary buffer allocated on stack to format %f before using standard strftime
         // This check protects against buffer overflow. If dateFmt is too large for the buffer
         // (bigger than in this check) then %f formatting will be disabled thus dateFmt will be passed
         // directly to strftime
-        if (self->dateFmtStrSize <= MAX_FORMATTED_ASCTIME_SIZE - 4)
-            self->dateFmtMicrosendsPos = dateFmtSV.find("%f");
+        if (self->_dateFmtStrSize <= MAX_FORMATTED_ASCTIME_SIZE - 4)
+            self->_dateFmtMicrosendsPos = dateFmtSV.find("%f");
     } else {
-        self->dateFmtStr = nullptr;
+        self->_dateFmtStr = nullptr;
     }
 
     if (validate){
@@ -118,22 +118,22 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
             if (self->dateFmt != Py_None){
                 size_t len;
 
-                if (self->dateFmtMicrosendsPos != std::string_view::npos){
+                if (self->_dateFmtMicrosendsPos != std::string_view::npos){
                     char formatStrBuf[MAX_FORMATTED_ASCTIME_SIZE + 1];
                     // Copy everything before %f
-                    memcpy(formatStrBuf, self->dateFmtStr, self->dateFmtMicrosendsPos);
+                    memcpy(formatStrBuf, self->_dateFmtStr, self->_dateFmtMicrosendsPos);
                     // Format microseconds
-                    snprintf(formatStrBuf + self->dateFmtMicrosendsPos,
+                    snprintf(formatStrBuf + self->_dateFmtMicrosendsPos,
                              sizeof(formatStrBuf) - 1, "%06d",
                              static_cast<int>(createdFrac * 1e6));
                     // Copy everthing after %f, including null terminator
-                    memcpy(formatStrBuf + self->dateFmtMicrosendsPos + 6,
-                           self->dateFmtStr + self->dateFmtMicrosendsPos + 2,
-                           self->dateFmtStrSize - self->dateFmtMicrosendsPos - 2 + 1);
+                    memcpy(formatStrBuf + self->_dateFmtMicrosendsPos + 6,
+                           self->_dateFmtStr + self->_dateFmtMicrosendsPos + 2,
+                           self->_dateFmtStrSize - self->_dateFmtMicrosendsPos - 2 + 1);
 
                     len = strftime(buf, sizeof(buf), formatStrBuf, ct);
                 } else {
-                    len = strftime(buf, sizeof(buf), self->dateFmtStr, ct);
+                    len = strftime(buf, sizeof(buf), self->_dateFmtStr, ct);
                 }
 
                 asctime = PyUnicode_FromStringAndSize(buf, len);
