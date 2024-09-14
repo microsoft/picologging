@@ -132,7 +132,7 @@ PyObject* Formatter_format(Formatter *self, PyObject *record){
                         // Format microseconds
                         snprintf(formatStrBuf + self->_dateFmtMicrosendsPos,
                                  sizeof(formatStrBuf) - 1, "%06d",
-                                 static_cast<int>(createdFrac * 1e6));
+                                 static_cast<int>(std::round(createdFrac * 1e6)));
                         // Copy everthing after %f, including null terminator
                         memcpy(formatStrBuf + self->_dateFmtMicrosendsPos + 6,
                                self->_dateFmtStr + self->_dateFmtMicrosendsPos + 2,
