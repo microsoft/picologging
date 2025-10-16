@@ -53,12 +53,18 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
     if (Filterer_filter(&self->filterer, (PyObject*)record) != Py_True)
         Py_RETURN_NONE;
 
+    // Release GIL before acquiring C++ lock to prevent deadlock
+    PyThreadState *_save = PyEval_SaveThread();
     try {
         self->lock->lock();
     } catch (const std::exception& e) {
+        PyEval_RestoreThread(_save);
         PyErr_Format(PyExc_RuntimeError, "Cannot acquire thread lock, %s", e.what());
         return nullptr;
     }
+    // Reacquire GIL after acquiring C++ lock
+    PyEval_RestoreThread(_save);
+    
     PyObject* result = nullptr;
     if (StreamHandler_CheckExact(((PyObject*)self))){
         PyObject* args[1] = {record};
@@ -67,7 +73,11 @@ PyObject* Handler_handle(Handler *self, PyObject *record) {
         result = PyObject_CallMethod_ONEARG((PyObject*)self, self->_const_emit, record);
     }
     
+    // Release GIL before releasing C++ lock
+    _save = PyEval_SaveThread();
     self->lock->unlock();
+    PyEval_RestoreThread(_save);
+    
     return result == nullptr ? nullptr : Py_True;
 }
 
@@ -108,12 +118,16 @@ PyObject* Handler_setFormatter(Handler *self, PyObject *formatter) {
 }
 
 PyObject* Handler_acquire(Handler *self){
+    PyThreadState *_save = PyEval_SaveThread();
     self->lock->lock();
+    PyEval_RestoreThread(_save);
     Py_RETURN_NONE;
 }
 
 PyObject* Handler_release(Handler *self){
+    PyThreadState *_save = PyEval_SaveThread();
     self->lock->unlock();
+    PyEval_RestoreThread(_save);
     Py_RETURN_NONE;
 }
 

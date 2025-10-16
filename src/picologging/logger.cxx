@@ -185,6 +185,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
     long lineno = f != nullptr ? PyFrame_GETLINENO(f) : 0;
     PyObject *co_name = f != nullptr ? PyFrame_GETCODE(f)->co_name : self->_const_unknown;
 
+    PyObject* processed_stack_info = nullptr;
     if (stack_info == Py_True){
         PyObject* mod = PICOLOGGING_MODULE(); // borrowed reference
         PyObject* modDict = PyModule_GetDict(mod); // borrowed reference
@@ -210,6 +211,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             NULL);
         if (printStackResult == nullptr)
         {
+            Py_XDECREF(sio);
             Py_XDECREF(sio_cls);
             Py_XDECREF(print_stack);
             return nullptr; // Got exception in print_stack()
@@ -232,7 +234,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
             Py_DECREF(s);
             s = s2;
         }
-        stack_info = s;
+        processed_stack_info = s;
     }
 
     LogRecord* record = (LogRecord*) (&LogRecordType)->tp_alloc(&LogRecordType, 0);
@@ -242,7 +244,7 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         return nullptr;
     }
 
-    return LogRecord_create(
+    LogRecord* result = LogRecord_create(
         record,
         self->name,
         msg,
@@ -252,8 +254,13 @@ LogRecord* Logger_logMessageAsRecord(Logger* self, unsigned short level, PyObjec
         lineno,
         exc_info,
         co_name,
-        stack_info
+        processed_stack_info ? processed_stack_info : stack_info
     );
+    
+    // Clean up the processed stack info if it was created
+    Py_XDECREF(processed_stack_info);
+    
+    return result;
 }
 
 inline PyObject* PyArg_GetKeyword(PyObject *const *args, Py_ssize_t npargs, PyObject *kwnames, PyObject* keyword){
@@ -281,34 +288,42 @@ PyObject* Logger_logAndHandle(Logger *self, PyObject *const *args, Py_ssize_t nf
         PyTuple_SET_ITEM(args_, i - 1, args[i]);
         Py_INCREF(args[i]);
     }
-    PyObject* exc_info = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_exc_info) : nullptr;
-    if (exc_info == nullptr){
+    PyObject* exc_info_kw = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_exc_info) : nullptr;
+    PyObject* exc_info;
+    if (exc_info_kw == nullptr){
         exc_info = Py_NewRef(Py_None);
     } else {
-        if (PyExceptionInstance_Check(exc_info)){
+        if (PyExceptionInstance_Check(exc_info_kw)){
             PyObject * unpackedExcInfo = PyTuple_New(3);
-            PyObject * excType = (PyObject*)Py_TYPE(exc_info);
+            PyObject * excType = (PyObject*)Py_TYPE(exc_info_kw);
             PyTuple_SET_ITEM(unpackedExcInfo, 0, excType);
             Py_INCREF(excType);
-            PyTuple_SET_ITEM(unpackedExcInfo, 1, exc_info);
-            Py_INCREF(exc_info);
-            PyObject* traceback = PyObject_GetAttrString(exc_info, "__traceback__");
+            PyTuple_SET_ITEM(unpackedExcInfo, 1, exc_info_kw);
+            Py_INCREF(exc_info_kw);
+            PyObject* traceback = PyObject_GetAttrString(exc_info_kw, "__traceback__");
             PyTuple_SET_ITEM(unpackedExcInfo, 2, traceback);
-            Py_INCREF(traceback);
             exc_info = unpackedExcInfo;
-        } else if (!PyTuple_CheckExact(exc_info)){ // Probably Py_TRUE, fetch current exception as tuple
+        } else if (!PyTuple_CheckExact(exc_info_kw)){ // Probably Py_TRUE, fetch current exception as tuple
             PyObject * unpackedExcInfo = PyTuple_New(3);
             PyErr_GetExcInfo(&PyTuple_GET_ITEM(unpackedExcInfo, 0), &PyTuple_GET_ITEM(unpackedExcInfo, 1), &PyTuple_GET_ITEM(unpackedExcInfo, 2));
             exc_info = unpackedExcInfo;
+        } else {
+            exc_info = Py_NewRef(exc_info_kw);
         }
     }
-    PyObject* extra = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_extra) : nullptr;
-    if (extra == nullptr){
+    PyObject* extra_kw = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_extra) : nullptr;
+    PyObject* extra;
+    if (extra_kw == nullptr){
         extra = Py_NewRef(Py_None);
+    } else {
+        extra = Py_NewRef(extra_kw);
     }
-    PyObject* stack_info = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_stack_info) : nullptr;
-    if (stack_info == nullptr){
+    PyObject* stack_info_kw = kwnames != nullptr ? PyArg_GetKeyword(args, npargs, kwnames, self->_const_stack_info) : nullptr;
+    PyObject* stack_info;
+    if (stack_info_kw == nullptr){
         stack_info = Py_NewRef(Py_False);
+    } else {
+        stack_info = Py_NewRef(stack_info_kw);
     }
     LogRecord *record = Logger_logMessageAsRecord(
         self, level, msg, args_, exc_info, extra, stack_info, 1);
