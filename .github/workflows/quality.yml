@@ -140,7 +140,7 @@ jobs:
         coverage xml -o coverage_python.xml
         gcov _skbuild/linux-x86_64-3.10/cmake-build/CMakeFiles/_picologging.dir/src/picologging/*.gcda
         gcovr -g -r . --xml coverage_cpp.xml
-    - uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457 # v3.1.6
+    - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         verbose: true
         files: ./coverage_cpp.xml,./coverage_python.xml
