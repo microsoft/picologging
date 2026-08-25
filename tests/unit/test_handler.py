@@ -2,6 +2,7 @@ import pytest
 from utils import filter_gc
 
 import picologging
+from picologging import LogRecord
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
@@ -131,13 +132,22 @@ def test_custom_formatter():
     assert handler.format(record) == "foo"
 
 
-@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
-def test_handle_error():
-    handler = picologging.Handler()
+def test_handle_error(capsys):
+    picologging.raiseExceptions = True
+
+    class BadStream:
+        def write(self, data):
+            raise RuntimeError("bad stream")
+
+    handler = picologging.StreamHandler(BadStream())
     record = picologging.LogRecord(
         "test", picologging.INFO, __file__, 1, "test", (), None, None, None
     )
-    assert not handler.handleError(record)
+    handler.handle(record)
+    cap = capsys.readouterr()
+
+    assert cap.out == ""
+    assert cap.err.startswith("Traceback (most recent call last)")
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
