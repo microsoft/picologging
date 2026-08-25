@@ -47,10 +47,18 @@ PyObject* StreamHandler_dealloc(StreamHandler *self) {
 PyObject* flush (StreamHandler* self){
     if (!self->stream_has_flush)
         Py_RETURN_NONE;
-    Handler_acquire(&self->handler);
+    
+    PyThreadState *_save = PyEval_SaveThread();
+    self->handler.lock->lock();
+    PyEval_RestoreThread(_save);
+    
     PyObject* result = PyObject_CallMethod_NOARGS(self->stream, self->_const_flush);
     Py_XDECREF(result);
-    Handler_release(&self->handler);
+    
+    _save = PyEval_SaveThread();
+    self->handler.lock->unlock();
+    PyEval_RestoreThread(_save);
+    
     Py_RETURN_NONE;
 }
 
