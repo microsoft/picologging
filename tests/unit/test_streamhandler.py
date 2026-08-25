@@ -23,6 +23,14 @@ def test_stream_handler():
 
 
 @pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
+def test_stream_handler_keyword_argument():
+    stream = io.StringIO()
+    handler = picologging.StreamHandler(stream=stream)
+
+    assert handler.stream is stream
+
+
+@pytest.mark.limit_leaks("192B", filter_fn=filter_gc)
 def test_stream_handler_defaults_to_stderr():
     handler = picologging.StreamHandler()
     assert handler.stream == sys.stderr

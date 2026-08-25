@@ -1,3 +1,5 @@
+import io
+
 import pytest
 from utils import filter_gc
 
@@ -14,6 +16,7 @@ def test_dictconfig():
         def filter(self, record):
             return True
 
+    stream = io.StringIO()
     config = {
         "version": 1,
         "root": {"handlers": ["console"], "level": "DEBUG"},
@@ -36,6 +39,7 @@ def test_dictconfig():
         "handlers": {
             "console": {
                 "class": "picologging.StreamHandler",
+                "stream": stream,
                 "filters": ["test_filter"],
                 "level": picologging.DEBUG,
             },
@@ -57,6 +61,7 @@ def test_dictconfig():
     assert root.level == picologging.DEBUG
     assert root.handlers[0].name == "console"
     assert isinstance(root.handlers[0], picologging.StreamHandler)
+    assert root.handlers[0].stream is stream
 
     logger = picologging.getLogger("test_config")
     assert logger.name == "test_config"

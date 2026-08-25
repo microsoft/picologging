@@ -20,11 +20,18 @@ PyObject* StreamHandler_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 }
 
 int StreamHandler_init(StreamHandler *self, PyObject *args, PyObject *kwds){
-    if (HandlerType.tp_init((PyObject *) self, args, kwds) < 0)
-        return -1;
     PyObject *stream = NULL;
     static const char *kwlist[] = {"stream", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", const_cast<char**>(kwlist), &stream)){
+        return -1;
+    }
+    PyObject *empty_args = PyTuple_New(0);
+    if (empty_args == NULL) {
+        return -1;
+    }
+    int handler_init_status = HandlerType.tp_init((PyObject *) self, empty_args, NULL);
+    Py_DECREF(empty_args);
+    if (handler_init_status < 0){
         return -1;
     }
     if (stream == NULL || stream == Py_None){
