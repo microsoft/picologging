@@ -1,11 +1,62 @@
 [build-system]
 requires = [
     "setuptools>=65.4.1",
-    "scikit-build>=0.18.0",
-    "cmake>=3.18",
-    "ninja",
+    "scikit-build-core"
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "picologging"
+version = "0.9.5"
+description = "A fast and lightweight logging library for Python"
+readme = "README.md"
+license = {text = "MIT License"}
+authors = [
+    {name = "Microsoft"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Logging",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "rich",
+    "pytest",
+    "pytest-cov",
+    "hypothesis",
+    "flaky",
+    "black",
+    "pre-commit",
+]
+memray = [
+    "memray>=1.10.0",
+    "pytest-memray>=1.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/microsoft/picologging"
+Source = "https://github.com/microsoft/picologging"
+Documentation = "https://microsoft.github.io/picologging/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+picologging = ["py.typed", "__init__.pyi", "config.pyi", "handlers.pyi"]
 
 [tool.cibuildwheel]
 # skip musl and pypy

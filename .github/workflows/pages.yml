@@ -38,7 +38,6 @@ jobs:
       - name: Install requirements and package
         run: |
           python -m pip install -U pip
-          python -m pip install scikit-build
           python -m pip install -v .
       - name: Setup Pages
         uses: actions/configure-pages@1f0c5cde4bc74cd7e1254d0cb4de8d49e9068c7d # v4.0.0
