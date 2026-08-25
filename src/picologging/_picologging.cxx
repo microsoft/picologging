@@ -94,10 +94,8 @@ static int
 picologging_clear(PyObject *module)
 {
     picologging_state *state = get_picologging_state(module);
-    if (state && state->g_filepathCache) {
-      delete state->g_filepathCache;
-      state->g_filepathCache = nullptr;
-
+    if (state) {
+      Py_XDECREF(state->g_filepathCache);
       Py_DECREF(state->g_const_CRITICAL);
       Py_DECREF(state->g_const_ERROR);
       Py_DECREF(state->g_const_WARNING);
@@ -156,7 +154,7 @@ PyMODINIT_FUNC PyInit__picologging(void)
 
   // Initialize module state
   picologging_state *state = get_picologging_state(m);
-  state->g_filepathCache = new FilepathCache();
+  state->g_filepathCache = PyDict_New();
   state->g_const_CRITICAL = PyUnicode_FromString("CRITICAL");
   state->g_const_ERROR = PyUnicode_FromString("ERROR");
   state->g_const_WARNING = PyUnicode_FromString("WARNING");
