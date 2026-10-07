@@ -52,7 +52,7 @@ jobs:
         architecture: x64
     - name: Get latest CMake and ninja
       # Using 'latest' branch, the most recent CMake and ninja are installed.
-      uses: lukka/get-cmake@latest
+      uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
     - name: Install and build package
       run: |
         python -m pip install -U pip
@@ -129,7 +129,7 @@ jobs:
         architecture: x64
     - name: Get latest CMake and ninja
       # Using 'latest' branch, the most recent CMake and ninja are installed.
-      uses: lukka/get-cmake@latest
+      uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
     - name: Install dependencies
       run: python -m pip install -U pip setuptools wheel scikit-build ninja cmake pytest gcovr pytest-cov
     - name: Run Coverage
